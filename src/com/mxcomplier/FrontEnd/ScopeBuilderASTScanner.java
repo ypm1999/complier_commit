@@ -21,9 +21,9 @@ public class ScopeBuilderASTScanner extends ASTScanner{
         if (initExpr != null){
             initExpr.accept(this);
             Type nodeType = node.getType().getType();
-            if ((nodeType == BoolType.getInstance()) ||
-                (initExpr.getType() instanceof NullType && !(nodeType instanceof ArrayType || nodeType instanceof ClassType)) ||
-                !nodeType.equals(initExpr.getType()) ||
+            if ((nodeType == VoidType.getInstance()) ||
+                ((initExpr.getType() instanceof NullType && !(nodeType instanceof ArrayType || nodeType instanceof ClassType)) &&
+                !nodeType.equals(initExpr.getType())) ||
                 node.isFuncArgs())
                 throw new ComplierError(node.getLocation(), "Variable initialization is invalid");
         }
@@ -43,8 +43,10 @@ public class ScopeBuilderASTScanner extends ASTScanner{
     public void visit(FuncDefNode node) {
         currentFunc = currentScope.getFunc(node.getName(), node.getLocation());
 
-        if (node.getReturnType().getType() instanceof ClassType)
+        //check return type vaild
+        if (node.getReturnType()!= null && node.getReturnType().getType() instanceof ClassType)
             globalScope.getClass(((ClassType) node.getReturnType().getType()).getName(), node.getLocation());
+
         node.getFuncBody().accept(this);
         currentFunc = null;
     }
@@ -84,7 +86,7 @@ public class ScopeBuilderASTScanner extends ASTScanner{
         for (Node stmt : node.getStmtlist()){
             stmt.accept(this);
             if (currentFunc != null && stmt instanceof ReturnStmtNode)
-                if (((ReturnStmtNode) stmt).getType() != currentFunc.getReturnType())
+                if (!((ReturnStmtNode) stmt).getType().equals(currentFunc.getReturnType()))
                     throw new ComplierError(stmt.getLocation(), "return type not match");
         }
 
@@ -181,34 +183,44 @@ public class ScopeBuilderASTScanner extends ASTScanner{
         ExprNode base = node.getBaseExpr();
         base.accept(this);
 
-        if (!node.getArgumentList().isEmpty()){
-            FuncSymbol func;
-            if (base instanceof IdentExprNode){
-                func = globalScope.getFunc(((IdentExprNode) base).getName(), base.getLocation());
-            }
-            else if (base instanceof MemberCallExprNode){
-                Symbol tmpSymbol = getClassMember(((ClassType)((MemberCallExprNode) base).getBaseExpr().getType()).getName(),
-                                        ((MemberCallExprNode) base).getMemberName(), base.getLocation());
-                if (tmpSymbol instanceof FuncSymbol)
-                    func = (FuncSymbol) tmpSymbol;
-                else
-                    throw new ComplierError(base.getLocation(),"invalid member function call");
-            }
+        FuncSymbol func;
+        if (base instanceof IdentExprNode){
+            func = currentScope.getFunc(((IdentExprNode) base).getName(), base.getLocation());
+        }
+        else if (base instanceof MemberCallExprNode){
+            String name;
+            Type type = ((MemberCallExprNode) base).getBaseExpr().getType();
+            if (type instanceof ClassType)
+                name = ((ClassType) type).getName();
+            else if (type instanceof StringType)
+                name = "string";
+            else if (type instanceof ArrayType)
+                name = "__array";
             else
-                throw new ComplierError(node.getLocation(), "unknown function call");
+                throw new ComplierError(node.getLocation(), "unknown member call type");
 
+            Symbol tmpSymbol = getClassMember(name, ((MemberCallExprNode) base).getMemberName(), base.getLocation());
+            if (tmpSymbol instanceof FuncSymbol)
+                func = (FuncSymbol) tmpSymbol;
+            else
+                throw new ComplierError(base.getLocation(),"invalid member function call");
+        }
+        else
+            throw new ComplierError(node.getLocation(), "unknown function call");
+
+        if (!node.getArgumentList().isEmpty()){
             Iterator<Type> it = func.getParameters().iterator();
             if (func.getParameters().size() == node.getArgumentList().size())
                 for (ExprNode expr : node.getArgumentList()){
                     expr.accept(this);
-                    if (expr.getType() != it.next())
+                    if (!expr.getType().equals(it.next()))
                         throw new ComplierError(node.getLocation(), "paratemers' type is invalid");
                 }
             else
                 throw new ComplierError(node.getLocation(), "paratemers number is not equal to the function define");
         }
         node.setLeftValue(false);
-        node.setType(node.getBaseExpr().getType());
+        node.setType(base.getType());
     }
 
     @Override
@@ -229,20 +241,17 @@ public class ScopeBuilderASTScanner extends ASTScanner{
     public void visit(MemberCallExprNode node) {
         ExprNode baseExpr = node.getBaseExpr();
         baseExpr.accept(this);
-        Symbol varOrFunc;
-        if (baseExpr.getType() instanceof ClassType){
-            varOrFunc = getClassMember(((ClassType) baseExpr.getType()).getName(),
-                                              node.getMemberName(), node.getLocation());
-        }
-        else if (baseExpr.getType() instanceof StringType){
-            varOrFunc = getClassMember("string", node.getMemberName(), node.getLocation());
-        }
-        else if (baseExpr.getType() instanceof ArrayType){
-            varOrFunc = getClassMember("__array", node.getMemberName(), node.getLocation());
-        }
+        String className;
+        if (baseExpr.getType() instanceof ClassType)
+            className = ((ClassType) baseExpr.getType()).getName();
+        else if (baseExpr.getType() instanceof StringType)
+            className = "string";
+        else if (baseExpr.getType() instanceof ArrayType)
+            className = "__array";
         else
             throw new ComplierError(node.getLocation(), "only class can call member variable");
 
+        Symbol varOrFunc = getClassMember(className, node.getMemberName(), node.getLocation());
         node.setLeftValue(true);
         if (varOrFunc.getType().getHyperType() == HyperType.FUNC)
             node.setType(((FuncSymbol) varOrFunc).getReturnType());
@@ -332,7 +341,7 @@ public class ScopeBuilderASTScanner extends ASTScanner{
             case LARGE:
             case LESS_EQUAL:
             case LARGE_EQUAL:
-                valid = lhType == rhType;
+                valid = lhType.equals(rhType);
                 node.setType(BoolType.getInstance());
                 break;
 
@@ -365,7 +374,7 @@ public class ScopeBuilderASTScanner extends ASTScanner{
                     String.format("left value(%s) is not assignable", lType.toString()));
 
         if (!lType.equals(rType) &&
-            !(lType instanceof ArrayType && rType instanceof NullType))
+            !((lType instanceof ArrayType || lType instanceof ClassType) && rType instanceof NullType))
             throw new ComplierError(node.getLocation(),
                     String.format("type error with %s and %s", lType.toString(), rType.toString()));
 

@@ -11,8 +11,6 @@ sections
     |   declarationStatement
     ;
 
-
-
 functionDefinition
     :   (typeOrVoid)? identifier '(' declarationList? ')' compoundStatement
     ;
@@ -171,6 +169,51 @@ For                 : 'for';
 While               : 'while';
 If                  : 'if';
 
+
+LeftParen : '(';
+RightParen : ')';
+LeftBracket : '[';
+RightBracket : ']';
+LeftBrace : '{';
+RightBrace : '}';
+
+Less : '<';
+LessEqual : '<=';
+Greater : '>';
+GreaterEqual : '>=';
+LeftShift : '<<';
+RightShift : '>>';
+
+Plus : '+';
+PlusPlus : '++';
+Minus : '-';
+MinusMinus : '--';
+Star : '*';
+Div : '/';
+Mod : '%';
+
+And : '&';
+Or : '|';
+AndAnd : '&&';
+OrOr : '||';
+Caret : '^';
+Not : '!';
+Tilde : '~';
+
+Question : '?';
+Colon : ':';
+Semi : ';';
+Comma : ',';
+
+Assign : '=';
+
+Equal : '==';
+NotEqual : '!=';
+
+Dot : '.';
+
+
+
 Identifier
     :   Nondigit        (   Nondigit
         |   Digit
@@ -206,7 +249,7 @@ fragment CCharSequence
 
 fragment CChar
     :   EscapeSequence
-    |   ~[\\\r\n]
+    |   ~["\\\r\n]
     ;
 
 fragment EscapeSequence

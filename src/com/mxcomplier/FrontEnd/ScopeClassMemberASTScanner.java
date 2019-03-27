@@ -2,6 +2,7 @@ package com.mxcomplier.FrontEnd;
 
 import com.mxcomplier.AST.*;
 import com.mxcomplier.Error.ComplierError;
+import com.mxcomplier.Scope.ClassSymbol;
 import com.mxcomplier.Scope.FuncSymbol;
 import com.mxcomplier.Type.ClassType;
 import com.mxcomplier.Type.IntType;
@@ -12,7 +13,7 @@ import java.util.List;
 
 //add class members ans all functions, add function parameters
 public class ScopeClassMemberASTScanner extends ASTScanner{
-
+    private ClassSymbol currentClass = null;
 
     void checkMain(Location location){
         FuncSymbol main =  currentScope.getFunc("main", location);
@@ -36,6 +37,7 @@ public class ScopeClassMemberASTScanner extends ASTScanner{
 
     @Override
     public void visit(ClassDefNode node) {
+        currentClass = currentScope.getClass(node.getName(), node.getLocation());
         currentScope = node.getScope();
 
         for (FuncDefNode func : node.getFuncDefs())
@@ -44,6 +46,7 @@ public class ScopeClassMemberASTScanner extends ASTScanner{
             vars.accept(this);
 
         currentScope = currentScope.getParent();
+        currentClass = null;
     }
 
     @Override
@@ -59,7 +62,15 @@ public class ScopeClassMemberASTScanner extends ASTScanner{
         }
         currentScope = currentScope.getParent();
 
-        FuncSymbol symbol = new FuncSymbol(node.getName(), node.getReturnType().getType(), node.getFuncBody().getScope(), args);
+        Type returnType;
+        if (node.getReturnType() == null){
+            if (currentClass == null || !args.isEmpty())
+                throw new ComplierError(node.getLocation(), "constructor function is not valid");
+            returnType = currentClass.getType();
+        }
+        else
+            returnType = node.getReturnType().getType();
+        FuncSymbol symbol = new FuncSymbol(node.getName(), returnType, node.getFuncBody().getScope(), args);
         currentScope.put(symbol, node.getLocation());
         node.getFuncBody().getScope().setParent(currentScope);
     }

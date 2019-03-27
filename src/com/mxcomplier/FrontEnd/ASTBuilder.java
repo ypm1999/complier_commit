@@ -389,7 +389,7 @@ public class ASTBuilder  extends MxStarBaseVisitor<Node> {
         int order = 0;
         newType = visit(ctx.baseType());
 
-        if (ctx.expression() != null){
+        if (!ctx.expression().isEmpty()){
             Type type = ((TypeNode)newType).getType();
             for (ParserRuleContext dim : ctx.expression()){
                 dims.add((ExprNode) visit(dim));

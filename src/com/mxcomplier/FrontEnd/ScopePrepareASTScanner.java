@@ -37,7 +37,7 @@ public class ScopePrepareASTScanner extends ASTScanner{
         addBuildInFunc(currentScope, "println", voidType, Collections.singletonList(stringType));
         addBuildInFunc(stringScope, "ord", intType, Collections.singletonList(intType));
         addBuildInFunc(currentScope, "toString", stringType, Collections.singletonList(intType));
-        addBuildInFunc(stringScope, "subString", stringType, Arrays.asList(intType, intType));
+        addBuildInFunc(stringScope, "substring", stringType, Arrays.asList(intType, intType));
 
 //        currentScope.put(new ClassSymbol("int", new Scope(currentScope)));
 //        currentScope.put(new ClassSymbol("bool", new Scope(currentScope)));
