@@ -64,13 +64,14 @@ public class ScopeClassMemberASTScanner extends ASTScanner{
 
         Type returnType;
         if (node.getReturnType() == null){
-            if (currentClass == null || !args.isEmpty())
-                throw new ComplierError(node.getLocation(), "constructor function is not valid");
+            if (currentClass == null || !args.isEmpty() || !node.getName().equals(currentClass.getName()))
+                throw new ComplierError(node.getLocation(), "constructor function is invalid");
             returnType = currentClass.getType();
         }
         else
             returnType = node.getReturnType().getType();
         FuncSymbol symbol = new FuncSymbol(node.getName(), returnType, node.getFuncBody().getScope(), args);
+        symbol.setConstructor(node.getReturnType() == null);
         currentScope.put(symbol, node.getLocation());
         node.getFuncBody().getScope().setParent(currentScope);
     }

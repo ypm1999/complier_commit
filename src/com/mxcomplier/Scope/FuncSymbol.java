@@ -10,6 +10,7 @@ public class FuncSymbol extends Symbol{
     private Type returnType;
     private Scope scope;
     private List<Type> parameters;
+    private boolean isConstructor;
 
 
     public FuncSymbol(String name, Type returnType, Scope scope, List<Type> args){
@@ -17,6 +18,7 @@ public class FuncSymbol extends Symbol{
         this.scope = scope;
         this.returnType = returnType;
         this.parameters = args;
+        isConstructor = false;
     }
 
     public Scope getScope(){
@@ -29,5 +31,13 @@ public class FuncSymbol extends Symbol{
 
     public List<Type> getParameters() {
         return parameters;
+    }
+
+    public void setConstructor(boolean constructor) {
+        isConstructor = constructor;
+    }
+
+    public boolean isConstructor() {
+        return isConstructor;
     }
 }

@@ -5,6 +5,7 @@ import com.mxcomplier.Error.ComplierError;
 import com.mxcomplier.Scope.*;
 import com.mxcomplier.Type.Type.HyperType;
 import com.mxcomplier.Type.*;
+import com.sun.management.VMOption;
 
 
 import java.util.Iterator;
@@ -43,11 +44,12 @@ public class ScopeBuilderASTScanner extends ASTScanner{
     public void visit(FuncDefNode node) {
         currentFunc = currentScope.getFunc(node.getName(), node.getLocation());
 
+        node.getFuncBody().accept(this);
+
         //check return type vaild
         if (node.getReturnType()!= null && node.getReturnType().getType() instanceof ClassType)
             globalScope.getClass(((ClassType) node.getReturnType().getType()).getName(), node.getLocation());
 
-        node.getFuncBody().accept(this);
         currentFunc = null;
     }
 
@@ -85,9 +87,6 @@ public class ScopeBuilderASTScanner extends ASTScanner{
 
         for (Node stmt : node.getStmtlist()){
             stmt.accept(this);
-            if (currentFunc != null && stmt instanceof ReturnStmtNode)
-                if (!((ReturnStmtNode) stmt).getType().equals(currentFunc.getReturnType()))
-                    throw new ComplierError(stmt.getLocation(), "return type not match");
         }
 
         currentScope = currentScope.getParent();
@@ -156,11 +155,16 @@ public class ScopeBuilderASTScanner extends ASTScanner{
     public void visit(ReturnStmtNode node) {
         if (currentFunc == null)
             throw new ComplierError(node.getLocation(), "return is not in function");
-        if (node.getReturnExpr() == null)
-            node.setType(VoidType.getInstance());
+        if (node.getReturnExpr() == null) {
+            if (!currentFunc.isConstructor() && ! (currentFunc.getReturnType() == VoidType.getInstance()))
+                throw new ComplierError(node.getLocation(), "return type void not match");
+        }
         else {
             node.getReturnExpr().accept(this);
-            node.setType(node.getReturnExpr().getType());
+            if (currentFunc.isConstructor())
+                throw new ComplierError(node.getLocation(), "constructor cant return with value");
+            if (!(node.getReturnExpr().getType().equals(currentFunc.getReturnType())))
+                throw new ComplierError(node.getLocation(), "return type not match");
         }
     }
 
