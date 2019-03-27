@@ -22,7 +22,7 @@ public class ScopeBuilderASTScanner extends ASTScanner{
             initExpr.accept(this);
             Type nodeType = node.getType().getType();
             if ((nodeType == VoidType.getInstance()) ||
-                ((initExpr.getType() instanceof NullType && !(nodeType instanceof ArrayType || nodeType instanceof ClassType)) &&
+                (!(initExpr.getType() instanceof NullType && (nodeType instanceof ArrayType || nodeType instanceof ClassType)) &&
                 !nodeType.equals(initExpr.getType())) ||
                 node.isFuncArgs())
                 throw new ComplierError(node.getLocation(), "Variable initialization is invalid");
@@ -174,7 +174,9 @@ public class ScopeBuilderASTScanner extends ASTScanner{
         node.getSubExpr().accept(this);
         if (node.getSubExpr().getType() != IntType.getInstance())
             throw new ComplierError(node.getLocation(), "invalid suffix expression");
-        node.setLeftValue(node.getSubExpr().isLeftValue());
+        if (!node.getSubExpr().isLeftValue())
+            throw new ComplierError(node.getLocation(), "invalid left value in suffix expression");
+        node.setLeftValue(false);
         node.setType(node.getSubExpr().getType());
     }
 
@@ -276,7 +278,10 @@ public class ScopeBuilderASTScanner extends ASTScanner{
         }
         if (!valid)
             throw new ComplierError(node.getLocation(), "invalid prefix expression");
-        node.setLeftValue(node.getSubExpr().isLeftValue());
+        if ((node.getPrefixOp() == PrefixExprNode.PrefixOp.PREFIX_DEC ||
+             node.getPrefixOp() == PrefixExprNode.PrefixOp.PREFIX_INC) && !node.getSubExpr().isLeftValue())
+            throw new ComplierError(node.getLocation(), "invalid left value in prefix expression");
+        node.setLeftValue(false);
         node.setType(node.getSubExpr().getType());
 
     }

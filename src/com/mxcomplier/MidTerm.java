@@ -17,7 +17,6 @@ import org.antlr.v4.runtime.CommonTokenStream;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.ConnectException;
 
 public class MidTerm {
 //    private ProgramNode ast;
