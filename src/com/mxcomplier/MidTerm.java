@@ -46,10 +46,10 @@ public class MidTerm {
             System.err.println("Complier Failed!");
             System.exit(-1);
         } catch (IOException e) {
-            System.err.println("input file not exist！");
+            System.err.println("input file not exist!");
             System.exit(-1);
         } catch (ParseCancellationException e){
-            System.err.println("parser exception! ");
+            System.err.println("parser exception!");
             System.exit(-1);
         }
     }
