@@ -23,8 +23,7 @@ public class ScopeBuilderASTScanner extends ASTScanner{
             initExpr.accept(this);
             Type nodeType = node.getType().getType();
             if ((nodeType == VoidType.getInstance()) ||
-                (!(initExpr.getType() instanceof NullType && (nodeType instanceof ArrayType || nodeType instanceof ClassType)) &&
-                !nodeType.equals(initExpr.getType())) ||
+                !typeAssignable(nodeType, initExpr.getType()) ||
                 node.isFuncArgs())
                 throw new ComplierError(node.getLocation(), "Variable initialization is invalid");
         }
@@ -163,7 +162,7 @@ public class ScopeBuilderASTScanner extends ASTScanner{
             node.getReturnExpr().accept(this);
             if (currentFunc.isConstructor())
                 throw new ComplierError(node.getLocation(), "constructor cant return with value");
-            if (!(node.getReturnExpr().getType().equals(currentFunc.getReturnType())))
+            if (!(typeAssignable(currentFunc.getReturnType(), node.getReturnExpr().getType())))
                 throw new ComplierError(node.getLocation(), "return type not match");
         }
     }
@@ -382,8 +381,7 @@ public class ScopeBuilderASTScanner extends ASTScanner{
             throw new ComplierError(node.getLocation(),
                     String.format("left value(%s) is not assignable", lType.toString()));
 
-        if (!lType.equals(rType) &&
-            !((lType instanceof ArrayType || lType instanceof ClassType) && rType instanceof NullType))
+        if (!typeAssignable(lType, rType))
             throw new ComplierError(node.getLocation(),
                     String.format("type error with %s and %s", lType.toString(), rType.toString()));
 

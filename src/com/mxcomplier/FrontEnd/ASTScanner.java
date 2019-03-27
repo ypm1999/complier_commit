@@ -5,10 +5,7 @@ import com.mxcomplier.Scope.ClassSymbol;
 import com.mxcomplier.Scope.Scope;
 import com.mxcomplier.Scope.Symbol;
 import com.mxcomplier.Scope.VarSymbol;
-import com.mxcomplier.Type.ArrayType;
-import com.mxcomplier.Type.ClassType;
-import com.mxcomplier.Type.StringType;
-import com.mxcomplier.Type.Type;
+import com.mxcomplier.Type.*;
 
 public class ASTScanner implements ASTVisitor {
     Scope currentScope = null;
@@ -24,6 +21,11 @@ public class ASTScanner implements ASTVisitor {
         if (type instanceof ClassType)
             type = globalScope.getClass(((ClassType) type).getName(), node.getLocation()).getType();
         currentScope.put(new VarSymbol(node.getName(), type));
+    }
+
+    boolean typeAssignable(Type leftType, Type rightType){
+        return leftType.equals(rightType) ||
+                ((leftType instanceof ArrayType || leftType instanceof ClassType) && rightType instanceof NullType);
     }
 
 
