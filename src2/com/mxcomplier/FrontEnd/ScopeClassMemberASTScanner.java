@@ -12,11 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 //add class members ans all functions, add function parameters
-public class ScopeClassMemberASTScanner extends ASTScanner {
+public class ScopeClassMemberASTScanner extends ASTScanner{
     private ClassSymbol currentClass = null;
 
-    void checkMain(Location location) {
-        FuncSymbol main = currentScope.getFunc("main", location);
+    void checkMain(Location location){
+        FuncSymbol main =  currentScope.getFunc("main", location);
         if (!main.getParameters().isEmpty() || main.getReturnType() != IntType.getInstance())
             throw new ComplierError("main method error");
     }
@@ -26,8 +26,8 @@ public class ScopeClassMemberASTScanner extends ASTScanner {
     public void visit(ProgramNode node) {
         globalScope = currentScope = node.getScope();
 
-        for (Node section : node.getSections()) {
-            if (section instanceof FuncDefNode || section instanceof ClassDefNode)
+        for (Node section : node.getSections()){
+            if (section  instanceof FuncDefNode || section  instanceof ClassDefNode)
                 section.accept(this);
         }
 
@@ -70,7 +70,7 @@ public class ScopeClassMemberASTScanner extends ASTScanner {
         }
         else
             returnType = node.getReturnType().getType();
-        FuncSymbol symbol = new FuncSymbol(node.getName(), returnType, node.getFuncBody().getScope(), args, currentClass);
+        FuncSymbol symbol = new FuncSymbol(node.getName(), returnType, node.getFuncBody().getScope(), args);
         symbol.setConstructor(node.getReturnType() == null);
         currentScope.put(symbol, node.getLocation());
         node.getFuncBody().getScope().setParent(currentScope);
@@ -79,8 +79,6 @@ public class ScopeClassMemberASTScanner extends ASTScanner {
     @Override
     public void visit(VarDefNode node) {
         putVar(node);
-        if (currentClass != null && currentScope == currentClass.getScope())
-            currentClass.addVar(node.getName());
     }
 
 }

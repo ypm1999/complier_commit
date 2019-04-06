@@ -2,30 +2,29 @@ package com.mxcomplier.FrontEnd;
 
 import com.mxcomplier.AST.*;
 import com.mxcomplier.Error.ComplierError;
-import com.mxcomplier.Scope.ClassSymbol;
-import com.mxcomplier.Scope.FuncSymbol;
-import com.mxcomplier.Scope.Symbol;
-import com.mxcomplier.Scope.VarSymbol;
-import com.mxcomplier.Type.*;
+import com.mxcomplier.Scope.*;
 import com.mxcomplier.Type.Type.HyperType;
+import com.mxcomplier.Type.*;
+import com.sun.management.VMOption;
+
 
 import java.util.Iterator;
 
 
-public class ScopeBuilderASTScanner extends ASTScanner {
+public class ScopeBuilderASTScanner extends ASTScanner{
     private ClassSymbol currentClass = null;
     private FuncSymbol currentFunc = null;
     private boolean inLoop = false;
 //    private boolean getReturn = false;
 
-    private void checkVarInit(VarDefNode node) {
+    private void checkVarInit(VarDefNode node){
         ExprNode initExpr = node.getInitExpr();
-        if (initExpr != null) {
+        if (initExpr != null){
             initExpr.accept(this);
             Type nodeType = node.getType().getType();
             if ((nodeType == VoidType.getInstance()) ||
-                    !typeAssignable(nodeType, initExpr.getType()) ||
-                    node.isFuncArgs())
+                !typeAssignable(nodeType, initExpr.getType()) ||
+                node.isFuncArgs())
                 throw new ComplierError(node.getLocation(), "Variable initialization is invalid");
         }
     }
@@ -47,8 +46,8 @@ public class ScopeBuilderASTScanner extends ASTScanner {
         node.getFuncBody().accept(this);
 
         //check return type vaild
-        if (node.getReturnType() != null && node.getReturnType().getType() instanceof ClassType)
-            currentScope.getClass(((ClassType) node.getReturnType().getType()).getName(), node.getLocation());
+        if (node.getReturnType()!= null && node.getReturnType().getType() instanceof ClassType)
+            globalScope.getClass(((ClassType) node.getReturnType().getType()).getName(), node.getLocation());
 
         currentFunc = null;
     }
@@ -85,7 +84,7 @@ public class ScopeBuilderASTScanner extends ASTScanner {
     public void visit(CompStmtNode node) {
         currentScope = node.getScope();
 
-        for (Node stmt : node.getStmtlist()) {
+        for (Node stmt : node.getStmtlist()){
             stmt.accept(this);
         }
 
@@ -127,9 +126,9 @@ public class ScopeBuilderASTScanner extends ASTScanner {
             node.getExpr1().accept(this);
         if (node.getExpr2() != null) {
             node.getExpr2().accept(this);
-            if (node.getExpr2().getType() != BoolType.getInstance())
+            if(node.getExpr2().getType() != BoolType.getInstance())
                 throw new ComplierError(node.getExpr2().getLocation(),
-                        "the second expression in FOR must get bool value");
+                                    "the second expression in FOR must get bool value");
         }
         if (node.getExpr3() != null)
             node.getExpr3().accept(this);
@@ -156,9 +155,10 @@ public class ScopeBuilderASTScanner extends ASTScanner {
         if (currentFunc == null)
             throw new ComplierError(node.getLocation(), "return is not in function");
         if (node.getReturnExpr() == null) {
-            if (!currentFunc.isConstructor() && !(currentFunc.getReturnType() == VoidType.getInstance()))
+            if (!currentFunc.isConstructor() && ! (currentFunc.getReturnType() == VoidType.getInstance()))
                 throw new ComplierError(node.getLocation(), "return type void not match");
-        } else {
+        }
+        else {
             node.getReturnExpr().accept(this);
             if (currentFunc.isConstructor())
                 throw new ComplierError(node.getLocation(), "constructor cant return with value");
@@ -189,9 +189,10 @@ public class ScopeBuilderASTScanner extends ASTScanner {
         base.accept(this);
 
         FuncSymbol func;
-        if (base instanceof IdentExprNode) {
+        if (base instanceof IdentExprNode){
             func = currentScope.getFunc(((IdentExprNode) base).getName(), base.getLocation());
-        } else if (base instanceof MemberCallExprNode) {
+        }
+        else if (base instanceof MemberCallExprNode){
             String name;
             Type type = ((MemberCallExprNode) base).getBaseExpr().getType();
             if (type instanceof ClassType)
@@ -212,11 +213,10 @@ public class ScopeBuilderASTScanner extends ASTScanner {
         else
             throw new ComplierError(node.getLocation(), "unknown function call");
 
-        node.setFuncName(func.getName());
-        if (!node.getArgumentList().isEmpty()) {
+        if (!node.getArgumentList().isEmpty()){
             Iterator<Type> it = func.getParameters().iterator();
             if (func.getParameters().size() == node.getArgumentList().size())
-                for (ExprNode expr : node.getArgumentList()) {
+                for (ExprNode expr : node.getArgumentList()){
                     expr.accept(this);
                     if (!expr.getType().equals(it.next()))
                         throw new ComplierError(node.getLocation(), "paratemers' type is invalid");
@@ -268,7 +268,7 @@ public class ScopeBuilderASTScanner extends ASTScanner {
     public void visit(PrefixExprNode node) {
         node.getSubExpr().accept(this);
         boolean valid;
-        switch (node.getSubExpr().getType().getHyperType()) {
+        switch (node.getSubExpr().getType().getHyperType()){
             case INT:
                 valid = true;
                 break;
@@ -282,7 +282,7 @@ public class ScopeBuilderASTScanner extends ASTScanner {
         if (!valid)
             throw new ComplierError(node.getLocation(), "invalid prefix expression");
         if ((node.getPrefixOp() == PrefixExprNode.PrefixOp.PREFIX_DEC ||
-                node.getPrefixOp() == PrefixExprNode.PrefixOp.PREFIX_INC) && !node.getSubExpr().isLeftValue())
+             node.getPrefixOp() == PrefixExprNode.PrefixOp.PREFIX_INC) && !node.getSubExpr().isLeftValue())
             throw new ComplierError(node.getLocation(), "invalid left value in prefix expression");
         node.setLeftValue(false);
         node.setType(node.getSubExpr().getType());
@@ -291,7 +291,7 @@ public class ScopeBuilderASTScanner extends ASTScanner {
 
     @Override
     public void visit(NewExprNode node) {
-        for (ExprNode dim : node.getDims()) {
+        for(ExprNode dim : node.getDims()){
             dim.accept(this);
             if (!(dim.getType() instanceof IntType))
                 throw new ComplierError(node.getLocation(), "dim of array must be int");
@@ -307,7 +307,7 @@ public class ScopeBuilderASTScanner extends ASTScanner {
 
         HyperType lhType = node.getLeftExpr().getType().getHyperType();
         HyperType rhType = node.getRightExpr().getType().getHyperType();
-        if (lhType == HyperType.NULL) {
+        if (lhType == HyperType.NULL){
             HyperType tmp = lhType;
             lhType = rhType;
             rhType = tmp;
@@ -316,7 +316,7 @@ public class ScopeBuilderASTScanner extends ASTScanner {
         boolean valid;
         switch (node.getOp()) {
             case PLUS:
-                if (lhType == HyperType.STRING && rhType == HyperType.STRING) {
+                if (lhType == HyperType.STRING && rhType == HyperType.STRING){
                     node.setType(node.getLeftExpr().getType());
                     valid = true;
                     break;
@@ -340,7 +340,7 @@ public class ScopeBuilderASTScanner extends ASTScanner {
             case EQUAL:
             case UNEQUAL:
                 if (rhType == HyperType.NULL &&
-                        (lhType == HyperType.NULL || lhType == HyperType.ARRAY || lhType == HyperType.CLASS)) {
+                    (lhType == HyperType.NULL || lhType == HyperType.ARRAY || lhType == HyperType.CLASS)){
                     valid = true;
                     node.setType(BoolType.getInstance());
                     break;
@@ -358,15 +358,15 @@ public class ScopeBuilderASTScanner extends ASTScanner {
                 valid = (lhType == HyperType.BOOL && rhType == HyperType.BOOL);
                 node.setType(BoolType.getInstance());
                 break;
-            default:
-                valid = false;
-                node.setType(NullType.getInstance());
+             default:
+                 valid = false;
+                 node.setType(NullType.getInstance());
         }
 
         if (!valid)
             throw new ComplierError(node.getLocation(),
-                    String.format("type error with: %s %s %s", node.getLeftExpr().getType().toString(),
-                            node.getOp().toString(), node.getLeftExpr().getType().toString()));
+                                String.format("type error with: %s %s %s", node.getLeftExpr().getType().toString(),
+                                            node.getOp().toString(), node.getLeftExpr().getType().toString()));
 
         node.setLeftValue(false);
     }
@@ -393,15 +393,15 @@ public class ScopeBuilderASTScanner extends ASTScanner {
     @Override
     public void visit(IdentExprNode node) {
         Symbol symbol = currentScope.get(node.getName(), node.getLocation());
-        if (symbol instanceof VarSymbol) {
+        if (symbol instanceof VarSymbol){
             node.setLeftValue(true);
             node.setType(symbol.getType());
-            node.setVar(true);
-        } else if (symbol instanceof FuncSymbol) {
+        }
+        else if (symbol instanceof FuncSymbol){
             node.setLeftValue(false);
             node.setType(((FuncSymbol) symbol).getReturnType());
-            node.setFunc(true);
-        } else
+        }
+        else
             throw new ComplierError(node.getLocation(), "Identifier must be a variable or function");
     }
 

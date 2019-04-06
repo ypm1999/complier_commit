@@ -392,8 +392,7 @@ public class IRBuilder extends ASTScanner{
         else if (node.getBaseExpr().getType() instanceof ClassType){
             String className = ((ClassType) node.getBaseExpr().getType()).getName();
             ClassSymbol classSymbol = globalScope.getClass(className);
-            Symbol member = classSymbol.getScope().get(node.getMemberName());
-            if (member instanceof FuncSymbol){
+            if (classSymbol.getScope().tryGetFunc(node.getMemberName()) != null){
                 node.resultReg = baseExpr;
             }
             else{

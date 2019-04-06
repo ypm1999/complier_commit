@@ -20,8 +20,8 @@ import java.util.List;
 //add BuildInFunc, class define, function define and class method define
 public class ScopePrepareASTScanner extends ASTScanner {
 
-    private void addBuildInFunc(String name, Type returnType, List<Type> args, ClassSymbol belongClass) {
-        currentScope.put(new FuncSymbol(name, returnType, null, args, belongClass));
+    private void addBuildInFunc(Scope scope, String name, Type returnType, List<Type> args, ClassSymbol belongClass) {
+        scope.put(new FuncSymbol(name, returnType, null, args, belongClass));
     }
 
     private void prepareGlobalScope() {
@@ -35,16 +35,16 @@ public class ScopePrepareASTScanner extends ASTScanner {
         Type voidType = VoidType.getInstance();
         Type stringType = StringType.getInstance();
 
-        addBuildInFunc("length", intType, new ArrayList<>(), string);
-        addBuildInFunc("parseInt", intType, new ArrayList<>(), string);
-        addBuildInFunc("size", intType, new ArrayList<>(), array);
-        addBuildInFunc("getString", stringType, new ArrayList<>(), null);
-        addBuildInFunc("getInt", intType, new ArrayList<>(), null);
-        addBuildInFunc("print", voidType, Collections.singletonList(stringType), null);
-        addBuildInFunc("println", voidType, Collections.singletonList(stringType), null);
-        addBuildInFunc("ord", intType, Collections.singletonList(intType), string);
-        addBuildInFunc("toString", stringType, Collections.singletonList(intType), null);
-        addBuildInFunc("substring", stringType, Arrays.asList(intType, intType), string);
+        addBuildInFunc(stringScope, "length", intType, new ArrayList<>(), string);
+        addBuildInFunc(stringScope, "parseInt", intType, new ArrayList<>(), string);
+        addBuildInFunc(arrayScope, "size", intType, new ArrayList<>(), array);
+        addBuildInFunc(currentScope, "getString", stringType, new ArrayList<>(), null);
+        addBuildInFunc(currentScope, "getInt", intType, new ArrayList<>(), null);
+        addBuildInFunc(currentScope, "print", voidType, Collections.singletonList(stringType), null);
+        addBuildInFunc(currentScope, "println", voidType, Collections.singletonList(stringType), null);
+        addBuildInFunc(stringScope, "ord", intType, Collections.singletonList(intType), string);
+        addBuildInFunc(currentScope, "toString", stringType, Collections.singletonList(intType), null);
+        addBuildInFunc(stringScope, "substring", stringType, Arrays.asList(intType, intType), string);
 
 //        currentScope.put(new ClassSymbol("int", new Scope(currentScope)));
 //        currentScope.put(new ClassSymbol("bool", new Scope(currentScope)));
