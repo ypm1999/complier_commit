@@ -15,7 +15,6 @@ import java.lang.reflect.Array;
 import java.util.*;
 
 public class IRBuilder extends ASTScanner{
-    private Scope globalScope;
     public ProgramIR root;
     private List<StaticDataIR> staticDataList = new ArrayList<>();
     private Map<String, FuncIR> funcMap = new HashMap<>();
@@ -42,6 +41,9 @@ public class IRBuilder extends ASTScanner{
             return (RegisterIR) reg;
     }
 
+    private String transName(String className, String funcName){
+        return "$" + className + '_' + funcName;
+    }
 
     private void initBuildInFunc(){
         //TODO
@@ -101,6 +103,7 @@ public class IRBuilder extends ASTScanner{
     private void initFunc(FuncDefNode node, String className){
         FuncIR func = new FuncIR(className + node.getName());
         funcMap.put(func.getName(), func);
+        node.setFuncIR(func);
         root.getFuncs().add(func);
     }
 
@@ -145,7 +148,7 @@ public class IRBuilder extends ASTScanner{
     @Override
     public void visit(FuncDefNode node) {
 
-        currentFunc = funcMap.get(node.getName());
+        currentFunc = node.getFuncIR();
         curBB = currentFunc.entryBB = new BasicBlockIR(currentFunc, "entry " + currentFunc.getName());
         //TODO add parameters
         Scope funcScope = node.getFuncBody().getScope();
@@ -177,7 +180,7 @@ public class IRBuilder extends ASTScanner{
         for (VarDefNode var : node.getMemberDefs())
             var.accept(this);
         for (FuncDefNode func : node.getFuncDefs()) {
-            func.setName('$' + node.getName() + '_' + func.getName());
+            func.setName(func.getName());
             func.accept(this);
         }
         currentScope = currentScope.getParent();

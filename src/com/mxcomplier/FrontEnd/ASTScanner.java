@@ -15,11 +15,8 @@ public class ASTScanner implements ASTVisitor {
     Scope globalScope = null;
 
     Symbol getClassMember(String className, String memberName, Location location) {
-        Symbol symbol = globalScope.tryGetFunc(memberName);
-        if (symbol != null)
-            return symbol;
-        symbol = globalScope.getClass(className, location);
-        return ((ClassSymbol) symbol).getScope().getSelf(memberName, location);
+        ClassSymbol symbol = globalScope.getClass(className, location);
+        return symbol.getScope().getSelf(memberName, location);
     }
 
     void putVar(VarDefNode node) {

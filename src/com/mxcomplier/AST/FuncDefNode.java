@@ -1,5 +1,7 @@
 package com.mxcomplier.AST;
 
+import com.mxcomplier.Ir.FuncIR;
+
 import java.util.List;
 
 final public class FuncDefNode extends Node {
@@ -8,6 +10,7 @@ final public class FuncDefNode extends Node {
     private boolean isConstructor;
     private List<VarDefNode> parameters;
     private CompStmtNode funcBody;
+    private FuncIR funcIR;
 
     public FuncDefNode(String name,
                        TypeNode returnType,
@@ -44,6 +47,14 @@ final public class FuncDefNode extends Node {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public FuncIR getFuncIR() {
+        return funcIR;
+    }
+
+    public void setFuncIR(FuncIR funcIR) {
+        this.funcIR = funcIR;
     }
 
     @Override
