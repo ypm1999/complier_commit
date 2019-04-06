@@ -1241,7 +1241,7 @@ public class MxStarParser extends Parser {
 						setState(178);
 						((BinaryExprContext)_localctx).op = match(AndAnd);
 						setState(179);
-						((BinaryExprContext)_localctx).exp2 = expression(4);
+						((BinaryExprContext)_localctx).exp2 = expression(3);
 						}
 						break;
 					case 10:
@@ -1254,7 +1254,7 @@ public class MxStarParser extends Parser {
 						setState(181);
 						((BinaryExprContext)_localctx).op = match(OrOr);
 						setState(182);
-						((BinaryExprContext)_localctx).exp2 = expression(3);
+						((BinaryExprContext)_localctx).exp2 = expression(2);
 						}
 						break;
 					case 11:
@@ -2602,8 +2602,8 @@ public class MxStarParser extends Parser {
 		"\b\2\2\u00ab\u00ac\7\'\2\2\u00ac\u00bc\5\24\13\t\u00ad\u00ae\f\7\2\2\u00ae"+
 		"\u00af\7+\2\2\u00af\u00bc\5\24\13\b\u00b0\u00b1\f\6\2\2\u00b1\u00b2\7"+
 		"(\2\2\u00b2\u00bc\5\24\13\7\u00b3\u00b4\f\5\2\2\u00b4\u00b5\7)\2\2\u00b5"+
-		"\u00bc\5\24\13\6\u00b6\u00b7\f\4\2\2\u00b7\u00b8\7*\2\2\u00b8\u00bc\5"+
-		"\24\13\5\u00b9\u00ba\f\21\2\2\u00ba\u00bc\t\2\2\2\u00bb\u009b\3\2\2\2"+
+		"\u00bc\5\24\13\5\u00b6\u00b7\f\4\2\2\u00b7\u00b8\7*\2\2\u00b8\u00bc\5"+
+		"\24\13\4\u00b9\u00ba\f\21\2\2\u00ba\u00bc\t\2\2\2\u00bb\u009b\3\2\2\2"+
 		"\u00bb\u009e\3\2\2\2\u00bb\u00a1\3\2\2\2\u00bb\u00a4\3\2\2\2\u00bb\u00a7"+
 		"\3\2\2\2\u00bb\u00aa\3\2\2\2\u00bb\u00ad\3\2\2\2\u00bb\u00b0\3\2\2\2\u00bb"+
 		"\u00b3\3\2\2\2\u00bb\u00b6\3\2\2\2\u00bb\u00b9\3\2\2\2\u00bc\u00bf\3\2"+

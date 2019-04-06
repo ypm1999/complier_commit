@@ -1,7 +1,5 @@
 package com.mxcomplier.AST;
 
-import com.mxcomplier.Scope.Scope;
-
 import java.util.List;
 
 final public class FuncDefNode extends Node {
@@ -32,7 +30,9 @@ final public class FuncDefNode extends Node {
         return returnType;
     }
 
-    public boolean getIsConstructor() { return isConstructor; }
+    public boolean getIsConstructor() {
+        return isConstructor;
+    }
 
     public List<VarDefNode> getParameters() {
         return parameters;

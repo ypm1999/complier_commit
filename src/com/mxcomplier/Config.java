@@ -1,7 +1,7 @@
 package com.mxcomplier;
 
 public class Config {
-    private static final int REGSIZE = 32;
+    private static final int REGSIZE = 8;
 
     public static int getREGSIZE() {
         return REGSIZE;

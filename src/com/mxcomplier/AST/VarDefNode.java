@@ -33,12 +33,12 @@ public class VarDefNode extends Node {
         return isMemberDef;
     }
 
-    public boolean isFuncArgs() {
-        return isFuncArgs;
-    }
-
     public void setMemberDef(boolean MemberDef) {
         this.isMemberDef = MemberDef;
+    }
+
+    public boolean isFuncArgs() {
+        return isFuncArgs;
     }
 
     public void setFuncArgs(boolean funcArgs) {

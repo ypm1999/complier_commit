@@ -61,8 +61,8 @@ expression
     |   exp1=expression op = '&' exp2=expression                        # binaryExpr
     |   exp1=expression op = '^' exp2=expression                        # binaryExpr
     |   exp1=expression op = '|' exp2=expression                        # binaryExpr
-    |   exp1=expression op = '&&' exp2=expression                       # binaryExpr
-    |   exp1=expression op = '||' exp2=expression                       # binaryExpr
+    |   <assoc = right> exp1=expression op = '&&' exp2=expression                       # binaryExpr
+    |   <assoc = right> exp1=expression op = '||' exp2=expression                       # binaryExpr
     |   <assoc=right> primaryExpression op = '=' expression             # assignExpr
     ;
 

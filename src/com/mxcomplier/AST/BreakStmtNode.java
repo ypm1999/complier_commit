@@ -2,7 +2,7 @@ package com.mxcomplier.AST;
 
 public class BreakStmtNode extends StmtNode {
 
-    public BreakStmtNode(Location location){
+    public BreakStmtNode(Location location) {
         this.location = location;
     }
 

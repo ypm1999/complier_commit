@@ -2,7 +2,7 @@ package com.mxcomplier.Type;
 
 import com.mxcomplier.Config;
 
-public class ClassType extends Type{
+public class ClassType extends Type {
     private String name;
 
     public ClassType(String name) {
@@ -25,6 +25,6 @@ public class ClassType extends Type{
 
     @Override
     public String toString() {
-        return String.format("ClassType(%s)", name.toString());
+        return String.format("ClassType(%s)", name);
     }
 }

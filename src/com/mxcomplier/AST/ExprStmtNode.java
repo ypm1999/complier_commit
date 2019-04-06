@@ -3,7 +3,7 @@ package com.mxcomplier.AST;
 public class ExprStmtNode extends StmtNode {
     private ExprNode expr;
 
-    public ExprStmtNode(ExprNode expr, Location location){
+    public ExprStmtNode(ExprNode expr, Location location) {
         this.expr = expr;
         this.location = location;
     }

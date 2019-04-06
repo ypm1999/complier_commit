@@ -3,7 +3,7 @@ package com.mxcomplier.AST;
 public class IntConstExprNode extends ConstExprNode {
     private int value;
 
-    public IntConstExprNode(int value, Location location){
+    public IntConstExprNode(int value, Location location) {
         this.value = value;
         this.location = location;
     }

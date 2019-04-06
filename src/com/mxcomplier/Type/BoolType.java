@@ -1,9 +1,9 @@
 package com.mxcomplier.Type;
 
-public class BoolType extends Type{
+public class BoolType extends Type {
     static private BoolType instance = new BoolType();
 
-    private BoolType(){
+    private BoolType() {
         this.hyperType = HyperType.BOOL;
     }
 

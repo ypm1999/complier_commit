@@ -7,14 +7,14 @@ public class IfStmtNode extends StmtNode {
     private StmtNode thenStmt, elseStmt;
     private Scope scope = new Scope();
 
-    public IfStmtNode(ExprNode judgeExpr, StmtNode thenStmt, StmtNode elseStmt, Location location){
+    public IfStmtNode(ExprNode judgeExpr, StmtNode thenStmt, StmtNode elseStmt, Location location) {
         this.judgeExpr = judgeExpr;
         this.thenStmt = thenStmt;
         this.elseStmt = elseStmt;
         this.location = location;
     }
 
-    public IfStmtNode(ExprNode judgeExpr, StmtNode thenStmt, Location location){
+    public IfStmtNode(ExprNode judgeExpr, StmtNode thenStmt, Location location) {
         this.judgeExpr = judgeExpr;
         this.thenStmt = thenStmt;
         this.elseStmt = null;

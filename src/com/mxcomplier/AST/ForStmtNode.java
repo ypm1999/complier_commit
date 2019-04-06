@@ -1,12 +1,10 @@
 package com.mxcomplier.AST;
 
-import com.mxcomplier.Scope.Scope;
-
 public class ForStmtNode extends StmtNode {
     private ExprNode expr1, expr2, expr3;
     private StmtNode stmt;
 
-    public ForStmtNode(ExprNode expr1, ExprNode expr2, ExprNode expr3, StmtNode stmt, Location location){
+    public ForStmtNode(ExprNode expr1, ExprNode expr2, ExprNode expr3, StmtNode stmt, Location location) {
         this.expr1 = expr1;
         this.expr2 = expr2;
         this.expr3 = expr3;

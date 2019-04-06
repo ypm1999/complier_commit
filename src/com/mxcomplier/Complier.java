@@ -8,21 +8,20 @@ public class Complier {
     private ProgramNode ast;
     private InputStream codeInput;
 
-    public Complier(InputStream codeInput){
+    public Complier(InputStream codeInput) {
         this.codeInput = codeInput;
     }
 
-    private void buildAST() throws Exception  {
+    private void buildAST() throws Exception {
 
     }
 
 
     public boolean run() throws Exception {
-        try{
+        try {
             buildAST();
             return true;
-        }
-        catch (Error error){
+        } catch (Error error) {
             return false;
         }
     }

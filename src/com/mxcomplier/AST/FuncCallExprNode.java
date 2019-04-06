@@ -5,6 +5,7 @@ import java.util.List;
 public class FuncCallExprNode extends ExprNode {
     private ExprNode baseExpr;
     private List<ExprNode> argumentList;
+    private String funcName;
 
     public FuncCallExprNode(ExprNode baseExpr, List<ExprNode> argumentList, Location location) {
         this.baseExpr = baseExpr;
@@ -18,6 +19,14 @@ public class FuncCallExprNode extends ExprNode {
 
     public List<ExprNode> getArgumentList() {
         return argumentList;
+    }
+
+    public String getFuncName() {
+        return funcName;
+    }
+
+    public void setFuncName(String funcName) {
+        this.funcName = funcName;
     }
 
     @Override

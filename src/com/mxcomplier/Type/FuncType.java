@@ -1,9 +1,9 @@
 package com.mxcomplier.Type;
 
-public class FuncType extends Type{
+public class FuncType extends Type {
     private String name;
 
-    public FuncType(String name){
+    public FuncType(String name) {
         this.name = name;
         this.hyperType = HyperType.FUNC;
     }
@@ -22,6 +22,6 @@ public class FuncType extends Type{
 
     @Override
     public String toString() {
-        return String.format("FuncType(%s)", name.toString());
+        return String.format("FuncType(%s)", name);
     }
 }

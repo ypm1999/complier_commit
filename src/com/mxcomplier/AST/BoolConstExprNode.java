@@ -2,11 +2,6 @@ package com.mxcomplier.AST;
 
 public class BoolConstExprNode extends ConstExprNode {
 
-    public enum BoolValue {
-        TRUE, FALSE,
-        NULL
-    }
-
     private BoolValue value;
 
     public BoolConstExprNode(BoolValue value, Location location) {
@@ -21,5 +16,10 @@ public class BoolConstExprNode extends ConstExprNode {
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public enum BoolValue {
+        TRUE, FALSE,
+        NULL
     }
 }

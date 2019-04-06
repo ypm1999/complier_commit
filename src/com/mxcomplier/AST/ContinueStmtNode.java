@@ -2,7 +2,7 @@ package com.mxcomplier.AST;
 
 public class ContinueStmtNode extends StmtNode {
 
-    public ContinueStmtNode(Location location){
+    public ContinueStmtNode(Location location) {
         this.location = location;
     }
 

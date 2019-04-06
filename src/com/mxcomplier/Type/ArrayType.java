@@ -2,10 +2,10 @@ package com.mxcomplier.Type;
 
 import com.mxcomplier.Config;
 
-public class ArrayType extends Type{
+public class ArrayType extends Type {
     private Type baseType;
 
-    public ArrayType(Type baseType){
+    public ArrayType(Type baseType) {
         this.baseType = baseType;
         this.hyperType = HyperType.ARRAY;
         this.varSize = Config.getREGSIZE();

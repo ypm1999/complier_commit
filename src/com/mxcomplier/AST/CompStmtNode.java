@@ -8,7 +8,7 @@ public class CompStmtNode extends StmtNode {
     private List<Node> stmtlist;
     private Scope scope;
 
-    public CompStmtNode(List<Node> stmtlist,  Scope scope, Location location){
+    public CompStmtNode(List<Node> stmtlist, Scope scope, Location location) {
         this.stmtlist = stmtlist;
         this.scope = scope;
         this.location = location;

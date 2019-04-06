@@ -7,7 +7,7 @@ public class WhileStmtNode extends StmtNode {
     private StmtNode stmt;
     private Scope scope = new Scope();
 
-    public WhileStmtNode(ExprNode judgeExpr, StmtNode stmt, Location location){
+    public WhileStmtNode(ExprNode judgeExpr, StmtNode stmt, Location location) {
         this.judgeExpr = judgeExpr;
         this.stmt = stmt;
         this.location = location;

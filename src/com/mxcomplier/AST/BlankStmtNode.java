@@ -2,7 +2,7 @@ package com.mxcomplier.AST;
 
 public class BlankStmtNode extends StmtNode {
 
-    public BlankStmtNode(Location location){
+    public BlankStmtNode(Location location) {
         this.location = location;
     }
 
