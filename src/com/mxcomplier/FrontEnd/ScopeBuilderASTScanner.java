@@ -48,7 +48,7 @@ public class ScopeBuilderASTScanner extends ASTScanner {
 
         //check return type vaild
         if (node.getReturnType() != null && node.getReturnType().getType() instanceof ClassType)
-            currentScope.getClass(((ClassType) node.getReturnType().getType()).getName(), node.getLocation());
+            globalScope.getClass(((ClassType) node.getReturnType().getType()).getName(), node.getLocation());
 
         currentFunc = null;
     }
@@ -191,6 +191,7 @@ public class ScopeBuilderASTScanner extends ASTScanner {
         FuncSymbol func;
         if (base instanceof IdentExprNode) {
             func = currentScope.getFunc(((IdentExprNode) base).getName(), base.getLocation());
+            node.setFuncName(func.getName());
         } else if (base instanceof MemberCallExprNode) {
             String name;
             Type type = ((MemberCallExprNode) base).getBaseExpr().getType();
@@ -208,11 +209,11 @@ public class ScopeBuilderASTScanner extends ASTScanner {
                 func = (FuncSymbol) tmpSymbol;
             else
                 throw new ComplierError(base.getLocation(),"invalid member function call");
+            node.setFuncName('$' + name + '_' + func.getName());
         }
         else
             throw new ComplierError(node.getLocation(), "unknown function call");
 
-        node.setFuncName(func.getName());
         if (!node.getArgumentList().isEmpty()) {
             Iterator<Type> it = func.getParameters().iterator();
             if (func.getParameters().size() == node.getArgumentList().size())

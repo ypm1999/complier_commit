@@ -52,11 +52,11 @@ public class IRBuilder extends ASTScanner{
         FuncIR library_getInt = new FuncIR("getInt", FuncIR.Type.LIBRARY);
         FuncIR library_toString = new FuncIR("toString", FuncIR.Type.LIBRARY);
 
-        FuncIR library_length = new FuncIR("length", FuncIR.Type.LIBRARY);
-        FuncIR library_parseInt = new FuncIR("parseInt", FuncIR.Type.LIBRARY);
-        FuncIR library_ord = new FuncIR("ord", FuncIR.Type.LIBRARY);
-        FuncIR library_substring = new FuncIR("substring", FuncIR.Type.LIBRARY);
-        FuncIR library_size = new FuncIR("size", FuncIR.Type.LIBRARY);
+        FuncIR library_length = new FuncIR("$string_length", FuncIR.Type.LIBRARY);
+        FuncIR library_parseInt = new FuncIR("$string_parseInt", FuncIR.Type.LIBRARY);
+        FuncIR library_ord = new FuncIR("$string_ord", FuncIR.Type.LIBRARY);
+        FuncIR library_substring = new FuncIR("$string_substring", FuncIR.Type.LIBRARY);
+        FuncIR library_size = new FuncIR("$__array_size", FuncIR.Type.LIBRARY);
 
         library_malloc = new FuncIR("__malloc", FuncIR.Type.LIBRARY);
         library_stradd = new FuncIR("__stradd", FuncIR.Type.LIBRARY);
@@ -98,9 +98,9 @@ public class IRBuilder extends ASTScanner{
         }
     }
 
-    private void initFunc(FuncDefNode node){
-        FuncIR func = new FuncIR(node.getName());
-        funcMap.put(node.getName(), func);
+    private void initFunc(FuncDefNode node, String className){
+        FuncIR func = new FuncIR(className + node.getName());
+        funcMap.put(func.getName(), func);
         root.getFuncs().add(func);
     }
 
@@ -112,11 +112,11 @@ public class IRBuilder extends ASTScanner{
         root.getFuncs().add(initFunc);
         for (Node section: node.getSections())
             if (section instanceof FuncDefNode){
-                initFunc((FuncDefNode) section);
+                initFunc((FuncDefNode) section,  "");
             }
             else if (section instanceof ClassDefNode){
                 for (FuncDefNode func : ((ClassDefNode) section).getFuncDefs())
-                    initFunc(func);
+                    initFunc(func, '$' + ((ClassDefNode) section).getName() + '_');
             }
 
         curBB = initFunc.entryBB = new BasicBlockIR(initFunc, "initFuncEntry");
@@ -176,8 +176,10 @@ public class IRBuilder extends ASTScanner{
         curThisPointor = new VirtualRegisterIR(String.format("this_of_%s", node.getName()));
         for (VarDefNode var : node.getMemberDefs())
             var.accept(this);
-        for (FuncDefNode func : node.getFuncDefs())
+        for (FuncDefNode func : node.getFuncDefs()) {
+            func.setName('$' + node.getName() + '_' + func.getName());
             func.accept(this);
+        }
         currentScope = currentScope.getParent();
     }
 
@@ -341,7 +343,28 @@ public class IRBuilder extends ASTScanner{
         if (!(node.getType() instanceof VoidType))
             returnValue = new VirtualRegisterIR(String.format("returnValue_of_%s", node.getFuncName()));
         List<OperandIR> args = new ArrayList<>();
-        FuncSymbol func = globalScope.getFunc(node.getFuncName());
+
+        ExprNode base = node.getBaseExpr();
+        FuncSymbol func = null;
+        if (base instanceof IdentExprNode) {
+            func = currentScope.getFunc(((IdentExprNode) base).getName(), base.getLocation());
+        }
+        else {
+            String name = null;
+            Type type = ((MemberCallExprNode) base).getBaseExpr().getType();
+            if (type instanceof ClassType)
+                name = ((ClassType) type).getName();
+            else if (type instanceof StringType)
+                name = "string";
+            else if (type instanceof ArrayType)
+                name = "__array";
+
+            Symbol tmpSymbol = getClassMember(name, ((MemberCallExprNode) base).getMemberName(), base.getLocation());
+            if (tmpSymbol instanceof FuncSymbol)
+                func = (FuncSymbol) tmpSymbol;
+        }
+
+
         if (func.getBelongClass() != null){
             if (node.getBaseExpr() instanceof MemberCallExprNode) {
                 node.getBaseExpr().accept(this);
@@ -439,7 +462,7 @@ public class IRBuilder extends ASTScanner{
         else{
             ClassSymbol symbol = globalScope.getClass(name);
             curBB.append(new CallInstIR(library_malloc, Collections.singletonList(new ImmediateIR(symbol.getSize())), res));
-            FuncIR constructor = funcMap.getOrDefault(name, null);
+            FuncIR constructor = funcMap.getOrDefault('$' + name + '_' + name, null);
             if (constructor != null) {
                 VirtualRegisterIR tmp = new VirtualRegisterIR("tmp");
                 curBB.append(new MoveInstIR(tmp, res));
