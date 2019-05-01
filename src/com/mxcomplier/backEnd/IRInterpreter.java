@@ -129,7 +129,7 @@ public class IRInterpreter{
 
 
     private BasicBlockIR runInst(InstIR instruction){
-//        System.err.println(instruction.toString());
+        System.err.println(instruction.toString());
         switch (instruction.getClass().getName().substring(31)){
             case "BinaryInstIR":{
                 BinaryInstIR inst = (BinaryInstIR) instruction;

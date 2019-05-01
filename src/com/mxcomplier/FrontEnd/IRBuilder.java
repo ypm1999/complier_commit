@@ -274,36 +274,42 @@ public class IRBuilder extends ASTScanner{
     @Override
     public void visit(ForStmtNode node) {
         BasicBlockIR condBB = new BasicBlockIR(currentFunc, "forCondition");
+        BasicBlockIR expr3BB = new BasicBlockIR(currentFunc, "forexpr3");
         BasicBlockIR bodyBB = new BasicBlockIR(currentFunc, "forBody");
         BasicBlockIR afterBB = new BasicBlockIR(currentFunc, "forAfter");
         if (node.getExpr1() != null)
             node.getExpr1().accept(this);
-        curBB.append(new JumpInstIR(bodyBB));
+        curBB.append(new JumpInstIR(condBB));
 
         if (node.getExpr2() == null){
-            curBB = condBB;
-            if (node.getExpr3() != null)
+            if (node.getExpr3() != null) {
+                curBB = expr3BB;
                 node.getExpr3().accept(this);
-            curBB.append(new JumpInstIR(bodyBB));
+            }
+            expr3BB.append(new JumpInstIR(condBB));
+            condBB.append(new JumpInstIR(bodyBB));
         }
         else{
+            if (node.getExpr3() != null) {
+                curBB = expr3BB;
+                node.getExpr3().accept(this);
+            }
+            expr3BB.append(new JumpInstIR(condBB));
             trueBBMap.put(node.getExpr2(), bodyBB);
             falseBBMap.put(node.getExpr2(), afterBB);
             curBB = condBB;
-            if (node.getExpr3() != null)
-                node.getExpr3().accept(this);
             node.getExpr2().accept(this);
         }
 
         curBB = bodyBB;
         BasicBlockIR oldLoop = curLoopAfter, oldLoopCondition = curLoopCondition;
         curLoopAfter = afterBB;
-        curLoopCondition = condBB;
+        curLoopCondition = expr3BB;
         node.getStmt().accept(this);
         curLoopAfter = oldLoop;
         curLoopCondition = oldLoopCondition;
         if (!(curBB.getTail().prev instanceof BranchInstIR))
-            curBB.append(new JumpInstIR(condBB));
+            curBB.append(new JumpInstIR(expr3BB));
 
         curBB = afterBB;
     }
@@ -362,6 +368,8 @@ public class IRBuilder extends ASTScanner{
         if (base instanceof IdentExprNode) {
             func = currentScope.getFunc(((IdentExprNode) base).getName(), base.getLocation());
             funcName = func.getName();
+            if (func.getBelongClass() != null)
+                funcName = transName(func.getBelongClass().getName(), funcName);
         }
         else {
             String name = null;
@@ -518,17 +526,18 @@ public class IRBuilder extends ASTScanner{
         BasicBlockIR condBB = new BasicBlockIR(currentFunc, "newWhileCondition");
         BasicBlockIR bodyBB = new BasicBlockIR(currentFunc, "newWhileBody");
         BasicBlockIR afterBB = new BasicBlockIR(currentFunc, "newWhileAfter");
-        VirtualRegisterIR end = size;
-        curBB.append(new BinaryInstIR(BinaryInstIR.Op.ADD, end, res));
-        curBB.append(new JumpInstIR(condBB));
-        condBB.append(new CJumpInstIR(CJumpInstIR.Op.E, res, end, afterBB, bodyBB));
-        curBB = bodyBB;
-        curBB.append(new MoveInstIR(res, allocaArray(order - 1, dims)));
 
-        curBB.append(new BinaryInstIR(BinaryInstIR.Op.ADD, res, REGSIZE));
+        VirtualRegisterIR cnt = new VirtualRegisterIR("new_cnt");
+        curBB.append(new MoveInstIR(size, dim));
+        curBB.append(new MoveInstIR(cnt, ZERO));
+        curBB.append(new JumpInstIR(condBB));
+        condBB.append(new CJumpInstIR(CJumpInstIR.Op.E, cnt, size, afterBB, bodyBB));
+        curBB = bodyBB;
+        curBB.append(new MoveInstIR(new MemoryIR(res, cnt, 8), allocaArray(order - 1, dims)));
+
+        curBB.append(new UnaryInstIR(UnaryInstIR.Op.INC, cnt));
         curBB.append(new JumpInstIR(condBB));
         curBB = afterBB;
-        curBB.append(new BinaryInstIR(BinaryInstIR.Op.SUB, res, dim));
         return res;
     }
 
