@@ -1,7 +1,11 @@
 package com.mxcomplier.Ir.Instructions;
 
 import com.mxcomplier.Ir.IRVisitor;
+import com.mxcomplier.Ir.Operands.StackSoltIR;
 import com.mxcomplier.Type.StringType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 abstract public class InstIR {
     public InstIR prev, next;
@@ -34,6 +38,12 @@ abstract public class InstIR {
         this.next = inst;
         inst.prev = this;
     }
+
+    public List<StackSoltIR> getStackSolt(){
+        return new ArrayList<>();
+    }
+
+
 
     public void accept(IRVisitor visitor) {
         visitor.visit(this);

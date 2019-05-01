@@ -19,6 +19,10 @@ public class JumpInstIR extends BranchInstIR {
         return String.format("jmp %s", target);
     }
 
+    public String nasmString() {
+        return toString();
+    }
+
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
     }

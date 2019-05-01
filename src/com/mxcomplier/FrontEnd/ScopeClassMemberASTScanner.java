@@ -4,6 +4,7 @@ import com.mxcomplier.AST.*;
 import com.mxcomplier.Error.ComplierError;
 import com.mxcomplier.Scope.ClassSymbol;
 import com.mxcomplier.Scope.FuncSymbol;
+import com.mxcomplier.Scope.VarSymbol;
 import com.mxcomplier.Type.ClassType;
 import com.mxcomplier.Type.IntType;
 import com.mxcomplier.Type.Type;
@@ -78,9 +79,11 @@ public class ScopeClassMemberASTScanner extends ASTScanner {
 
     @Override
     public void visit(VarDefNode node) {
-        putVar(node);
-        if (currentClass != null && currentScope == currentClass.getScope())
+        VarSymbol var = putClassVar(node);
+        if (currentClass != null && currentScope == currentClass.getScope()) {
             currentClass.addVar(node.getName());
+            var.belongClass = currentClass;
+        }
     }
 
 }

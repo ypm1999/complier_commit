@@ -4,7 +4,10 @@ import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.IRVisitor;
 import com.mxcomplier.Ir.Operands.OperandIR;
 import com.mxcomplier.Ir.Operands.RegisterIR;
+import com.mxcomplier.Ir.Operands.StackSoltIR;
+import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CallInstIR extends InstIR {
@@ -32,6 +35,15 @@ public class CallInstIR extends InstIR {
     }
 
     @Override
+    public List<StackSoltIR> getStackSolt() {
+        List<StackSoltIR> res = new ArrayList<>();
+        VirtualRegisterIR ret = (VirtualRegisterIR) returnValue;
+        if (ret != null && ret.memory instanceof StackSoltIR)
+            res.add((StackSoltIR) ret.memory);
+        return res;
+    }
+
+    @Override
     public String toString() {
         StringBuilder str = new StringBuilder("call " + func.getName() + " (");
         for (OperandIR arg : args){
@@ -42,6 +54,10 @@ public class CallInstIR extends InstIR {
         else
             str.append(')');
         return str.toString();
+    }
+
+    public String nasmString() {
+        return "call " + func.getName();
     }
 
     public void accept(IRVisitor visitor) {

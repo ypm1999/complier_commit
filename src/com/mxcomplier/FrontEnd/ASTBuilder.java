@@ -331,8 +331,30 @@ public class ASTBuilder extends MxStarBaseVisitor<Node> {
     @Override
     public Node visitPrefixExpr(MxStarParser.PrefixExprContext ctx) {
         Node subExpr;
-        PrefixExprNode.PrefixOp op;
 
+
+        subExpr = visit(ctx.expression());
+        if (subExpr instanceof IntConstExprNode){
+            IntConstExprNode intValue = (IntConstExprNode) subExpr;
+            switch (ctx.op.getText()) {
+                case "++":
+                    return new IntConstExprNode(intValue.getValue() + 1, new Location(ctx.getStart()));
+                case "--":
+                    return new IntConstExprNode(intValue.getValue() - 1, new Location(ctx.getStart()));
+                case "+":
+                    return intValue;
+                case "-":
+                    return new IntConstExprNode(-intValue.getValue(), new Location(ctx.getStart()));
+                case "!":
+                    throw new ComplierError(new Location(ctx.getStart()), "Invalid prefix operator of Int Constant");
+                case "~":
+                    return new IntConstExprNode(~intValue.getValue(), new Location(ctx.getStart()));
+                default:
+                    throw new ComplierError(new Location(ctx.getStart()), "Invalid prefix operator");
+            }
+        }
+
+        PrefixExprNode.PrefixOp op;
         switch (ctx.op.getText()) {
             case "++":
                 op = PrefixExprNode.PrefixOp.PREFIX_INC;
@@ -355,8 +377,6 @@ public class ASTBuilder extends MxStarBaseVisitor<Node> {
             default:
                 throw new ComplierError(new Location(ctx.getStart()), "Invalid prefix operator");
         }
-        subExpr = visit(ctx.expression());
-
         return new PrefixExprNode((ExprNode) subExpr, op, new Location(ctx.getStart()));
     }
 

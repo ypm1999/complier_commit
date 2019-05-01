@@ -1,11 +1,14 @@
 package com.mxcomplier.Ir.Operands;
 
 import com.mxcomplier.Ir.IRVisitor;
+import com.mxcomplier.Ir.RegisterSet;
 
 public class MemoryIR extends AddressIR {
     private RegisterIR base = null;
     private RegisterIR offset = null;
-    private int scale = 0;
+    public RegisterIR old_base = null;
+    public RegisterIR old_offset = null;
+    private int scale = 1;
     private int num = 0;
     private ConstantIR constant = null;
 
@@ -21,6 +24,12 @@ public class MemoryIR extends AddressIR {
         this.offset = offset;
     }
 
+    public MemoryIR(RegisterIR base, RegisterIR offset, int scale){
+        this.base = base;
+        this.offset = offset;
+        this.scale = scale;
+    }
+
     public MemoryIR(RegisterIR base, int num){
         this.base = base;
         this.num = num;
@@ -31,12 +40,20 @@ public class MemoryIR extends AddressIR {
     }
 
 
-    public OperandIR getBase() {
+    public RegisterIR getBase() {
         return base;
     }
 
-    public OperandIR getOffset() {
+    public RegisterIR getOffset() {
         return offset;
+    }
+
+    public void setBase(RegisterIR base) {
+        this.base = base;
+    }
+
+    public void setOffset(RegisterIR offset) {
+        this.offset = offset;
     }
 
     public ConstantIR getConstant() {
@@ -51,20 +68,35 @@ public class MemoryIR extends AddressIR {
         this.scale = scale;
     }
 
+    public int getNum() {
+        return num;
+    }
+
+    public void setNum(int num) {
+        this.num = num;
+    }
+
     @Override
     public String toString() {
-        if (scale == 0) {
-            if (offset == null)
-                return String.format("[%s + %d]", base, num);
+        if (constant != null)
+            return "[rel " + constant.lable + "]";
+        String str1, str2, str3;
+        str1 = "" + base;
+        if (offset == null)
+            str2 = "";
+        else{
+            if (scale == 1)
+                str2 = " + " + offset.toString();
             else
-                return String.format("[%s + %s]", base, offset);
+                str2 = " + " + offset.toString() + "*" + scale;
         }
-        else {
-            if (num == 0)
-                return String.format("[%s + %s * %d]", base, offset, scale);
-            else
-                return String.format("[%s + %s*%d + %d]", base, offset, scale, num);
-        }
+        if (num > 0)
+            str3 = " + " + num;
+        else if (num < 0)
+            str3 = " - " + (-num);
+        else
+            str3 = "";
+        return "qword [" + str1 + str2 + str3 + ']';
     }
 
     public void accept(IRVisitor visitor) {

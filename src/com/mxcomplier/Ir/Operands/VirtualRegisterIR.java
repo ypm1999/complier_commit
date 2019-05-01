@@ -7,14 +7,20 @@ public class VirtualRegisterIR extends RegisterIR {
 
     private int id;
     public MemoryIR memory;
+    public PhysicalRegisterIR phyReg = null;
+
     public VirtualRegisterIR(String label){
-        this.id = ++vRegId;
+        this.id = vRegId++;
         this.lable = label;
         this.memory = new StackSoltIR(lable + "_solt");
     }
 
     public int getId() {
         return id;
+    }
+
+    static public int getVregId(){
+        return vRegId;
     }
 
     public void accept(IRVisitor visitor) {

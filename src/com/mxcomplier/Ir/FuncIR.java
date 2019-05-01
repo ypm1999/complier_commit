@@ -1,6 +1,6 @@
 package com.mxcomplier.Ir;
 
-import com.mxcomplier.Ir.Operands.RegisterIR;
+import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ public class FuncIR {
     public BasicBlockIR entryBB, leaveBB;
     private List<BasicBlockIR> BBList = new ArrayList<>();
     private List<FuncIR> callee = new ArrayList<>();
-    private List<RegisterIR> parameters = new ArrayList<>();
+    private List<VirtualRegisterIR> parameters = new ArrayList<>();
 
     public FuncIR(String name){
         this.name = name;
@@ -42,9 +42,10 @@ public class FuncIR {
         return type;
     }
 
-    public List<RegisterIR> getParameters() {
+    public List<VirtualRegisterIR> getParameters() {
         return parameters;
     }
+
 
     public void accept(IRVisitor visitor) {
         visitor.visit(this);

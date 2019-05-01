@@ -5,6 +5,7 @@ import com.mxcomplier.Error.ComplierError;
 import com.mxcomplier.FrontEnd.*;
 import com.mxcomplier.LaxerParser.MxStarLexer;
 import com.mxcomplier.LaxerParser.MxStarParser;
+import com.mxcomplier.backEnd.*;
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -12,6 +13,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -20,6 +22,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             InputStream codeInput = System.in;
+//            InputStream codeInput = new FileInputStream("testcases/testcase.mx");
             CharStream charInput = CharStreams.fromStream(codeInput);
             MxStarLexer lexer = new MxStarLexer(charInput);
             CommonTokenStream token = new CommonTokenStream(lexer);
@@ -37,8 +40,21 @@ public class Main {
 
             IRBuilder irBuilder = new IRBuilder();
             IRPrinter irPrinter = new IRPrinter(irBuilder);
+
+            IRfixer iRfixer = new IRfixer();
+            RegisterAllocater allocater = new RegisterAllocater();
+            StackFrameAllocater stackFrameAllocater = new StackFrameAllocater();
             irBuilder.visit(ast);
-            irPrinter.visit(irBuilder.root);
+//            irPrinter.visit(irBuilder.root);
+//            IRInterpreter interpreter = new IRInterpreter(irBuilder);
+//            interpreter.run();
+            iRfixer.visit((irBuilder.root));
+            allocater.visit(irBuilder.root);
+
+            stackFrameAllocater.visit(irBuilder.root);
+            iRfixer.visit((irBuilder.root));
+            NasmPrinter nasmPrinter = new NasmPrinter(irBuilder);
+            nasmPrinter.visit(irBuilder.root);
 
         } catch (ComplierError e) {
             System.err.println("Complier Failed!");

@@ -19,6 +19,15 @@ public class ASTScanner implements ASTVisitor {
         return symbol.getScope().getSelf(memberName, location);
     }
 
+    VarSymbol putClassVar(VarDefNode node) {
+        Type type = node.getType().getType();
+        if (type instanceof ClassType)
+            type = globalScope.getClass(((ClassType) type).getName(), node.getLocation()).getType();
+        VarSymbol var = new VarSymbol(node.getName(), type);
+        currentScope.put(var);
+        return var;
+    }
+
     void putVar(VarDefNode node) {
         Type type = node.getType().getType();
         if (type instanceof ClassType)

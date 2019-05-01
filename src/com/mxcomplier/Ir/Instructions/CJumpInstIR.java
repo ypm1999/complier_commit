@@ -6,11 +6,11 @@ import com.mxcomplier.Ir.Operands.OperandIR;
 
 public class CJumpInstIR extends BranchInstIR {
     public enum Op{
-        L, G, LE, GE, EQ, NEQ, ERROR
+        L, G, LE, GE, E, NE, ERROR
     }
 
     private Op op;
-    private OperandIR lhs, rhs;
+    public OperandIR lhs, rhs;
     private BasicBlockIR trueBB, falseBB;
 
     public CJumpInstIR(Op op, OperandIR lhs, OperandIR rhs, BasicBlockIR trueBB, BasicBlockIR falseBB){
@@ -42,9 +42,13 @@ public class CJumpInstIR extends BranchInstIR {
     }
 
 
-    @Override
+
     public String toString() {
         return String.format("cjmp if(%s %s %s) goto %s else goto %s", lhs, op, rhs, trueBB, falseBB);
+    }
+
+    public String nasmString() {
+        return 'j' + op.toString().toLowerCase() + ' ' + trueBB + "\njmp " + falseBB;
     }
 
     public void accept(IRVisitor visitor) {

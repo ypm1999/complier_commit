@@ -191,7 +191,6 @@ public class ScopeBuilderASTScanner extends ASTScanner {
         FuncSymbol func;
         if (base instanceof IdentExprNode) {
             func = currentScope.getFunc(((IdentExprNode) base).getName(), base.getLocation());
-            node.setFuncName(func.getName());
         } else if (base instanceof MemberCallExprNode) {
             String name;
             Type type = ((MemberCallExprNode) base).getBaseExpr().getType();
@@ -209,7 +208,6 @@ public class ScopeBuilderASTScanner extends ASTScanner {
                 func = (FuncSymbol) tmpSymbol;
             else
                 throw new ComplierError(base.getLocation(),"invalid member function call");
-            node.setFuncName('$' + name + '_' + func.getName());
         }
         else
             throw new ComplierError(node.getLocation(), "unknown function call");
@@ -225,6 +223,7 @@ public class ScopeBuilderASTScanner extends ASTScanner {
             else
                 throw new ComplierError(node.getLocation(), "paratemers number is not equal to the function define");
         }
+        node.setFuncName(func.getName());
         node.setLeftValue(false);
         node.setType(base.getType());
     }

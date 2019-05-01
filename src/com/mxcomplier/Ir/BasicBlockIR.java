@@ -1,5 +1,6 @@
 package com.mxcomplier.Ir;
 
+import com.mxcomplier.Ir.Instructions.EmptyInstIR;
 import com.mxcomplier.Ir.Instructions.InstIR;
 
 public class BasicBlockIR {
@@ -13,20 +14,18 @@ public class BasicBlockIR {
     public BasicBlockIR(FuncIR func, String lable){
         this.lable = lable;
         this.func = func;
-        this.head = this.tail = null;
+        this.head = new EmptyInstIR();
+        this.tail = new EmptyInstIR();
+        this.head.append(this.tail);
         func.getBBList().add(this);
     }
 
     public void append(InstIR inst){
-//        System.out.println(inst);
-        if (head == null){
-            inst.prev = inst.next = null;
-            head = tail = inst;
-        }
-        else {
-            tail.append(inst);
-            tail = inst;
-        }
+        tail.prepend(inst);
+    }
+
+    public void prepend(InstIR inst){
+        head.append(inst);
     }
 
     public FuncIR getFunc() {
