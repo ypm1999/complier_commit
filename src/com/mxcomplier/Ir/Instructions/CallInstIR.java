@@ -2,10 +2,7 @@ package com.mxcomplier.Ir.Instructions;
 
 import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.IRVisitor;
-import com.mxcomplier.Ir.Operands.OperandIR;
-import com.mxcomplier.Ir.Operands.RegisterIR;
-import com.mxcomplier.Ir.Operands.StackSoltIR;
-import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
+import com.mxcomplier.Ir.Operands.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +37,13 @@ public class CallInstIR extends InstIR {
         VirtualRegisterIR ret = (VirtualRegisterIR) returnValue;
         if (ret != null && ret.memory instanceof StackSoltIR)
             res.add((StackSoltIR) ret.memory);
+        for (OperandIR arg : args){
+            if (arg instanceof VirtualRegisterIR){
+                MemoryIR mem = ((VirtualRegisterIR) arg).memory;
+                if (mem instanceof StackSoltIR)
+                    res.add((StackSoltIR) mem);
+            }
+        }
         return res;
     }
 

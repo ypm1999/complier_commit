@@ -63,22 +63,38 @@ public class StackFrameAllocater extends IRScanner {
                 inst = inst.next;
             }
         }
-        Iterator<VirtualRegisterIR> args = node.getParameters().iterator();
-        int cnt = 1;
-        while(args.hasNext()){
-            MemoryIR tmp = getVregMemory(args.next());
-            assert(tmp instanceof StackSoltIR);
-            stackSolts.remove(tmp);
-            tmp.setNum(Config.getREGSIZE() * (++cnt));
-        }
 
         int i = 0;
+        List<StackSoltIR> argsMemory = new ArrayList<>();
+        for (VirtualRegisterIR arg : node.getParameters()) {
+            MemoryIR tmp = getVregMemory(arg);
+            assert(tmp instanceof StackSoltIR);
+            if (i >= 6)
+                stackSolts.remove(tmp);
+            else
+                stackSolts.add((StackSoltIR) tmp);
+            argsMemory.add((StackSoltIR) tmp);
+            ++i;
+        }
+
+        int stackSize = (stackSolts.size() + min(6, argsMemory.size())) * Config.getREGSIZE();
+        firstInst.prepend(new BinaryInstIR(BinaryInstIR.Op.SUB, RegisterSet.rsp, new ImmediateIR(stackSize)));
+
+        i = 0;
         for (StackSoltIR stackSolt: stackSolts){
             stackSolt.setNum(-Config.getREGSIZE() * (++i));
         }
 
-        firstInst.prepend(new BinaryInstIR(BinaryInstIR.Op.SUB, RegisterSet.rsp,
-                              new ImmediateIR((stackSolts.size() + 1) * Config.getREGSIZE())));
+        i = 0;
+        for (StackSoltIR arg : argsMemory){
+            if (i < 6){
+                firstInst.prepend(new MoveInstIR(arg, paratReg[i]));
+            }
+            else{
+                arg.setNum(Config.getREGSIZE() * (i - 6 + 2));
+            }
+            i++;
+        }
 
         for (BasicBlockIR bb : node.getBBList()){
             bb.accept(this);
@@ -92,7 +108,7 @@ public class StackFrameAllocater extends IRScanner {
 
         for (int i = args.size()-1; i >= 0; i--){
             OperandIR arg = args.get(i);
-            if (args.size() - i < 6) {
+            if (i < 6) {
                 if (arg instanceof ImmediateIR)
                     node.prepend(new MoveInstIR(paratReg[cnt], arg));
                 else {
@@ -100,7 +116,6 @@ public class StackFrameAllocater extends IRScanner {
                     fixMemory(mem, node);
                     node.prepend(new MoveInstIR(paratReg[cnt], mem));
                 }
-                node.prepend(new PushInstIR(paratReg[cnt]));
                 cnt--;
             }
             else {
@@ -114,9 +129,9 @@ public class StackFrameAllocater extends IRScanner {
                 node.prepend(new PushInstIR(RegisterSet.rax));
             }
         }
-        if (node.getArgs().size() > 0)
+        if (node.getArgs().size() > 6)
             node.append(new BinaryInstIR(BinaryInstIR.Op.ADD, RegisterSet.rsp,
-                                        new ImmediateIR(Config.getREGSIZE()*node.getArgs().size())));
+                                        new ImmediateIR(Config.getREGSIZE()*(node.getArgs().size() - 6))));
         if (node.getReturnValue() != null)
             node.append(new MoveInstIR(getMemory(node.getReturnValue()), RegisterSet.rax));
     }
