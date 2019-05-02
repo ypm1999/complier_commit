@@ -131,7 +131,7 @@ public class RegisterAllocater extends IRScanner {
             node.src = RegisterSet.rdx;
 //            node.append(new MoveInstIR(src, RegisterSet.rdx));
         }
-        else{
+        else if (node.getSrc() instanceof ImmediateIR){
             node.prepend(new MoveInstIR(RegisterSet.rdx, node.getSrc()));
             node.src = RegisterSet.rdx;
         }

@@ -393,6 +393,7 @@ public class ScopeBuilderASTScanner extends ASTScanner {
     @Override
     public void visit(IdentExprNode node) {
         Symbol symbol = currentScope.get(node.getName(), node.getLocation());
+        node.setSymbol(symbol);
         if (symbol instanceof VarSymbol) {
             node.setLeftValue(true);
             node.setType(symbol.getType());

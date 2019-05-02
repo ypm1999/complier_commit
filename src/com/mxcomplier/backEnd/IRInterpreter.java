@@ -55,7 +55,7 @@ public class IRInterpreter{
             BasicBlockIR nextBB;
             while (inst != bb.getTail()) {
                 if (inst instanceof ReturnInstIR){
-                    System.err.println(func.getName() + " return Value:" + getValue(((ReturnInstIR) inst).getSrc()));
+//                    System.err.println(func.getName() + " return Value:" + getValue(((ReturnInstIR) inst).getSrc()));
                     return getValue(((ReturnInstIR) inst).getSrc());
                 }
                 nextBB = runInst(inst);
@@ -129,7 +129,7 @@ public class IRInterpreter{
 
 
     private BasicBlockIR runInst(InstIR instruction){
-        System.err.println(instruction.toString());
+//        System.err.println(instruction.toString());
         switch (instruction.getClass().getName().substring(31)){
             case "BinaryInstIR":{
                 BinaryInstIR inst = (BinaryInstIR) instruction;

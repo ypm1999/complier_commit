@@ -433,10 +433,10 @@ public class ASTBuilder extends MxStarBaseVisitor<Node> {
                 op = BinaryExprNode.Op.AND;
                 break;
             case "^":
-                op = BinaryExprNode.Op.OR;
+                op = BinaryExprNode.Op.XOR;
                 break;
             case "|":
-                op = BinaryExprNode.Op.XOR;
+                op = BinaryExprNode.Op.OR;
                 break;
             case "&&":
                 op = BinaryExprNode.Op.ANDAND;

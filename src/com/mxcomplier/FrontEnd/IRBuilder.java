@@ -480,7 +480,13 @@ public class IRBuilder extends ASTScanner{
             default: assert false;
         }
         node.getSubExpr().accept(this);
-        node.resultReg = node.getSubExpr().resultReg;
+        if (op == UnaryInstIR.Op.NEG || op == UnaryInstIR.Op.INV){
+            VirtualRegisterIR res = new VirtualRegisterIR("Unary_temp");
+            curBB.append(new MoveInstIR(res, node.getSubExpr().resultReg));
+            node.resultReg = res;
+        }
+        else
+            node.resultReg = node.getSubExpr().resultReg;
         curBB.append(new UnaryInstIR(op, node.resultReg));
     }
 
@@ -533,7 +539,8 @@ public class IRBuilder extends ASTScanner{
         curBB.append(new JumpInstIR(condBB));
         condBB.append(new CJumpInstIR(CJumpInstIR.Op.E, cnt, size, afterBB, bodyBB));
         curBB = bodyBB;
-        curBB.append(new MoveInstIR(new MemoryIR(res, cnt, 8), allocaArray(order - 1, dims)));
+        VirtualRegisterIR subArray = allocaArray(order - 1, dims);
+        curBB.append(new MoveInstIR(new MemoryIR(res, cnt, 8), subArray));
 
         curBB.append(new UnaryInstIR(UnaryInstIR.Op.INC, cnt));
         curBB.append(new JumpInstIR(condBB));
@@ -699,7 +706,7 @@ public class IRBuilder extends ASTScanner{
     @Override
     public void visit(IdentExprNode node) {
         if (node.isVar()){
-            VarSymbol var = currentScope.getVar(node.getName());
+            VarSymbol var = (VarSymbol) node.getSymbol();
             if(var.vReg == null)
                 throw new IRError("varReg " + node.getName() + " used before define");
             if (trueBBMap.containsKey(node)){
