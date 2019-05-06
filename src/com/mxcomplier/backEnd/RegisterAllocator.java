@@ -7,7 +7,7 @@ import com.mxcomplier.Ir.Operands.*;
 import com.mxcomplier.Ir.ProgramIR;
 import com.mxcomplier.Ir.RegisterSet;
 
-public class RegisterAllocater extends IRScanner {
+public class RegisterAllocator extends IRScanner {
 
     @Override
     public void visit(BasicBlockIR node) {

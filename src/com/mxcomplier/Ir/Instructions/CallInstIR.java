@@ -3,9 +3,14 @@ package com.mxcomplier.Ir.Instructions;
 import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.IRVisitor;
 import com.mxcomplier.Ir.Operands.*;
+import com.mxcomplier.Ir.RegisterSet;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+
+import static java.lang.Math.min;
 
 public class CallInstIR extends InstIR {
 
@@ -45,6 +50,28 @@ public class CallInstIR extends InstIR {
             }
         }
         return res;
+    }
+
+    @Override
+    public List<VirtualRegisterIR> getUsedVReg() {
+        return new ArrayList<>(Arrays.asList(RegisterSet.paratReg).subList(0, min(args.size(), 6)));
+    }
+
+    @Override
+    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap){
+        returnValue = (RegisterIR) replacedVreg(returnValue, renameMap);
+        List<OperandIR> tmp = new ArrayList<>();
+        for (OperandIR arg : args)
+            tmp.add(replacedVreg(arg, renameMap));
+        args = tmp;
+    }
+
+    @Override
+    public List<VirtualRegisterIR> getDefinedVreg() {
+        if (returnValue != null)
+            return getVreg(RegisterSet.Vrax);
+        else
+            return new ArrayList<>();
     }
 
     @Override

@@ -1,13 +1,11 @@
 package com.mxcomplier.Ir.Instructions;
 
 import com.mxcomplier.Ir.IRVisitor;
-import com.mxcomplier.Ir.Operands.AddressIR;
-import com.mxcomplier.Ir.Operands.MemoryIR;
-import com.mxcomplier.Ir.Operands.OperandIR;
-import com.mxcomplier.Ir.Operands.StackSoltIR;
+import com.mxcomplier.Ir.Operands.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class LeaInstIR extends InstIR {
     public AddressIR dest;
@@ -39,6 +37,31 @@ public class LeaInstIR extends InstIR {
             res.add((StackSoltIR) src);
         return res;
     }
+
+
+    @Override
+    public List<VirtualRegisterIR> getUsedVReg() {
+        List<VirtualRegisterIR> tmp = getVreg(src);
+        if (dest instanceof MemoryIR)
+            tmp.addAll(((MemoryIR) dest).getVreg());
+        return tmp;
+    }
+
+    @Override
+    public List<VirtualRegisterIR> getDefinedVreg() {
+        List<VirtualRegisterIR> tmp = new ArrayList<>();
+        if (dest instanceof VirtualRegisterIR)
+            tmp.add((VirtualRegisterIR)dest);
+        return tmp;
+    }
+
+
+    @Override
+    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap){
+        dest = (AddressIR) replacedVreg(dest, renameMap);
+        src = (AddressIR) replacedVreg(src, renameMap);
+    }
+
 
     @Override
     public String toString() {

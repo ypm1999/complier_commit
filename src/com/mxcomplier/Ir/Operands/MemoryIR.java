@@ -3,11 +3,14 @@ package com.mxcomplier.Ir.Operands;
 import com.mxcomplier.Ir.IRVisitor;
 import com.mxcomplier.Ir.RegisterSet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MemoryIR extends AddressIR {
-    private RegisterIR base = null;
-    private RegisterIR offset = null;
-    public RegisterIR old_base = null;
-    public RegisterIR old_offset = null;
+    private VirtualRegisterIR base = null;
+    private VirtualRegisterIR offset = null;
+    public VirtualRegisterIR old_base = null;
+    public VirtualRegisterIR old_offset = null;
     private int scale = 1;
     private int num = 0;
     private ConstantIR constant = null;
@@ -15,22 +18,22 @@ public class MemoryIR extends AddressIR {
 
     public MemoryIR(){}
 
-    public MemoryIR(RegisterIR base){
+    public MemoryIR(VirtualRegisterIR base){
         this.base = base;
     }
 
-    public MemoryIR(RegisterIR base, RegisterIR offset){
+    public MemoryIR(VirtualRegisterIR base, VirtualRegisterIR offset){
         this.base = base;
         this.offset = offset;
     }
 
-    public MemoryIR(RegisterIR base, RegisterIR offset, int scale){
+    public MemoryIR(VirtualRegisterIR base, VirtualRegisterIR offset, int scale){
         this.base = base;
         this.offset = offset;
         this.scale = scale;
     }
 
-    public MemoryIR(RegisterIR base, int num){
+    public MemoryIR(VirtualRegisterIR base, int num){
         this.base = base;
         this.num = num;
     }
@@ -40,19 +43,19 @@ public class MemoryIR extends AddressIR {
     }
 
 
-    public RegisterIR getBase() {
+    public VirtualRegisterIR getBase() {
         return base;
     }
 
-    public RegisterIR getOffset() {
+    public VirtualRegisterIR getOffset() {
         return offset;
     }
 
-    public void setBase(RegisterIR base) {
+    public void setBase(VirtualRegisterIR base) {
         this.base = base;
     }
 
-    public void setOffset(RegisterIR offset) {
+    public void setOffset(VirtualRegisterIR offset) {
         this.offset = offset;
     }
 
@@ -74,6 +77,15 @@ public class MemoryIR extends AddressIR {
 
     public void setNum(int num) {
         this.num = num;
+    }
+
+    public List<VirtualRegisterIR> getVreg(){
+        List<VirtualRegisterIR> regs = new ArrayList<>();
+        if (base != null)
+            regs.add(base);
+        if (offset != null)
+            regs.add(offset);
+        return regs;
     }
 
     @Override

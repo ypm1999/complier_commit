@@ -28,12 +28,12 @@ public class ASTScanner implements ASTVisitor {
         return var;
     }
 
-    void putVar(VarDefNode node) {
-        Type type = node.getType().getType();
-        if (type instanceof ClassType)
-            type = globalScope.getClass(((ClassType) type).getName(), node.getLocation()).getType();
-        currentScope.put(new VarSymbol(node.getName(), type));
-    }
+//    void putVar(VarDefNode node) {
+//        Type type = node.getType().getType();
+//        if (type instanceof ClassType)
+//            type = globalScope.getClass(((ClassType) type).getName(), node.getLocation()).getType();
+//        currentScope.put(new VarSymbol(node.getName(), type));
+//    }
 
     boolean typeAssignable(Type leftType, Type rightType) {
         return leftType.equals(rightType) ||

@@ -1,8 +1,12 @@
 package com.mxcomplier.Ir;
 
 import com.mxcomplier.Ir.Operands.PhysicalRegisterIR;
+import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
 
 import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class RegisterSet {
 
@@ -22,6 +26,50 @@ public class RegisterSet {
     static public PhysicalRegisterIR r13 = new PhysicalRegisterIR("r13");
     static public PhysicalRegisterIR r14 = new PhysicalRegisterIR("r14");
     static public PhysicalRegisterIR r15 = new PhysicalRegisterIR("r15");
+
+
+    static public VirtualRegisterIR Vrax = new VirtualRegisterIR("Vrax", rax);
+    static public VirtualRegisterIR Vrcx = new VirtualRegisterIR("Vrcx", rcx);
+    static public VirtualRegisterIR Vrdx = new VirtualRegisterIR("Vrdx", rdx);
+    static public VirtualRegisterIR Vrbx = new VirtualRegisterIR("Vrbx", rbx);
+    static public VirtualRegisterIR Vrsp = new VirtualRegisterIR("Vrsp", rsp);
+    static public VirtualRegisterIR Vrbp = new VirtualRegisterIR("Vrbp", rbp);
+    static public VirtualRegisterIR Vrsi = new VirtualRegisterIR("Vrsi", rsi);
+    static public VirtualRegisterIR Vrdi = new VirtualRegisterIR("Vrdi", rdi);
+    static public VirtualRegisterIR Vr8 = new VirtualRegisterIR("Vr8", r8);
+    static public VirtualRegisterIR Vr9 = new VirtualRegisterIR("Vr9", r9);
+    static public VirtualRegisterIR Vr10 = new VirtualRegisterIR("Vr10", r10);
+    static public VirtualRegisterIR Vr11 = new VirtualRegisterIR("Vr11", r11);
+    static public VirtualRegisterIR Vr12 = new VirtualRegisterIR("Vr12", r12);
+    static public VirtualRegisterIR Vr13 = new VirtualRegisterIR("Vr13", r13);
+    static public VirtualRegisterIR Vr14 = new VirtualRegisterIR("Vr14", r14);
+    static public VirtualRegisterIR Vr15 = new VirtualRegisterIR("Vr15", r15);
+
+    static public VirtualRegisterIR[] paratReg = {
+            Vrdi,
+            Vrsi,
+            Vrdx,
+            Vrcx,
+            Vr8,
+            Vr9
+    };
+
+    static public List<PhysicalRegisterIR> phyRegisterSet = new ArrayList<>(
+            Arrays.asList(rax, rbx, rcx, rdx, rsp, rbp, rsi, rdi, r8, r9, r10, r11, r12, r13, r14, r15)
+    );
+
+    static public List<PhysicalRegisterIR> allocatePhyRegisterSet = new ArrayList<>(
+            Arrays.asList(rax, rbx, rcx, rdx, rsi, rdi, r8, r9, r10, r11, r12, r13, r14, r15)
+    );
+
+    static public List<PhysicalRegisterIR> calleeSaveRegisterSet = new ArrayList<>(
+            Arrays.asList(r12,r13,r14,r15,rbx)
+    );
+
+    static public List<PhysicalRegisterIR> callerSaveRegisterSet = new ArrayList<>(
+            Arrays.asList(rcx, rdx, rsi, rdi, r8, r9, r10, r11)
+            //without rbp,rsp,rax
+    );
 
     public RegisterSet(){
         

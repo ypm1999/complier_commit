@@ -1,5 +1,6 @@
 package com.mxcomplier.backEnd;
 
+import com.mxcomplier.Config;
 import com.mxcomplier.Error.ComplierError;
 import com.mxcomplier.FrontEnd.IRBuilder;
 import com.mxcomplier.Ir.BasicBlockIR;
@@ -17,11 +18,13 @@ public class NasmPrinter extends IRScanner {
 
     public NasmPrinter(IRBuilder builder){
         this.builder = builder;
-//        try {
-//            output = new PrintStream("test.asm");
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
+        if (Config.DEBUG) {
+            try {
+                output = new PrintStream("test.asm");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void println(String str){
@@ -48,6 +51,7 @@ public class NasmPrinter extends IRScanner {
         } catch (IOException e) {
             throw new ComplierError("IO exception when reading builtin functions from file");
         }
+        println("\n;********************************************************************************\n");
         println("global main");
         println("global __init");
         println("section .data");
@@ -61,13 +65,6 @@ public class NasmPrinter extends IRScanner {
         unindent();
         println("");
         println("section .text\n");
-//        println("start:");
-//        indent();
-//        println("call __init");
-//        println("call main");
-//        println("jmp __done");
-//        unindent();
-        println("");
     }
 
 
@@ -88,7 +85,6 @@ public class NasmPrinter extends IRScanner {
         for (FuncIR func : node.getFuncs()){
             func.accept(this);
         }
-//        println("__done:");
         output.flush();
     }
 
@@ -101,8 +97,7 @@ public class NasmPrinter extends IRScanner {
             bb.accept(this);
         }
         unindent();
-        println("");
-//        println(";********************************************************************************\n");
+//        println("\n;********************************************************************************\n");
     }
 
 

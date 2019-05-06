@@ -3,9 +3,11 @@ package com.mxcomplier.Ir.Instructions;
 import com.mxcomplier.Ir.IRVisitor;
 import com.mxcomplier.Ir.Operands.AddressIR;
 import com.mxcomplier.Ir.Operands.StackSoltIR;
+import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class UnaryInstIR extends InstIR {
     public enum Op{
@@ -34,6 +36,24 @@ public class UnaryInstIR extends InstIR {
         if (dest instanceof StackSoltIR)
             res.add((StackSoltIR) dest);
         return res;
+    }
+
+    @Override
+    public List<VirtualRegisterIR> getUsedVReg() {
+        return getVreg(dest);
+    }
+
+    @Override
+    public List<VirtualRegisterIR> getDefinedVreg() {
+        List<VirtualRegisterIR> tmp = new ArrayList<>();
+        if (dest instanceof VirtualRegisterIR)
+            tmp.add((VirtualRegisterIR)dest);
+        return tmp;
+    }
+
+    @Override
+    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap){
+        dest = (AddressIR) replacedVreg(dest, renameMap);
     }
 
     @Override

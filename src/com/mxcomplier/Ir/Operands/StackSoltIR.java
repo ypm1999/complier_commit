@@ -8,7 +8,7 @@ public class StackSoltIR extends MemoryIR {
     private String lable;
 
     public StackSoltIR(String lable){
-        super(RegisterSet.rbp);
+        super(RegisterSet.Vrbp);
         this.lable = lable;
     }
 

@@ -1,9 +1,3 @@
-
-
-
-
-
-
 default rel
 
 global print

@@ -1,12 +1,11 @@
 package com.mxcomplier.Ir.Instructions;
 
 import com.mxcomplier.Ir.IRVisitor;
-import com.mxcomplier.Ir.Operands.AddressIR;
-import com.mxcomplier.Ir.Operands.OperandIR;
-import com.mxcomplier.Ir.Operands.StackSoltIR;
+import com.mxcomplier.Ir.Operands.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class BinaryInstIR extends InstIR {
     public enum Op{
@@ -43,6 +42,28 @@ public class BinaryInstIR extends InstIR {
         if (src instanceof StackSoltIR)
             res.add((StackSoltIR) src);
         return res;
+    }
+
+
+    @Override
+    public List<VirtualRegisterIR> getUsedVReg() {
+        List<VirtualRegisterIR> tmp = getVreg(src);
+        tmp.addAll(getVreg(dest));
+        return tmp;
+    }
+
+    @Override
+    public List<VirtualRegisterIR> getDefinedVreg() {
+        List<VirtualRegisterIR> tmp = new ArrayList<>();
+        if (dest instanceof VirtualRegisterIR)
+            tmp.add((VirtualRegisterIR)dest);
+        return tmp;
+    }
+
+    @Override
+    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap){
+        dest = (AddressIR) replacedVreg(dest, renameMap);
+        src = replacedVreg(src, renameMap);
     }
 
     @Override

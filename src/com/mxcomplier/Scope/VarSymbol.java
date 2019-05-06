@@ -5,6 +5,7 @@ import com.mxcomplier.Type.Type;
 
 public class VarSymbol extends Symbol {
     public ClassSymbol belongClass = null;
+    public boolean isGlobalVar = false;
     public VirtualRegisterIR vReg;
 
     public VarSymbol(String name, Type type) {

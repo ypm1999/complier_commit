@@ -8,29 +8,12 @@ import com.mxcomplier.Ir.Operands.*;
 import com.mxcomplier.Ir.ProgramIR;
 import com.mxcomplier.Ir.RegisterSet;
 
-import javax.swing.plaf.metal.MetalMenuBarUI;
 import java.util.*;
 
-import static java.lang.Integer.max;
 import static java.lang.Math.min;
 
 public class StackFrameAllocater extends IRScanner {
-
-    private class Frame{
-        public List<AddressIR> tempVar = new ArrayList<>();
-        public AddressIR old_rbp = new StackSoltIR("old_rbp");
-    }
-
-    Frame curFrame = null;
-
-    static PhysicalRegisterIR[] paratReg = {
-            RegisterSet.rdi,
-            RegisterSet.rsi,
-            RegisterSet.rdx,
-            RegisterSet.rcx,
-            RegisterSet.r8,
-            RegisterSet.r9
-    };
+    private FuncIR curFunc = null;
 
 
     @Override
@@ -45,7 +28,9 @@ public class StackFrameAllocater extends IRScanner {
     @Override
     public void visit(ProgramIR node) {
         for (FuncIR func : node.getFuncs()){
+            curFunc = func;
             func.accept(this);
+            curFunc = null;
         }
     }
 
@@ -64,76 +49,66 @@ public class StackFrameAllocater extends IRScanner {
             }
         }
 
-        int i = 0;
-        List<StackSoltIR> argsMemory = new ArrayList<>();
-        for (VirtualRegisterIR arg : node.getParameters()) {
-            MemoryIR tmp = getVregMemory(arg);
-            assert(tmp instanceof StackSoltIR);
-            if (i >= 6)
-                stackSolts.remove(tmp);
-            else
-                stackSolts.add((StackSoltIR) tmp);
-            argsMemory.add((StackSoltIR) tmp);
-            ++i;
-        }
-
-        int stackSize = (stackSolts.size() + min(6, argsMemory.size())) * Config.getREGSIZE();
+        int stackSize = (stackSolts.size()) * Config.getREGSIZE();
         firstInst.prepend(new BinaryInstIR(BinaryInstIR.Op.SUB, RegisterSet.rsp, new ImmediateIR(stackSize)));
 
-        i = 0;
-        for (StackSoltIR stackSolt: stackSolts){
+        int i = 0;
+        for (StackSoltIR stackSolt: stackSolts)
             stackSolt.setNum(-Config.getREGSIZE() * (++i));
-        }
 
-        i = 0;
-        for (StackSoltIR arg : argsMemory){
-            if (i < 6){
-                firstInst.prepend(new MoveInstIR(arg, paratReg[i]));
+        //TODO callee save regs
+        HashSet<PhysicalRegisterIR> saveSet = new HashSet<>(RegisterSet.calleeSaveRegisterSet);
+        saveSet.retainAll(node.getDefinedPhyRegs());
+        if (!node.getName().equals("main"))
+            for (PhysicalRegisterIR preg : saveSet) {
+                firstInst.prepend(new PushInstIR(preg));
+                firstInst = firstInst.prev;
             }
-            else{
-                arg.setNum(Config.getREGSIZE() * (i - 6 + 2));
-            }
-            i++;
-        }
 
         for (BasicBlockIR bb : node.getBBList()){
             bb.accept(this);
+        }
+
+        if (!node.getName().equals("main")) {
+            InstIR lastInst = node.leaveBB.getTail().prev;
+            for (PhysicalRegisterIR preg : saveSet)
+                lastInst.prepend(new PopInstIR(preg));
         }
     }
 
     @Override
     public void visit(CallInstIR node) {
-        List<OperandIR> args = node.getArgs();
-        int cnt = min(node.getArgs().size() - 1, 5);
 
-        for (int i = args.size()-1; i >= 0; i--){
-            OperandIR arg = args.get(i);
-            if (i < 6) {
-                if (arg instanceof ImmediateIR)
-                    node.prepend(new MoveInstIR(paratReg[cnt], arg));
-                else {
-                    MemoryIR mem = getMemory(arg);
-                    fixMemory(mem, node);
-                    node.prepend(new MoveInstIR(paratReg[cnt], mem));
-                }
+        //TODO caller save regs
+        HashSet<PhysicalRegisterIR> saveSet = new HashSet<>(RegisterSet.callerSaveRegisterSet);
+//        saveSet.retainAll(node.getFunc().getDefinedPhyRegs());
+//        saveSet.retainAll(curFunc.getUsedPhyRegs());
+        for (int i = 0; i < min(6, node.getArgs().size()); ++i)
+            saveSet.remove(RegisterSet.paratReg[i].getPhyReg());
+        InstIR firstInst = node;
+        int cnt = node.getArgs().size() - 6;
+        while(cnt > 0){
+            firstInst = firstInst.prev;
+            if (firstInst instanceof PushInstIR)
                 cnt--;
-            }
-            else {
-                if (arg instanceof ImmediateIR)
-                    node.prepend(new MoveInstIR(RegisterSet.rax, arg));
-                else {
-                    MemoryIR mem = getMemory(arg);
-                    fixMemory(mem, node);
-                    node.prepend(new MoveInstIR(RegisterSet.rax, mem));
-                }
-                node.prepend(new PushInstIR(RegisterSet.rax));
-            }
         }
+        if (!node.getFunc().getName().equals("__init"))
+            for (PhysicalRegisterIR preg : saveSet)
+                firstInst.prepend(new PushInstIR(preg));
+//
+//        if (node.getArgs().size() > 6) {
+//            for (int i = node.getArgs().size()-1; i >= 6; i--){
+//                OperandIR arg = node.getArgs().get(i);
+//                node.prepend(new PushInstIR(arg));
+//            }
+//        }
+        if (!node.getFunc().getName().equals("__init"))
+            for (PhysicalRegisterIR preg : saveSet)
+                node.append(new PopInstIR(preg));
         if (node.getArgs().size() > 6)
             node.append(new BinaryInstIR(BinaryInstIR.Op.ADD, RegisterSet.rsp,
-                                        new ImmediateIR(Config.getREGSIZE()*(node.getArgs().size() - 6))));
-        if (node.getReturnValue() != null)
-            node.append(new MoveInstIR(getMemory(node.getReturnValue()), RegisterSet.rax));
+                new ImmediateIR(Config.getREGSIZE() * (node.getArgs().size() - 6))));
+
     }
 }
 

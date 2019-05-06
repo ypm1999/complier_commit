@@ -89,6 +89,15 @@ public class IRPrinter extends IRScanner {
         println(node.toString());
     }
 
+    @Override
+    public void visit(PushInstIR node) {
+        println(node.toString());
+    }
+
+    @Override
+    public void visit(PopInstIR node) {
+        println(node.toString());
+    }
 
     @Override
     public void visit(ReturnInstIR node) {

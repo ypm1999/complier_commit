@@ -8,6 +8,8 @@ import com.mxcomplier.Ir.Operands.*;
 abstract public class IRScanner implements IRVisitor {
     IRBuilder builder;
 
+
+
     MemoryIR getMemory(OperandIR operand){
         if (operand instanceof VirtualRegisterIR)
             return ((VirtualRegisterIR) operand).memory;
@@ -42,11 +44,11 @@ abstract public class IRScanner implements IRVisitor {
         fixMemory(offset, node);
         if (base != null){
             node.prepend(new MoveInstIR(RegisterSet.r8, base));
-            mem.setBase(RegisterSet.r8);
+            mem.setBase(RegisterSet.Vr8);
         }
         if (mem.getOffset() != null){
             node.prepend(new MoveInstIR(RegisterSet.r9, offset));
-            mem.setOffset(RegisterSet.r9);
+            mem.setOffset(RegisterSet.Vr9);
         }
     }
 

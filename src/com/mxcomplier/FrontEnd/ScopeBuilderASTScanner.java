@@ -71,8 +71,15 @@ public class ScopeBuilderASTScanner extends ASTScanner {
     @Override
     public void visit(VarDefNode node) {
         checkVarInit(node);
-        if (!node.isMemberDef())
-            putVar(node);
+        if (!node.isMemberDef()) {
+            Type type = node.getType().getType();
+            if (type instanceof ClassType)
+                type = globalScope.getClass(((ClassType) type).getName(), node.getLocation()).getType();
+            VarSymbol symbol = new VarSymbol(node.getName(), type);
+            if (currentFunc == null && currentClass == null)
+                symbol.isGlobalVar = true;
+            currentScope.put(symbol);
+        }
 
     }
 
