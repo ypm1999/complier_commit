@@ -46,7 +46,7 @@ public class Main {
             irBuilder.visit(ast);
 
             new IRfixer().visit((irBuilder.root));
-            new BlockMerger().visit(irBuilder.root);
+            new BlockMerger(true).visit(irBuilder.root);
             if (Config.DEBUG) {
                 new IRPrinter(irBuilder).visit(irBuilder.root);
 //            IRInterpreter interpreter = new IRInterpreter(irBuilder);
@@ -55,6 +55,7 @@ public class Main {
 
             new GraphAllocator().run(irBuilder);
             new StackFrameAllocater().visit(irBuilder.root);
+            new BlockMerger(false).visit(irBuilder.root);
             new NasmPrinter(irBuilder).visit(irBuilder.root);
 
         } catch (ComplierError e) {

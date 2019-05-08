@@ -219,7 +219,6 @@ public class IRBuilder extends ASTScanner{
                             bb.append(new MoveInstIR(RegisterSet.Vrax, ZERO));
                     }
                 }
-
                 bb.append(new JumpInstIR(currentFunc.leaveBB));
             }
         }
@@ -227,7 +226,6 @@ public class IRBuilder extends ASTScanner{
             currentFunc.leaveBB.append(new ReturnInstIR());
         else
             currentFunc.leaveBB.append(new ReturnInstIR(RegisterSet.Vrax));
-        
 
         currentFunc = null;
         curThisPointor = null;
@@ -482,6 +480,8 @@ public class IRBuilder extends ASTScanner{
     }
 
     private void doFuncCall(FuncIR func, List<OperandIR> args, VirtualRegisterIR returnValue){
+        currentFunc.callee.add(func);
+        func.caller.add(currentFunc);
         curBB.append(new CallInstIR(func, args, returnValue));
         if (returnValue != null)
             curBB.append(new MoveInstIR(returnValue, RegisterSet.Vrax));

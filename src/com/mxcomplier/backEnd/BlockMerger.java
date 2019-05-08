@@ -17,12 +17,16 @@ import static com.mxcomplier.FrontEnd.IRBuilder.ZERO;
 public class BlockMerger extends IRScanner {
 
 
+    private boolean basic;
+    public BlockMerger(boolean basic){
+        this.basic = basic;
+    }
+
     @Override
     public void visit(ProgramIR node) {
         for (FuncIR func : node.getFuncs()){
             func.accept(this);
         }
-
     }
 
     @Override
@@ -36,10 +40,14 @@ public class BlockMerger extends IRScanner {
                 if (bb.fronters.size() == 1) {
                     BasicBlockIR prevBB = bb.fronters.iterator().next();
                     InstIR lastInst = prevBB.getTail().prev;
+                    if (basic && prevBB.successors.size() > 1)
+                        continue;
                     if (lastInst instanceof JumpInstIR && ((JumpInstIR) lastInst).getTarget() == bb) {
                         lastInst.remove();
                         prevBB.merge(bb);
                         node.getBBList().remove(bb);
+                        if (bb == node.leaveBB)
+                            node.leaveBB = prevBB;
                         changed = true;
                         break;
                     }
@@ -48,5 +56,4 @@ public class BlockMerger extends IRScanner {
         }
         node.initOrderBBList();
     }
-
 }

@@ -31,6 +31,7 @@ public class IRfixer extends IRScanner {
     public void visit(ProgramIR node) {
         for (FuncIR func : node.getFuncs()){
             curFunc = func;
+            dfsGlobalVars(func);
             func.accept(this);
             curFunc = null;
         }
@@ -40,13 +41,23 @@ public class IRfixer extends IRScanner {
                 VirtualRegisterIR temp = new VirtualRegisterIR(func.getName() + "_" + vreg.lable);
                 temp.memory = vreg.memory;
                 renameMap.put(vreg, temp);
-//            node.entryBB.prepend(new MoveInstIR(temp, vreg.memory));
-//            node.leaveBB.prepend(new MoveInstIR(vreg.memory, temp));
             }
             for (BasicBlockIR bb : func.getBBList()) {
                 for (InstIR inst = bb.getTail().prev; inst != bb.getHead(); inst = inst.prev)
                     inst.replaceVreg(renameMap);
             }
+        }
+    }
+
+    static private HashSet<FuncIR> accessedFunc = new HashSet<>();
+    private void dfsGlobalVars(FuncIR func){
+        if (accessedFunc.contains(func))
+            return;
+        accessedFunc.add(func);
+        func.selfUsedGlobalVar = new HashSet<>(func.usedGlobalVar);
+        for (FuncIR nextFunc:func.callee){
+            dfsGlobalVars(nextFunc);
+            func.usedGlobalVar.addAll(nextFunc.usedGlobalVar);
         }
     }
 
@@ -132,8 +143,8 @@ public class IRfixer extends IRScanner {
         FuncIR caller = curFunc;
         FuncIR callee = node.getFunc();
         if (callee.getType() == FuncIR.Type.USER) {
-            HashSet<VirtualRegisterIR> globalVar = new HashSet<>(caller.usedGlobalVar);
-//            globalVar.retainAll(callee.usedGlobalVar);
+            HashSet<VirtualRegisterIR> globalVar = new HashSet<>(caller.selfUsedGlobalVar);
+            globalVar.retainAll(callee.usedGlobalVar);
             for (VirtualRegisterIR vreg : globalVar) {
                 node.prepend(new MoveInstIR(vreg.memory, vreg));
                 node.append(new MoveInstIR(vreg, vreg.memory));

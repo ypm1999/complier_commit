@@ -17,11 +17,11 @@ public class FuncIR {
     private String name;
     private Type type;
     public BasicBlockIR entryBB, leaveBB;
-    public HashSet<VirtualRegisterIR> usedGlobalVar = new HashSet<>();
+    public HashSet<FuncIR> callee = new HashSet<>(), caller = new HashSet<>();
+    public HashSet<VirtualRegisterIR> usedGlobalVar = new HashSet<>(), selfUsedGlobalVar;
     private HashSet<PhysicalRegisterIR> definedPhyRegs = null, usedPhyRegs = null;
     private List<BasicBlockIR> BBList = new ArrayList<>();
     private List<BasicBlockIR> orderedBBList, reversedOrderedBBList;
-    private List<FuncIR> callee = new ArrayList<>();
     private List<VirtualRegisterIR> parameters = new ArrayList<>();
 
     public FuncIR(String name){
@@ -33,6 +33,7 @@ public class FuncIR {
         this.name = name;
         this.type = type;
     }
+
 
     static private HashSet<BasicBlockIR> accessed = new HashSet<>();
     private void dfsBB(BasicBlockIR now, BasicBlockIR fa){
@@ -82,10 +83,6 @@ public class FuncIR {
 
     public List<BasicBlockIR> getBBList() {
         return BBList;
-    }
-
-    public List<FuncIR> getCallee() {
-        return callee;
     }
 
     public Type getType() {
