@@ -205,10 +205,23 @@ public class IRBuilder extends ASTScanner{
         for (BasicBlockIR bb : currentFunc.getBBList()){
             if (bb == currentFunc.leaveBB)
                 continue;
-            if (bb.getTail().prev instanceof ReturnInstIR)
+            boolean ret = false;
+            if (bb.getTail().prev instanceof ReturnInstIR) {
                 bb.getTail().prev.remove();
-            if (!(bb.getTail().prev instanceof BranchInstIR))
+                ret = true;
+            }
+            if (!(bb.getTail().prev instanceof BranchInstIR)) {
+                if (!ret){
+                    if (node.getReturnType() == null)
+                        bb.append(new MoveInstIR(RegisterSet.Vrax, curThisPointor));
+                    else {
+                        if (!(node.getReturnType().getType() instanceof VoidType))
+                            bb.append(new MoveInstIR(RegisterSet.Vrax, ZERO));
+                    }
+                }
+
                 bb.append(new JumpInstIR(currentFunc.leaveBB));
+            }
         }
         if (node.getReturnType() != null && node.getReturnType().getType() instanceof VoidType)
             currentFunc.leaveBB.append(new ReturnInstIR());
@@ -437,8 +450,25 @@ public class IRBuilder extends ASTScanner{
         }
 
         for (ExprNode arg : node.getArgumentList()){
-            arg.accept(this);
-            args.add(arg.resultReg);
+            if (arg.getType() instanceof BoolType){
+                BasicBlockIR trueBB = new BasicBlockIR(currentFunc, "bool_args_trueBB");
+                BasicBlockIR falseBB = new BasicBlockIR(currentFunc, "bool_args_falseBB");
+                BasicBlockIR afterBB = new BasicBlockIR(currentFunc, "bool_args_afterBB");
+                VirtualRegisterIR res = new VirtualRegisterIR("bool_args");
+                trueBB.append(new MoveInstIR(res, ONE));
+                trueBB.append(new JumpInstIR(afterBB));
+                falseBB.append(new MoveInstIR(res, ZERO));
+                falseBB.append(new JumpInstIR(afterBB));
+                trueBBMap.put(arg, trueBB);
+                falseBBMap.put(arg, falseBB);
+                arg.accept(this);
+                args.add(res);
+                curBB = afterBB;
+            }
+            else {
+                arg.accept(this);
+                args.add(arg.resultReg);
+            }
         }
 
         doFuncCall(funcMap.get(funcName), args, returnValue);
