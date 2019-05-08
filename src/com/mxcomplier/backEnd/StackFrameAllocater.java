@@ -95,20 +95,13 @@ public class StackFrameAllocater extends IRScanner {
         if (!node.getFunc().getName().equals("__init"))
             for (PhysicalRegisterIR preg : saveSet)
                 firstInst.prepend(new PushInstIR(preg));
-//
-//        if (node.getArgs().size() > 6) {
-//            for (int i = node.getArgs().size()-1; i >= 6; i--){
-//                OperandIR arg = node.getArgs().get(i);
-//                node.prepend(new PushInstIR(arg));
-//            }
-//        }
+
         if (!node.getFunc().getName().equals("__init"))
             for (PhysicalRegisterIR preg : saveSet)
                 node.append(new PopInstIR(preg));
         if (node.getArgs().size() > 6)
             node.append(new BinaryInstIR(BinaryInstIR.Op.ADD, RegisterSet.rsp,
                 new ImmediateIR(Config.getREGSIZE() * (node.getArgs().size() - 6))));
-
     }
 }
 

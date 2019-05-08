@@ -12,7 +12,7 @@ public class VirtualRegisterIR extends RegisterIR {
     public VirtualRegisterIR(String label){
         this.id = vRegId++;
         this.lable = label;
-        this.memory = new StackSoltIR(lable + "_solt");
+//        this.memory = new StackSoltIR(lable + "_solt");
     }
 
     public VirtualRegisterIR(String label, PhysicalRegisterIR phy){

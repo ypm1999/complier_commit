@@ -133,15 +133,23 @@ public class IRBuilder extends ASTScanner{
                 root.getStaticData().add(staticData);
                 var.vReg.memory = new MemoryIR(staticData);
                 if (((VarDefNode) section).getInitExpr() != null) {
-                    addVarInitInst(var.vReg.memory, ((VarDefNode) section).getInitExpr());
+                    addVarInitInst(var.vReg, ((VarDefNode) section).getInitExpr());
+                    curBB.append(new MoveInstIR(var.vReg.memory, var.vReg));
                 }
             }
+
 //        FuncIR main_func = funcMap.get("main");
 //        curBB.append(new CallInstIR(main_func, new ArrayList<>()));
+
+        initFunc.leaveBB = curBB;
+        for (VirtualRegisterIR vreg: initFunc.usedGlobalVar){
+            currentFunc.entryBB.prepend(new MoveInstIR(vreg, vreg.memory));
+            currentFunc.leaveBB.append(new MoveInstIR(vreg.memory, vreg));
+        }
         if (!(curBB.getTail().prev instanceof BranchInstIR))
             curBB.append(new ReturnInstIR(null));
-        initFunc.leaveBB = curBB;
         initFunc.initOrderBBList();
+        currentFunc = null;
 
         for (Node section: node.getSections())
             if (!(section instanceof VarDefNode))
@@ -653,7 +661,7 @@ public class IRBuilder extends ASTScanner{
     }
 
     private void doArithmeticBinaryExpr(BinaryExprNode node, ExprNode lhs, ExprNode rhs){
-        VirtualRegisterIR res = new VirtualRegisterIR("airthmeticBinary");
+        
         BinaryInstIR.Op op = BinaryInstIR.Op.ERROR;
         switch (node.getOp()){
             case MUL    : op = BinaryInstIR.Op.MUL; break;
@@ -670,6 +678,27 @@ public class IRBuilder extends ASTScanner{
         }
         lhs.accept(this);
         rhs.accept(this);
+        if (lhs.resultReg instanceof ImmediateIR && rhs.resultReg instanceof ImmediateIR){
+            long res = 0;
+            long lvalue = ((ImmediateIR) lhs.resultReg).getValue();
+            long rvalue = ((ImmediateIR) rhs.resultReg).getValue();
+            switch (node.getOp()){
+                case MUL    : res = lvalue * rvalue; break;
+                case DIV    : res = lvalue / rvalue; break;
+                case MOD    : res = lvalue % rvalue; break;
+                case PLUS   : res = lvalue + rvalue; break;
+                case MINUS  : res = lvalue - rvalue; break;
+                case LSH    : res = lvalue << rvalue; break;
+                case RSH    : res = lvalue >> rvalue; break;
+                case AND    : res = lvalue & rvalue; break;
+                case XOR    : res = lvalue ^ rvalue; break;
+                case OR     : res = lvalue | rvalue; break;
+                default: assert false;
+            }
+            node.resultReg = new ImmediateIR(res);
+            return;
+        }
+        VirtualRegisterIR res = new VirtualRegisterIR("airthmeticBinary");
         if (op == BinaryInstIR.Op.ADD && lhs.getType() instanceof StringType){
             doFuncCall(library_stradd, Arrays.asList(lhs.resultReg, rhs.resultReg), res);
         }

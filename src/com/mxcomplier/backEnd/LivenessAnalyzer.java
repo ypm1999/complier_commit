@@ -19,7 +19,7 @@ public class LivenessAnalyzer {
 
     }
 
-    public Graph buildGraph(FuncIR func){
+    Graph buildGraph(FuncIR func){
         Graph graph = new Graph();
         liveOut.clear();
         usedVregs.clear();

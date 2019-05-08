@@ -7,6 +7,7 @@ import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.Instructions.InstIR;
 import com.mxcomplier.Ir.Instructions.MoveInstIR;
 import com.mxcomplier.Ir.Operands.PhysicalRegisterIR;
+import com.mxcomplier.Ir.Operands.StackSoltIR;
 import com.mxcomplier.Ir.Operands.StaticDataIR;
 import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
 
@@ -23,7 +24,7 @@ public class GraphAllocator{
     private HashSet<VirtualRegisterIR> simplifyTODOList, spillTODOList;
     private HashMap<VirtualRegisterIR, PhysicalRegisterIR> colorMap;
 
-    void init(){
+    private void init(){
         simplifyTODOList = new HashSet<>();
         spillTODOList = new HashSet<>();
         colorMap = new HashMap<>();
@@ -58,6 +59,7 @@ public class GraphAllocator{
         for (VirtualRegisterIR vreg:spillTODOList){
             if (vreg.getPhyReg() != null)
                 continue;
+
             int curDeegree = graph.getDegree(vreg);
             if (curDeegree > maxDegree){
                 maxDegree = curDeegree;
@@ -111,6 +113,9 @@ public class GraphAllocator{
 //            System.err.println(vreg);
 //            System.err.flush();
 //        }
+        for (VirtualRegisterIR vreg :spilledVregs)
+            if (vreg.memory == null)
+                vreg.memory = new StackSoltIR(vreg.lable + "_spillPlace");
         for (BasicBlockIR bb : func.getBBList()) {
             for(InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
                 List<VirtualRegisterIR> used = inst.getUsedVReg(), defined = inst.getDefinedVreg();
@@ -156,8 +161,9 @@ public class GraphAllocator{
             if (spilledVregs.isEmpty()){
                 //set phyReg
                 for (VirtualRegisterIR vreg: originGraph.getnodes())
-                    if (vreg.getPhyReg() == null)
+                    if (vreg.getPhyReg() == null) {
                         vreg.setPhyReg(colorMap.get(vreg));
+                    }
                 break;
             }
             else
