@@ -13,7 +13,6 @@ import com.mxcomplier.Ir.RegisterSet;
 import java.util.*;
 
 import static com.mxcomplier.FrontEnd.IRBuilder.ZERO;
-import static java.lang.Math.min;
 
 public class IRfixer extends IRScanner {
 
@@ -79,6 +78,13 @@ public class IRfixer extends IRScanner {
     @Override
     public void visit(BinaryInstIR node) {
         switch (node.getOp()){
+            case SHR:
+            case SHL:
+                if (node.getSrc() instanceof VirtualRegisterIR){
+                    node.prepend(new MoveInstIR(RegisterSet.Vrcx, node.src));
+                    node.src = RegisterSet.Vrcx;
+                }
+                break;
             case MUL:
             case DIV:
             case MOD:
@@ -141,4 +147,5 @@ public class IRfixer extends IRScanner {
             node.prepend(new MoveInstIR(RegisterSet.paratReg[i], arg));
         }
     }
+
 }

@@ -2,6 +2,7 @@ package com.mxcomplier.Ir.Instructions;
 
 import com.mxcomplier.Ir.IRVisitor;
 import com.mxcomplier.Ir.Operands.*;
+import com.mxcomplier.Ir.RegisterSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +74,12 @@ public class BinaryInstIR extends InstIR {
 
     public String nasmString() {
         switch (op){
+            case SHL:
+            case SHR:
+                if (src == RegisterSet.Vrcx)
+                    return String.format("%s %s, cl", op.toString().toLowerCase(), dest);
+                else
+                    return String.format("%s %s, %s", op.toString().toLowerCase(), dest, src);
             case MUL:
                 return String.format("mul %s", src);
             case DIV:
