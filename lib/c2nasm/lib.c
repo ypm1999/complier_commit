@@ -8,10 +8,15 @@ typedef char* pointer_t;
 
 
 void print(pointer_t str) {
-	printf("%s", str + REG_SIZE);
+	str += REG_SIZE;
+	while(*str != '\0')
+		putchar(*(str++));
 }
 void println(pointer_t str) {
-	puts(str + REG_SIZE);
+	str += REG_SIZE;
+	while(*str != '\0')
+		putchar(*(str++));
+	putchar('\n');
 }
 pointer_t getString() {
 	static char buffer[1024 * 1024];	//	1MB buffer

@@ -71,6 +71,11 @@ public class RegisterSet {
             //without rbp,rsp,rax
     );
 
+    static public List<VirtualRegisterIR> callerSaveVRegisterSet = new ArrayList<>(
+            Arrays.asList(Vrcx, Vrdx, Vrsi, Vrdi, Vr8, Vr9, Vr10, Vr11)
+            //without rbp,rsp,rax
+    );
+
     public RegisterSet(){
         
     }
