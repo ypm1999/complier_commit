@@ -46,6 +46,7 @@ public class Main {
             irBuilder.visit(ast);
 
             new IRfixer().visit((irBuilder.root));
+            new BlockMerger().visit(irBuilder.root);
             if (Config.DEBUG) {
                 new IRPrinter(irBuilder).visit(irBuilder.root);
 //            IRInterpreter interpreter = new IRInterpreter(irBuilder);

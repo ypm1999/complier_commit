@@ -14,10 +14,12 @@ import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
 import java.util.*;
 
 import static com.mxcomplier.Ir.RegisterSet.*;
+import static java.lang.Math.min;
 
 public class GraphAllocator{
     private static final int REGNUM = 14;
 
+    private FuncIR curFunc = null;
     private Graph graph, originGraph;
     private List<VirtualRegisterIR> spilledVregs;
     private LinkedList<VirtualRegisterIR> finishedStack;
@@ -90,7 +92,7 @@ public class GraphAllocator{
         for (VirtualRegisterIR vreg : finishedStack){
             if (vreg.getPhyReg() != null)
                 continue;
-            HashSet<PhysicalRegisterIR> colorCanUse = new HashSet<>(allocatePhyRegisterSet);
+            List<PhysicalRegisterIR> colorCanUse = new LinkedList<>(allocatePhyRegisterSet);
             for (VirtualRegisterIR neighbor : originGraph.getNeighbor(vreg))
                 if (colorMap.containsKey(neighbor))
                     colorCanUse.remove(colorMap.get(neighbor));
@@ -98,10 +100,18 @@ public class GraphAllocator{
                 spilledVregs.add(vreg);
             }
             else{
-                PhysicalRegisterIR preg = colorCanUse.iterator().next();
-                colorCanUse.retainAll(calleeSaveRegisterSet);
-                if (!colorCanUse.isEmpty())
+                PhysicalRegisterIR preg = null;
+                for (int i = 0; i < min(6, curFunc.getParameters().size()); i++)
+                    if (colorCanUse.contains(paratReg[i].getPhyReg())){
+                        preg =  paratReg[i].getPhyReg();
+                        break;
+                    }
+                if (preg == null) {
                     preg = colorCanUse.iterator().next();
+                    colorCanUse.retainAll(calleeSaveRegisterSet);
+                    if (!colorCanUse.isEmpty())
+                        preg = colorCanUse.iterator().next();
+                }
                 colorMap.put(vreg, preg);
             }
         }
@@ -181,7 +191,9 @@ public class GraphAllocator{
             cnt++;
         }
         for (FuncIR func: ir.root.getFuncs()){
+            curFunc = func;
             runFunc(func);
+            curFunc = null;
         }
     }
 }

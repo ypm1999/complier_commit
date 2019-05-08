@@ -124,6 +124,7 @@ public class IRfixer extends IRScanner {
             node.prepend(new MoveInstIR(tmp, node.getRhs()));
             node.rhs = tmp;
         }
+        node.append(new JumpInstIR(node.getFalseBB()));
     }
 
     @Override

@@ -43,20 +43,29 @@ public class FuncIR {
         if (accessed.contains(now))
             return;
         accessed.add(now);
-        InstIR inst = now.getTail().prev;
-        if (inst instanceof JumpInstIR)
-            dfsBB(((JumpInstIR) inst).getTarget(), now);
-        if (inst instanceof CJumpInstIR){
-            dfsBB(((CJumpInstIR) inst).getTrueBB(), now);
-            dfsBB(((CJumpInstIR) inst).getFalseBB(), now);
+        for(InstIR inst = now.getTail().prev; inst != now.getHead(); inst = inst.prev) {
+            if (inst instanceof JumpInstIR)
+                dfsBB(((JumpInstIR) inst).getTarget(), now);
+            if (inst instanceof CJumpInstIR) {
+                dfsBB(((CJumpInstIR) inst).getTrueBB(), now);
+//                dfsBB(((CJumpInstIR) inst).getFalseBB(), now);
+            }
         }
         reversedOrderedBBList.add(now);
     }
 
     public void initOrderBBList(){
+        for (BasicBlockIR bb:BBList)
+            bb.initFrontAndSucc();
         accessed.clear();
         reversedOrderedBBList = new ArrayList<>();
         dfsBB(entryBB, null);
+        List<BasicBlockIR> tempBBList = new ArrayList<>(BBList);
+        for (BasicBlockIR bb:tempBBList){
+            if (!accessed.contains(bb))
+                BBList.remove(bb);
+        }
+
     }
 
     public List<BasicBlockIR> getReversedOrderedBBList() {

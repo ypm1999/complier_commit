@@ -7,6 +7,7 @@ public class VirtualRegisterIR extends RegisterIR {
 
     private int id;
     public MemoryIR memory = null;
+    public boolean tempVar = false;
     private PhysicalRegisterIR phyReg = null;
 
     public VirtualRegisterIR(String label){

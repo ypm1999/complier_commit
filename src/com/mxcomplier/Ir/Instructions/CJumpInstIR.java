@@ -73,14 +73,13 @@ public class CJumpInstIR extends BranchInstIR {
 
 
     public String toString() {
-        return String.format("cjmp if(%s %s %s) goto %s else goto %s", lhs, op, rhs, trueBB, falseBB);
+        return String.format("cjmp if(%s %s %s) goto %s", lhs, op, rhs, trueBB);
     }
 
     public String nasmString() {
         String str1 = "cmp " + lhs + ", " + rhs;
         String str2 = 'j' + op.toString().toLowerCase() + ' ' + trueBB;
-        String str3 = "jmp " + falseBB;
-        return str1 + "\n" + str2 + "\n" + str3;
+        return str1 + "\n" + str2;
     }
 
     public void accept(IRVisitor visitor) {

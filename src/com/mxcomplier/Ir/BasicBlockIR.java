@@ -10,8 +10,8 @@ public class BasicBlockIR {
     private String lable; //for Debug
     private FuncIR func;
     private InstIR head, tail;
-    public List<BasicBlockIR> fronters = new ArrayList<>();
-    public List<BasicBlockIR> successors = new ArrayList<>();
+    public List<BasicBlockIR> fronters;
+    public List<BasicBlockIR> successors;
 
 
     public BasicBlockIR(FuncIR func, String lable){
@@ -21,6 +21,11 @@ public class BasicBlockIR {
         this.tail = new EmptyInstIR();
         this.head.append(this.tail);
         func.getBBList().add(this);
+    }
+
+    void initFrontAndSucc(){
+        fronters = new ArrayList<>();
+        successors = new ArrayList<>();
     }
 
     void addFronter(BasicBlockIR bb){
@@ -57,6 +62,13 @@ public class BasicBlockIR {
 
     public String getFuncLabel(){
         return func.getName() + func.getBBList().indexOf(this);
+    }
+
+    public void merge(BasicBlockIR nextBB){
+        successors = nextBB.successors;
+        tail.prev.next = nextBB.getHead().next;
+        nextBB.getHead().next.prev = tail.prev;
+        tail = nextBB.getTail();
     }
 
     @Override

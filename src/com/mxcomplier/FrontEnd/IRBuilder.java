@@ -148,7 +148,6 @@ public class IRBuilder extends ASTScanner{
         }
         if (!(curBB.getTail().prev instanceof BranchInstIR))
             curBB.append(new ReturnInstIR(null));
-        initFunc.initOrderBBList();
         currentFunc = null;
 
         for (Node section: node.getSections())
@@ -215,7 +214,7 @@ public class IRBuilder extends ASTScanner{
             currentFunc.leaveBB.append(new ReturnInstIR());
         else
             currentFunc.leaveBB.append(new ReturnInstIR(RegisterSet.Vrax));
-        currentFunc.initOrderBBList();
+        
 
         currentFunc = null;
         curThisPointor = null;
@@ -699,11 +698,15 @@ public class IRBuilder extends ASTScanner{
             return;
         }
         VirtualRegisterIR res = new VirtualRegisterIR("airthmeticBinary");
+        res.tempVar = true;
         if (op == BinaryInstIR.Op.ADD && lhs.getType() instanceof StringType){
             doFuncCall(library_stradd, Arrays.asList(lhs.resultReg, rhs.resultReg), res);
         }
         else {
-            curBB.append(new MoveInstIR(res, lhs.resultReg));
+            if (lhs.resultReg instanceof VirtualRegisterIR && ((VirtualRegisterIR) lhs.resultReg).tempVar)
+                res = (VirtualRegisterIR) lhs.resultReg;
+            else
+                curBB.append(new MoveInstIR(res, lhs.resultReg));
             curBB.append(new BinaryInstIR(op, res, rhs.resultReg));
         }
         node.resultReg = res;
