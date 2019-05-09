@@ -1,5 +1,6 @@
 package com.mxcomplier.backEnd;
 
+import com.mxcomplier.Error.IRError;
 import com.mxcomplier.Ir.BasicBlockIR;
 import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.Instructions.*;
@@ -27,20 +28,43 @@ public class IRfixer extends IRScanner {
         }
     }
 
+    void removeUselessMove(List<FuncIR> funcs){
+
+    }
+
     @Override
     public void visit(ProgramIR node) {
+
+        FuncIR main = null, init = null;
         for (FuncIR func : node.getFuncs()){
             curFunc = func;
+            if (func.getName().equals("main"))
+                main = func;
+            if (func.getName().equals("__init"))
+                init = func;
             dfsGlobalVars(func);
             func.accept(this);
             curFunc = null;
         }
+
+        if (main == null)
+            throw new IRError("no main func");
+        if (init != null)
+            main.entryBB.prepend(new CallInstIR(init, new ArrayList<>(), null));
+
         for (FuncIR func : node.getFuncs()){
             HashMap<VirtualRegisterIR, VirtualRegisterIR> renameMap = new HashMap<>();
-            for (VirtualRegisterIR vreg : func.usedGlobalVar) {
+            for (VirtualRegisterIR vreg : func.selfDefinedGlobalVar) {
                 VirtualRegisterIR temp = new VirtualRegisterIR(func.getName() + "_" + vreg.lable);
                 temp.memory = vreg.memory;
                 renameMap.put(vreg, temp);
+            }
+            for (VirtualRegisterIR vreg : func.selfUsedGlobalVar) {
+                if (!renameMap.containsKey(vreg)) {
+                    VirtualRegisterIR temp = new VirtualRegisterIR(func.getName() + "_" + vreg.lable);
+                    temp.memory = vreg.memory;
+                    renameMap.put(vreg, temp);
+                }
             }
             for (BasicBlockIR bb : func.getBBList()) {
                 for (InstIR inst = bb.getTail().prev; inst != bb.getHead(); inst = inst.prev)
@@ -54,15 +78,22 @@ public class IRfixer extends IRScanner {
         if (accessedFunc.contains(func))
             return;
         accessedFunc.add(func);
-        func.selfUsedGlobalVar = new HashSet<>(func.usedGlobalVar);
+        func.initGlobalDefined();
         for (FuncIR nextFunc:func.callee){
             dfsGlobalVars(nextFunc);
             func.usedGlobalVar.addAll(nextFunc.usedGlobalVar);
+            func.definedGlobalVar.addAll(nextFunc.definedGlobalVar);
         }
     }
 
     @Override
     public void visit(FuncIR node) {
+        for (VirtualRegisterIR vreg: node.selfUsedGlobalVar)
+            node.entryBB.prepend(new MoveInstIR(vreg, vreg.memory));
+        if (!node.getName().equals("__init"))
+            for (VirtualRegisterIR vreg: node.selfDefinedGlobalVar)
+                node.leaveBB.getTail().prev.prepend(new MoveInstIR(vreg.memory, vreg));
+
         for (BasicBlockIR bb : node.getBBList()){
             bb.accept(this);
         }
@@ -143,12 +174,14 @@ public class IRfixer extends IRScanner {
         FuncIR caller = curFunc;
         FuncIR callee = node.getFunc();
         if (callee.getType() == FuncIR.Type.USER) {
-            HashSet<VirtualRegisterIR> globalVar = new HashSet<>(caller.selfUsedGlobalVar);
+            HashSet<VirtualRegisterIR> globalVar = new HashSet<>(caller.selfDefinedGlobalVar);
             globalVar.retainAll(callee.usedGlobalVar);
-            for (VirtualRegisterIR vreg : globalVar) {
+            for (VirtualRegisterIR vreg : globalVar)
                 node.prepend(new MoveInstIR(vreg.memory, vreg));
+            globalVar = new HashSet<>(caller.selfUsedGlobalVar);
+            globalVar.retainAll(callee.definedGlobalVar);
+            for (VirtualRegisterIR vreg : globalVar)
                 node.append(new MoveInstIR(vreg, vreg.memory));
-            }
         }
 
         LinkedList<OperandIR> args = new LinkedList<>(node.getArgs());

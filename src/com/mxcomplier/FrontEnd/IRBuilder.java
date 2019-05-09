@@ -112,7 +112,6 @@ public class IRBuilder extends ASTScanner{
         globalScope = currentScope = node.getScope();
         root = new ProgramIR();
 
-        root.getFuncs().add(initFunc);
         for (Node section: node.getSections())
             if (section instanceof FuncDefNode){
                 initFunc((FuncDefNode) section,  "");
@@ -124,6 +123,7 @@ public class IRBuilder extends ASTScanner{
 
         curBB = initFunc.entryBB = new BasicBlockIR(initFunc, "initFuncEntry");
         currentFunc = initFunc;
+        boolean useinit = false;
         for (Node section: node.getSections())
             if (section instanceof VarDefNode){
                 VarSymbol var = currentScope.getVar(((VarDefNode) section).getName());
@@ -135,17 +135,22 @@ public class IRBuilder extends ASTScanner{
                 if (((VarDefNode) section).getInitExpr() != null) {
                     addVarInitInst(var.vReg, ((VarDefNode) section).getInitExpr());
                     curBB.append(new MoveInstIR(var.vReg.memory, var.vReg));
+                    currentFunc.usedGlobalVar.add(var.vReg);
+                    useinit = true;
                 }
             }
+        if (useinit)
+            root.getFuncs().add(initFunc);
+
 
 //        FuncIR main_func = funcMap.get("main");
 //        curBB.append(new CallInstIR(main_func, new ArrayList<>()));
 
         initFunc.leaveBB = curBB;
-        for (VirtualRegisterIR vreg: initFunc.usedGlobalVar){
-            currentFunc.entryBB.prepend(new MoveInstIR(vreg, vreg.memory));
-            currentFunc.leaveBB.append(new MoveInstIR(vreg.memory, vreg));
-        }
+//        for (VirtualRegisterIR vreg: initFunc.usedGlobalVar){
+//            currentFunc.entryBB.prepend(new MoveInstIR(vreg, vreg.memory));
+//            currentFunc.leaveBB.append(new MoveInstIR(vreg.memory, vreg));
+//        }
         if (!(curBB.getTail().prev instanceof BranchInstIR))
             curBB.append(new ReturnInstIR(null));
         currentFunc = null;
@@ -191,15 +196,6 @@ public class IRBuilder extends ASTScanner{
 
         node.getFuncBody().accept(this);
         currentFunc.leaveBB = new BasicBlockIR(currentFunc, "leave_" + currentFunc.getName());
-
-        for (VirtualRegisterIR vreg: currentFunc.usedGlobalVar){
-            currentFunc.entryBB.prepend(new MoveInstIR(vreg, vreg.memory));
-            currentFunc.leaveBB.append(new MoveInstIR(vreg.memory, vreg));
-        }
-
-        if (node.getName().equals("main")){
-            currentFunc.entryBB.prepend(new CallInstIR(funcMap.get("__init"), new ArrayList<>(), null));
-        }
 
         //TODO merge return && find leaveBB
         for (BasicBlockIR bb : currentFunc.getBBList()){
