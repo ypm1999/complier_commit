@@ -6,10 +6,7 @@ import com.mxcomplier.Ir.BasicBlockIR;
 import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.Instructions.InstIR;
 import com.mxcomplier.Ir.Instructions.MoveInstIR;
-import com.mxcomplier.Ir.Operands.PhysicalRegisterIR;
-import com.mxcomplier.Ir.Operands.StackSoltIR;
-import com.mxcomplier.Ir.Operands.StaticDataIR;
-import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
+import com.mxcomplier.Ir.Operands.*;
 
 import java.util.*;
 
@@ -108,7 +105,10 @@ public class GraphAllocator{
                     }
                 if (preg == null) {
                     preg = colorCanUse.iterator().next();
-                    colorCanUse.retainAll(calleeSaveRegisterSet);
+                    if (curFunc.callee.isEmpty())
+                        colorCanUse.retainAll(callerSaveRegisterSet);
+                    else
+                        colorCanUse.retainAll(calleeSaveRegisterSet);
                     if (!colorCanUse.isEmpty())
                         preg = colorCanUse.iterator().next();
                 }
@@ -181,6 +181,34 @@ public class GraphAllocator{
 //            new IRPrinter(irBuilder).visit(irBuilder.root);
 //            System.out.flush();;
         }
+
+        for (BasicBlockIR bb:func.getBBList()){
+            for(InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
+                if (inst instanceof MoveInstIR){
+                    OperandIR dest = getPhyValue(((MoveInstIR) inst).dest);
+                    OperandIR src = getPhyValue(((MoveInstIR) inst).src);
+                    if (dest == src){
+                        inst = inst.prev;
+                        inst.next.remove();
+                    }
+                    else if (inst.next instanceof MoveInstIR){
+                        OperandIR destNext = getPhyValue(((MoveInstIR) inst.next).dest);
+                        OperandIR srcNext = getPhyValue(((MoveInstIR) inst.next).src);
+                        if (dest == srcNext && src == destNext){
+                            inst.next.remove();
+                            inst = inst.prev;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private OperandIR getPhyValue(OperandIR oper){
+        if (oper instanceof VirtualRegisterIR)
+            return ((VirtualRegisterIR) oper).getPhyReg();
+        else
+            return oper;
     }
 
     public void run(IRBuilder ir){

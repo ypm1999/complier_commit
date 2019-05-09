@@ -28,13 +28,32 @@ public class IRfixer extends IRScanner {
         }
     }
 
-    void removeUselessMove(List<FuncIR> funcs){
-
-    }
+//    private void removeUselessMove(List<FuncIR> funcs){
+//        for (FuncIR func : funcs){
+//            for (BasicBlockIR bb : func.getBBList()) {
+//                for (InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
+//                    if (inst instanceof MoveInstIR){
+//                        MoveInstIR move1 = (MoveInstIR) inst;
+//                        if(move1.src == move1.dest){
+//                            inst = inst.prev;
+//                            move1.remove();
+//                        }
+//                        else if (inst.next instanceof MoveInstIR) {
+//                            MoveInstIR move2 = (MoveInstIR) inst.next;
+//                            if (move1.dest == move2.src) {
+//                                move1.dest = move2.dest;
+//                                inst = inst.prev;
+//                                move2.remove();
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     @Override
     public void visit(ProgramIR node) {
-
         FuncIR main = null, init = null;
         for (FuncIR func : node.getFuncs()){
             curFunc = func;
