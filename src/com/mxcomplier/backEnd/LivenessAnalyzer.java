@@ -68,12 +68,10 @@ public class LivenessAnalyzer {
             }
         }
 
-        int cnt = 0;
         for (BasicBlockIR bb : func.getBBList()) {
             HashSet<VirtualRegisterIR> liveNow = liveOut.get(bb);
-            cnt++;
             for(InstIR inst = bb.getTail().prev; inst != bb.getHead(); inst = inst.prev) {
-                if (inst instanceof MoveInstIR){
+                if (inst instanceof MoveInstIR && moveList != null){
                     OperandIR dest = ((MoveInstIR) inst).getDest();
                     OperandIR src = ((MoveInstIR) inst).getSrc();
                     if (dest instanceof VirtualRegisterIR && src instanceof VirtualRegisterIR){

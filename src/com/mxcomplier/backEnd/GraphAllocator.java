@@ -31,6 +31,59 @@ public class GraphAllocator{
         return x.alais = getAlias(x.alais);
     }
 
+    private boolean conservative(VirtualRegisterIR u, VirtualRegisterIR v){
+        HashSet<VirtualRegisterIR> nodes = new HashSet<>(graph.getNeighbor(u));
+        nodes.addAll(graph.getNeighbor(v));
+        int cnt = 0;
+        for (VirtualRegisterIR node : nodes)
+            if (graph.getDegree(node) >= REGNUM)
+                cnt++;
+        return cnt < REGNUM;
+    }
+
+    private void doMerge(FuncIR func){
+        List<Pair<VirtualRegisterIR, VirtualRegisterIR>> moveList = new ArrayList<>();
+        graph = new LivenessAnalyzer().buildGraph(func, moveList);
+
+        for (VirtualRegisterIR node : graph.getnodes())
+            node.alais = node;
+
+        HashMap<VirtualRegisterIR, VirtualRegisterIR> renameMap = new HashMap<>();
+            for (Pair<VirtualRegisterIR, VirtualRegisterIR> pair : moveList) {
+                VirtualRegisterIR u = getAlias(pair.a), v = getAlias(pair.b);
+                if (u == v)
+                    continue;
+                if (v.getPhyReg() != null) {
+                    if (u.getPhyReg() != null)
+                        continue;
+                    else {
+                        VirtualRegisterIR tmp = u;
+                        u = v;
+                        v = tmp;
+                    }
+                }
+                System.err.println(u + " <-> " + v);
+                if (!graph.getNeighbor(u).contains(v) && conservative(u, v)) {
+                    v.alais = u;
+                    renameMap.put(v, u);
+                    HashSet<VirtualRegisterIR> tmp = new HashSet<>(graph.getNeighbor(v));
+                    for (VirtualRegisterIR node : tmp) {
+                        graph.removeEdge(v, node);
+                        graph.addEdge(u, node);
+                    }
+                    System.err.println(v);
+                    graph.removeNode(v);
+                }
+            }
+
+
+        for (BasicBlockIR bb : func.getBBList()) {
+            for(InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
+                inst.replaceVreg(renameMap);
+            }
+        }
+    }
+
     private void init(FuncIR func){
         simplifyTODOList = new HashSet<>();
         spillTODOList = new HashSet<>();
@@ -38,30 +91,9 @@ public class GraphAllocator{
         spilledVregs = new ArrayList<>();
         finishedStack = new LinkedList<>();
 
-        List<Pair<VirtualRegisterIR, VirtualRegisterIR>> moveList = new ArrayList<>();
-        originGraph = new LivenessAnalyzer().buildGraph(func, moveList);
+        doMerge(func);
 
-        for (VirtualRegisterIR node : originGraph.getnodes())
-            node.alais = node;
-
-        for (Pair<VirtualRegisterIR, VirtualRegisterIR> pair : moveList){
-            VirtualRegisterIR u = getAlias(pair.a), v = getAlias(pair.b);
-            if (v.getPhyReg() != null){
-                if (u.getPhyReg() != null)
-                    continue;
-                else{
-                    VirtualRegisterIR tmp = u;
-                    u = v;
-                    v = tmp;
-                }
-            }
-            HashSet<VirtualRegisterIR> neighbor = new HashSet<>(originGraph.getNeighbor(u));
-            neighbor.addAll(originGraph.getNeighbor(v));
-            if (neighbor.size() < REGNUM){
-
-            }
-        }
-
+        originGraph = new LivenessAnalyzer().buildGraph(func, null);
         graph = new Graph(originGraph);
 
 
