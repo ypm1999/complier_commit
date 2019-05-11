@@ -54,7 +54,6 @@ public class Main {
             }
             new BlockMerger(true).visit(irBuilder.root);
 
-
             new GraphAllocator().run(irBuilder);
             new StackFrameAllocater().visit(irBuilder.root);
             new BlockMerger(false).visit(irBuilder.root);

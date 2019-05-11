@@ -62,7 +62,7 @@ public class GraphAllocator{
                         v = tmp;
                     }
                 }
-                System.err.println(u + " <-> " + v);
+//                System.err.println(u + " <-> " + v);
                 if (!graph.getNeighbor(u).contains(v) && conservative(u, v)) {
                     v.alais = u;
                     renameMap.put(v, u);
@@ -71,7 +71,7 @@ public class GraphAllocator{
                         graph.removeEdge(v, node);
                         graph.addEdge(u, node);
                     }
-                    System.err.println(v);
+//                    System.err.println(v);
                     graph.removeNode(v);
                 }
             }
