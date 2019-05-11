@@ -1,9 +1,13 @@
 package com.mxcomplier.backEnd;
 
+import com.mxcomplier.AST.BinaryExprNode;
 import com.mxcomplier.Ir.BasicBlockIR;
 import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.Instructions.InstIR;
+import com.mxcomplier.Ir.Instructions.MoveInstIR;
+import com.mxcomplier.Ir.Operands.OperandIR;
 import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
+import org.antlr.v4.runtime.misc.Pair;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,7 +23,7 @@ public class LivenessAnalyzer {
 
     }
 
-    Graph buildGraph(FuncIR func){
+    Graph buildGraph(FuncIR func, List<Pair<VirtualRegisterIR, VirtualRegisterIR>> moveList){
         Graph graph = new Graph();
         liveOut.clear();
         usedVregs.clear();
@@ -53,6 +57,7 @@ public class LivenessAnalyzer {
                 HashSet<VirtualRegisterIR> curLiveOut = new HashSet<>();
                 for (BasicBlockIR nextBB: bb.successors){
                     HashSet<VirtualRegisterIR> tempVregs = new HashSet<>(liveOut.get(nextBB));
+
                     tempVregs.removeAll(definedVregs.get(nextBB));
                     tempVregs.addAll(usedVregs.get(nextBB));
                     curLiveOut.addAll(tempVregs);
@@ -68,6 +73,13 @@ public class LivenessAnalyzer {
             HashSet<VirtualRegisterIR> liveNow = liveOut.get(bb);
             cnt++;
             for(InstIR inst = bb.getTail().prev; inst != bb.getHead(); inst = inst.prev) {
+                if (inst instanceof MoveInstIR){
+                    OperandIR dest = ((MoveInstIR) inst).getDest();
+                    OperandIR src = ((MoveInstIR) inst).getSrc();
+                    if (dest instanceof VirtualRegisterIR && src instanceof VirtualRegisterIR){
+                        moveList.add(new Pair<>((VirtualRegisterIR) dest, (VirtualRegisterIR) src));
+                    }
+                }
                 List<VirtualRegisterIR> used = inst.getUsedVReg(), defined = inst.getDefinedVreg();
                 graph.addEdges(new HashSet<>(defined), liveNow);
                 liveNow.removeAll(defined);

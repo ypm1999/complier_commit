@@ -7,6 +7,8 @@ import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.Instructions.InstIR;
 import com.mxcomplier.Ir.Instructions.MoveInstIR;
 import com.mxcomplier.Ir.Operands.*;
+import org.antlr.v4.runtime.misc.Pair;
+
 
 import java.util.*;
 
@@ -23,12 +25,46 @@ public class GraphAllocator{
     private HashSet<VirtualRegisterIR> simplifyTODOList, spillTODOList;
     private HashMap<VirtualRegisterIR, PhysicalRegisterIR> colorMap;
 
-    private void init(){
+    private VirtualRegisterIR getAlias(VirtualRegisterIR x){
+        if (x.alais == x)
+            return x;
+        return x.alais = getAlias(x.alais);
+    }
+
+    private void init(FuncIR func){
         simplifyTODOList = new HashSet<>();
         spillTODOList = new HashSet<>();
         colorMap = new HashMap<>();
         spilledVregs = new ArrayList<>();
         finishedStack = new LinkedList<>();
+
+        List<Pair<VirtualRegisterIR, VirtualRegisterIR>> moveList = new ArrayList<>();
+        originGraph = new LivenessAnalyzer().buildGraph(func, moveList);
+
+        for (VirtualRegisterIR node : originGraph.getnodes())
+            node.alais = node;
+
+        for (Pair<VirtualRegisterIR, VirtualRegisterIR> pair : moveList){
+            VirtualRegisterIR u = getAlias(pair.a), v = getAlias(pair.b);
+            if (v.getPhyReg() != null){
+                if (u.getPhyReg() != null)
+                    continue;
+                else{
+                    VirtualRegisterIR tmp = u;
+                    u = v;
+                    v = tmp;
+                }
+            }
+            HashSet<VirtualRegisterIR> neighbor = new HashSet<>(originGraph.getNeighbor(u));
+            neighbor.addAll(originGraph.getNeighbor(v));
+            if (neighbor.size() < REGNUM){
+
+            }
+        }
+
+        graph = new Graph(originGraph);
+
+
         for (VirtualRegisterIR node:graph.getnodes()){
             if (graph.getDegree(node) < REGNUM)
                 simplifyTODOList.add(node);
@@ -158,9 +194,7 @@ public class GraphAllocator{
 //        for (VirtualRegisterIR vreg : func.usedGlobalVar)
 //            vreg.setPhyReg(null);
         while (true){
-            originGraph = new LivenessAnalyzer().buildGraph(func);
-            graph = new Graph(originGraph);
-            init();
+            init(func);
             do{
                 if (!simplifyTODOList.isEmpty()) doSimplify();
                 else doSpill();
@@ -192,12 +226,12 @@ public class GraphAllocator{
                         inst.next.remove();
                     }
                     else if (inst.next instanceof MoveInstIR){
-//                        OperandIR destNext = getPhyValue(((MoveInstIR) inst.next).dest);
-//                        OperandIR srcNext = getPhyValue(((MoveInstIR) inst.next).src);
-//                        if (dest == srcNext && src == destNext){
-//                            inst.next.remove();
-//                            inst = inst.prev;
-//                        }
+                        OperandIR destNext = getPhyValue(((MoveInstIR) inst.next).dest);
+                        OperandIR srcNext = getPhyValue(((MoveInstIR) inst.next).src);
+                        if (dest == srcNext && src == destNext){
+                            inst.next.remove();
+                            inst = inst.prev;
+                        }
                     }
                 }
             }

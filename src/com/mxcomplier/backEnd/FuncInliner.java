@@ -11,12 +11,13 @@ import java.util.*;
 public class FuncInliner extends IRScanner{
 
     static private final int MAX_CALLEE_INST_NUM = 1 << 8;
+    static private final int MAX_CALLER_INST_NUM = 1 << 13;
+    static private final int MAX_INLINE_RAND = 5;
 
     private class FuncInfo{
         int instNum = 0;
 //        int calledTimes = 0;
         boolean selfRecursive = false;
-//        boolean memberFunc = false;
     }
 
     private HashMap<FuncIR, FuncInfo> funcInfoMap = new HashMap<>();
@@ -31,9 +32,11 @@ public class FuncInliner extends IRScanner{
         }
 
         boolean changed = true;
-        for (int cnt=0; changed && cnt < 10; cnt++){
+        for (int cnt=0; changed && cnt < MAX_INLINE_RAND; cnt++){
             changed = false;
             for (FuncIR func : funcList) {
+                if (funcInfoMap.get(func).instNum > MAX_CALLER_INST_NUM)
+                    continue;
                 List<BasicBlockIR> tempBBList = new ArrayList<>(func.getBBList());
                 for (BasicBlockIR bb : tempBBList){
                     BasicBlockIR curBB = bb;
@@ -41,9 +44,9 @@ public class FuncInliner extends IRScanner{
                         if (inst instanceof CallInstIR){
                             CallInstIR call = (CallInstIR) inst;
                             FuncInfo info = funcInfoMap.getOrDefault(call.getFunc(), null);
-                            if (info == null || info.selfRecursive || info.instNum > MAX_CALLEE_INST_NUM)
+                            if (info == null || func == call.getFunc() || info.instNum > MAX_CALLEE_INST_NUM)
                                 continue;
-                            System.err.println("inline " + call.getFunc().getName() + " in " + func.getName());
+//                            System.err.println("inline " + call.getFunc().getName() + " in " + func.getName());
                             curBB = doInline(func, curBB, call);
                             inst = curBB.getHead();
 //                            new IRPrinter(ir).visit(ir.root);
@@ -61,8 +64,6 @@ public class FuncInliner extends IRScanner{
                 if (func.caller.isEmpty() && !func.getName().equals("main"))
                     funcList.remove(func);
             }
-
-
         }
 
     }
