@@ -20,12 +20,10 @@ public interface IRVisitor {
     void visit(PopInstIR node);
     void visit(PushInstIR node);
     void visit(ReturnInstIR node);
-    void visit(CompInstIR node);
     void visit(LeaInstIR node);
 
     void visit(AddressIR node);
     void visit(ConstantIR node);
-    void visit(FuncAddressIR node);
     void visit(VirtualRegisterIR node);
     void visit(PhysicalRegisterIR node);
     void visit(ImmediateIR node);

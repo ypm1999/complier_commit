@@ -46,6 +46,10 @@ public class CJumpInstIR extends BranchInstIR {
         return falseBB;
     }
 
+    public void removeFalseBB(){
+        falseBB = null;
+    }
+
     public void swap(){
         switch (op){
             case L: op = Op.G; break;
@@ -71,15 +75,28 @@ public class CJumpInstIR extends BranchInstIR {
         rhs = replacedVreg(rhs, renameMap);
     }
 
+    @Override
+    public InstIR copy() {
+        return new CJumpInstIR(op, lhs.copy(), rhs.copy(), trueBB, falseBB);
+    }
 
     public String toString() {
-        return String.format("cjmp if(%s %s %s) goto %s", lhs, op, rhs, trueBB);
+        if (falseBB == null)
+            return String.format("cjmp if(%s %s %s) goto %s", lhs, op, rhs, trueBB);
+        else
+            return String.format("cjmp if(%s %s %s) goto %s else %s", lhs, op, rhs, trueBB, falseBB);
     }
 
     public String nasmString() {
         String str1 = "cmp " + lhs + ", " + rhs;
         String str2 = 'j' + op.toString().toLowerCase() + ' ' + trueBB;
         return str1 + "\n" + str2;
+    }
+
+    @Override
+    public void bbRename(Map<BasicBlockIR, BasicBlockIR> bbRenameMap) {
+        trueBB = bbRenameMap.getOrDefault(trueBB, trueBB);
+        falseBB = bbRenameMap.getOrDefault(falseBB, falseBB);
     }
 
     public void accept(IRVisitor visitor) {

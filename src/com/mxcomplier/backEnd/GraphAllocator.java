@@ -192,12 +192,12 @@ public class GraphAllocator{
                         inst.next.remove();
                     }
                     else if (inst.next instanceof MoveInstIR){
-                        OperandIR destNext = getPhyValue(((MoveInstIR) inst.next).dest);
-                        OperandIR srcNext = getPhyValue(((MoveInstIR) inst.next).src);
-                        if (dest == srcNext && src == destNext){
-                            inst.next.remove();
-                            inst = inst.prev;
-                        }
+//                        OperandIR destNext = getPhyValue(((MoveInstIR) inst.next).dest);
+//                        OperandIR srcNext = getPhyValue(((MoveInstIR) inst.next).src);
+//                        if (dest == srcNext && src == destNext){
+//                            inst.next.remove();
+//                            inst = inst.prev;
+//                        }
                     }
                 }
             }

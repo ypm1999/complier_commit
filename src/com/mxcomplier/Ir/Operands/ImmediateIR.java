@@ -13,6 +13,7 @@ public class ImmediateIR extends ConstantIR {
         return value;
     }
 
+
     @Override
     public String toString() {
         return "" + value;

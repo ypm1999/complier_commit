@@ -117,11 +117,11 @@ abstract public class IRScanner implements IRVisitor {
     public void visit(ReturnInstIR node) {
 
     }
-
-    @Override
-    public void visit(CompInstIR node) {
-
-    }
+//
+//    @Override
+//    public void visit(CompInstIR node) {
+//
+//    }
 
     @Override
     public void visit(AddressIR node) {
@@ -133,10 +133,6 @@ abstract public class IRScanner implements IRVisitor {
 
     }
 
-    @Override
-    public void visit(FuncAddressIR node) {
-
-    }
 
     @Override
     public void visit(VirtualRegisterIR node) {

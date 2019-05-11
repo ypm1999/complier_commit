@@ -102,6 +102,8 @@ public class IRBuilder extends ASTScanner{
 
     private void initFunc(FuncDefNode node, String className){
         FuncIR func = new FuncIR(className + node.getName());
+        if (node.getReturnType() == null || !(node.getReturnType().getType() instanceof VoidType))
+            func.returnValue = new VirtualRegisterIR("returnValue_of_" + func.getName());
         funcMap.put(func.getName(), func);
         node.setFuncIR(func);
         root.getFuncs().add(func);
@@ -139,18 +141,9 @@ public class IRBuilder extends ASTScanner{
                     useinit = true;
                 }
             }
-        if (useinit)
-            root.getFuncs().add(initFunc);
-
-
-//        FuncIR main_func = funcMap.get("main");
-//        curBB.append(new CallInstIR(main_func, new ArrayList<>()));
-
-        initFunc.leaveBB = curBB;
-//        for (VirtualRegisterIR vreg: initFunc.usedGlobalVar){
-//            currentFunc.entryBB.prepend(new MoveInstIR(vreg, vreg.memory));
-//            currentFunc.leaveBB.append(new MoveInstIR(vreg.memory, vreg));
-//        }
+        initFunc.leaveBB = new BasicBlockIR(initFunc, "leave_initFunc");
+        curBB.append(new JumpInstIR(initFunc.leaveBB));
+        initFunc.leaveBB.append(new ReturnInstIR());
         if (!(curBB.getTail().prev instanceof BranchInstIR))
             curBB.append(new ReturnInstIR(null));
         currentFunc = null;
@@ -158,6 +151,11 @@ public class IRBuilder extends ASTScanner{
         for (Node section: node.getSections())
             if (!(section instanceof VarDefNode))
                 section.accept(this);
+
+        if (useinit) {
+            root.getFuncs().add(initFunc);
+            funcMap.get("main").entryBB.prepend(new CallInstIR(initFunc, new ArrayList<>(), null));
+        }
 
         globalScope = currentScope = currentScope.getParent();
     }
@@ -171,27 +169,18 @@ public class IRBuilder extends ASTScanner{
         Scope funcScope = node.getFuncBody().getScope();
         List<VirtualRegisterIR> args = currentFunc.getParameters();
         ClassSymbol belongClass = funcScope.getFunc(node.getName()).getBelongClass();
-        int i = 0;
+
         if (belongClass != null) {
             curThisPointor = new VirtualRegisterIR("this_of_" + belongClass.getName());
-            curBB.append(new MoveInstIR(curThisPointor, RegisterSet.paratReg[i]));
+
             args.add(curThisPointor);
-            ++i;
         }
 
         for (VarDefNode arg : node.getParameters()){
             VarSymbol var = funcScope.getVar(arg.getName());
             var.vReg = new VirtualRegisterIR(node.getName() + "_arg_" + arg.getName());
-            if (i < 6)
-                curBB.append(new MoveInstIR(var.vReg, RegisterSet.paratReg[i]));
-            else {
-                var.vReg.memory = new MemoryIR(RegisterSet.Vrbp, Config.getREGSIZE() * (i - 6 + 2));
-                curBB.append(new MoveInstIR(var.vReg, var.vReg.memory));
-            }
             args.add(var.vReg);
-            ++i;
         }
-
 
 
         node.getFuncBody().accept(this);
@@ -209,10 +198,10 @@ public class IRBuilder extends ASTScanner{
             if (!(bb.getTail().prev instanceof BranchInstIR)) {
                 if (!ret){
                     if (node.getReturnType() == null)
-                        bb.append(new MoveInstIR(RegisterSet.Vrax, curThisPointor));
+                        bb.append(new MoveInstIR(currentFunc.returnValue, curThisPointor));
                     else {
                         if (!(node.getReturnType().getType() instanceof VoidType))
-                            bb.append(new MoveInstIR(RegisterSet.Vrax, ZERO));
+                            bb.append(new MoveInstIR(currentFunc.returnValue, ZERO));
                     }
                 }
                 bb.append(new JumpInstIR(currentFunc.leaveBB));
@@ -221,7 +210,7 @@ public class IRBuilder extends ASTScanner{
         if (node.getReturnType() != null && node.getReturnType().getType() instanceof VoidType)
             currentFunc.leaveBB.append(new ReturnInstIR());
         else
-            currentFunc.leaveBB.append(new ReturnInstIR(RegisterSet.Vrax));
+            currentFunc.leaveBB.append(new ReturnInstIR(currentFunc.returnValue));
 
         currentFunc = null;
         curThisPointor = null;
@@ -374,16 +363,17 @@ public class IRBuilder extends ASTScanner{
     @Override
     public void visit(ReturnStmtNode node) {
         if (node.getReturnExpr() != null) {
-            VirtualRegisterIR res = RegisterSet.Vrax;
             if (node.getReturnExpr().getType() instanceof BoolType){
-                boolAssign(res, node.getReturnExpr());
+                boolAssign(currentFunc.returnValue, node.getReturnExpr());
             }
             else {
                 node.getReturnExpr().accept(this);
-                curBB.append(new MoveInstIR(res, node.getReturnExpr().resultReg));
+                curBB.append(new MoveInstIR(currentFunc.returnValue, node.getReturnExpr().resultReg));
             }
+            curBB.append(new ReturnInstIR(currentFunc.returnValue));
         }
-        curBB.append(new ReturnInstIR());
+        else
+            curBB.append(new ReturnInstIR());
     }
 
     @Override
@@ -479,8 +469,6 @@ public class IRBuilder extends ASTScanner{
         currentFunc.callee.add(func);
         func.caller.add(currentFunc);
         curBB.append(new CallInstIR(func, args, returnValue));
-        if (returnValue != null)
-            curBB.append(new MoveInstIR(returnValue, RegisterSet.Vrax));
     }
 
     @Override

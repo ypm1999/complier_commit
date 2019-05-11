@@ -19,8 +19,7 @@ public class ClassType extends Type {
     public boolean equals(Object obj) {
         if (obj instanceof ClassType)
             return name.equals(((ClassType) obj).name);
-        else
-            return false;
+        return obj instanceof NullType;
     }
 
     @Override

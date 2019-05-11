@@ -83,6 +83,8 @@ abstract public class InstIR {
         return regs;
     }
 
+    abstract public InstIR copy();
+
 
     public void accept(IRVisitor visitor) {
         visitor.visit(this);

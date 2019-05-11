@@ -11,7 +11,7 @@ public class LeaInstIR extends InstIR {
     public AddressIR dest;
     public AddressIR src;
 
-    public LeaInstIR(AddressIR dest, MemoryIR src){
+    public LeaInstIR(AddressIR dest, AddressIR src){
         this.dest = dest;
         this.src = src;
     }
@@ -62,6 +62,10 @@ public class LeaInstIR extends InstIR {
         src = (AddressIR) replacedVreg(src, renameMap);
     }
 
+    @Override
+    public InstIR copy() {
+        return new LeaInstIR((RegisterIR) dest.copy(), (AddressIR) src.copy());
+    }
 
     @Override
     public String toString() {

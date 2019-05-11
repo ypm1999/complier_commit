@@ -1,13 +1,11 @@
 package com.mxcomplier.backEnd;
 
+import com.mxcomplier.Config;
 import com.mxcomplier.Error.IRError;
 import com.mxcomplier.Ir.BasicBlockIR;
 import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.Instructions.*;
-import com.mxcomplier.Ir.Operands.ImmediateIR;
-import com.mxcomplier.Ir.Operands.MemoryIR;
-import com.mxcomplier.Ir.Operands.OperandIR;
-import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
+import com.mxcomplier.Ir.Operands.*;
 import com.mxcomplier.Ir.ProgramIR;
 import com.mxcomplier.Ir.RegisterSet;
 
@@ -54,22 +52,14 @@ public class IRfixer extends IRScanner {
 
     @Override
     public void visit(ProgramIR node) {
-        FuncIR main = null, init = null;
+        accessedFunc.clear();
         for (FuncIR func : node.getFuncs()){
             curFunc = func;
-            if (func.getName().equals("main"))
-                main = func;
-            if (func.getName().equals("__init"))
-                init = func;
             dfsGlobalVars(func);
             func.accept(this);
             curFunc = null;
         }
 
-        if (main == null)
-            throw new IRError("no main func");
-        if (init != null)
-            main.entryBB.prepend(new CallInstIR(init, new ArrayList<>(), null));
 
         for (FuncIR func : node.getFuncs()){
             HashMap<VirtualRegisterIR, VirtualRegisterIR> renameMap = new HashMap<>();
@@ -107,8 +97,33 @@ public class IRfixer extends IRScanner {
 
     @Override
     public void visit(FuncIR node) {
+
+        int i = 0;
+        for (AddressIR arg : node.getParameters()) {
+            if (i < 6)
+                node.entryBB.getHead().append(new MoveInstIR(arg, RegisterSet.paratReg[i]));
+            else {
+                node.entryBB.getHead().append(new MoveInstIR(arg,
+                        new MemoryIR(RegisterSet.Vrbp, Config.getREGSIZE() * (i - 6 + 2))));
+            }
+            i++;
+        }
+
+        HashMap<VirtualRegisterIR, VirtualRegisterIR> renameMap = new HashMap<>();
+        renameMap.put(node.returnValue, RegisterSet.Vrax);
+        for (BasicBlockIR bb : node.getBBList()){
+            for(InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next){
+                inst.replaceVreg(renameMap);
+            }
+        }
+
+
+        InstIR firstInst = node.entryBB.getHead().next;
+        if (firstInst instanceof CallInstIR && ((CallInstIR) firstInst).getFunc().getName().equals("__init"))
+            firstInst = firstInst.next;
         for (VirtualRegisterIR vreg: node.selfUsedGlobalVar)
-            node.entryBB.prepend(new MoveInstIR(vreg, vreg.memory));
+            firstInst.prepend(new MoveInstIR(vreg, vreg.memory));
+
         if (!node.getName().equals("__init"))
             for (VirtualRegisterIR vreg: node.selfDefinedGlobalVar)
                 node.leaveBB.getTail().prev.prepend(new MoveInstIR(vreg.memory, vreg));
@@ -186,10 +201,13 @@ public class IRfixer extends IRScanner {
             node.rhs = tmp;
         }
         node.append(new JumpInstIR(node.getFalseBB()));
+        node.removeFalseBB();
     }
 
     @Override
     public void visit(CallInstIR node) {
+        if (node.getReturnValue() != null)
+            node.append(new MoveInstIR(node.getReturnValue(), RegisterSet.Vrax));
         FuncIR caller = curFunc;
         FuncIR callee = node.getFunc();
         if (callee.getType() == FuncIR.Type.USER) {

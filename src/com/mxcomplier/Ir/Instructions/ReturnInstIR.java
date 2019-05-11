@@ -1,13 +1,14 @@
 package com.mxcomplier.Ir.Instructions;
 
+import com.mxcomplier.Ir.BasicBlockIR;
 import com.mxcomplier.Ir.IRVisitor;
 import com.mxcomplier.Ir.Operands.OperandIR;
 import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
 import com.mxcomplier.Ir.RegisterSet;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class ReturnInstIR extends BranchInstIR {
 
@@ -34,8 +35,17 @@ public class ReturnInstIR extends BranchInstIR {
     }
 
     @Override
+    public InstIR copy() {
+        return new ReturnInstIR(src.copy());
+    }
+
+    @Override
     public String toString() {
         return "leave\nret";
+    }
+
+    @Override
+    public void bbRename(Map<BasicBlockIR, BasicBlockIR> bbRenameMap) {
     }
 
     public void accept(IRVisitor visitor) {

@@ -72,6 +72,16 @@ public class CallInstIR extends InstIR {
     }
 
     @Override
+    public InstIR copy() {
+        List<OperandIR> newArgs = new ArrayList<>();
+        args.forEach(arg -> newArgs.add(arg.copy()));
+        if (returnValue == null)
+            return new CallInstIR(func, newArgs, null);
+        else
+            return new CallInstIR(func, newArgs, (RegisterIR) returnValue.copy());
+    }
+
+    @Override
     public String toString() {
         StringBuilder str = new StringBuilder("call " + func.getName() + " (");
         for (OperandIR arg : args){

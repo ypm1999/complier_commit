@@ -90,6 +90,11 @@ public class BinaryInstIR extends InstIR {
         }
     }
 
+    @Override
+    public InstIR copy() {
+        return new BinaryInstIR(op, (AddressIR) dest.copy(), src.copy());
+    }
+
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
     }

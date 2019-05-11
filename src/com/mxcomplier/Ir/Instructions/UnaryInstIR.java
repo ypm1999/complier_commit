@@ -61,6 +61,12 @@ public class UnaryInstIR extends InstIR {
         return String.format("%s %s", op.toString().toLowerCase(), dest);
     }
 
+
+    @Override
+    public InstIR copy() {
+        return new UnaryInstIR(op, (AddressIR) dest.copy());
+    }
+
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
     }

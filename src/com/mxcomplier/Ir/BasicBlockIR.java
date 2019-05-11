@@ -56,6 +56,14 @@ public class BasicBlockIR {
         return tail;
     }
 
+    public void setHead(InstIR head) {
+        this.head = head;
+    }
+
+    public void setTail(InstIR tail) {
+        this.tail = tail;
+    }
+
     public String getLable() {
         return lable;
     }

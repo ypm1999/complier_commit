@@ -1,10 +1,7 @@
 package com.mxcomplier.Ir.Instructions;
 
 import com.mxcomplier.Ir.IRVisitor;
-import com.mxcomplier.Ir.Operands.AddressIR;
-import com.mxcomplier.Ir.Operands.OperandIR;
-import com.mxcomplier.Ir.Operands.PhysicalRegisterIR;
-import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
+import com.mxcomplier.Ir.Operands.*;
 
 import java.util.List;
 import java.util.Map;
@@ -33,6 +30,11 @@ public class PushInstIR extends InstIR {
     @Override
     public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap){
         src = replacedVreg(src, renameMap);
+    }
+
+    @Override
+    public InstIR copy() {
+        return new PushInstIR((RegisterIR)src.copy());
     }
 
     @Override

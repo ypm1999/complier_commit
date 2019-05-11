@@ -38,6 +38,16 @@ public class MemoryIR extends AddressIR {
         this.num = num;
     }
 
+    public MemoryIR(MemoryIR other){
+        base = other.base;
+        offset = other.offset;
+        scale = other.scale;
+        constant = other.constant;
+        num = other.num;
+        old_offset = other.old_offset;
+        old_base = other.old_offset;
+    }
+
     public MemoryIR(ConstantIR constant){
         this.constant = constant;
     }
@@ -86,6 +96,11 @@ public class MemoryIR extends AddressIR {
         if (offset != null)
             regs.add(offset);
         return regs;
+    }
+
+    @Override
+    public OperandIR copy() {
+        return new MemoryIR(this);
     }
 
     @Override

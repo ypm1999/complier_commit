@@ -16,6 +16,14 @@ public class VirtualRegisterIR extends RegisterIR {
 //        this.memory = new StackSoltIR(lable + "_solt");
     }
 
+    public VirtualRegisterIR(VirtualRegisterIR other){
+        this.id = vRegId++;
+        this.lable = other.lable + "_cp";
+        this.tempVar = other.tempVar;
+        this.memory = other.memory;
+        this.phyReg = other.phyReg;
+    }
+
     public VirtualRegisterIR(String label, PhysicalRegisterIR phy){
         this.id = -1;
         this.lable = label;
@@ -40,6 +48,11 @@ public class VirtualRegisterIR extends RegisterIR {
 
     public PhysicalRegisterIR getPhyReg() {
         return phyReg;
+    }
+
+    @Override
+    public VirtualRegisterIR copy() {
+        return this;
     }
 
     @Override

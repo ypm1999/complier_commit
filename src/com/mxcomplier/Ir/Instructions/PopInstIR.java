@@ -35,6 +35,11 @@ public class PopInstIR extends InstIR {
     }
 
     @Override
+    public InstIR copy() {
+        return new PopInstIR((RegisterIR) dest.copy());
+    }
+
+    @Override
     public String toString() {
         return "pop " + dest;
     }

@@ -62,6 +62,11 @@ public class MoveInstIR extends InstIR {
     }
 
     @Override
+    public InstIR copy() {
+        return new MoveInstIR((AddressIR) dest.copy(), src.copy());
+    }
+
+    @Override
     public String toString() {
         return String.format("mov %s %s", dest, src);
     }

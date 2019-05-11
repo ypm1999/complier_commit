@@ -14,11 +14,13 @@ import java.util.HashSet;
 import java.util.List;
 
 public class FuncIR {
+
     public enum Type{
         EXTRA, LIBRARY, USER
     }
     private String name;
     private Type type;
+    public VirtualRegisterIR returnValue = null;
     public BasicBlockIR entryBB, leaveBB;
     public HashSet<FuncIR> callee = new HashSet<>(), caller = new HashSet<>();
     public HashSet<VirtualRegisterIR> usedGlobalVar = new HashSet<>(), selfUsedGlobalVar;
@@ -37,6 +39,50 @@ public class FuncIR {
     public FuncIR(String name, Type type){
         this.name = name;
         this.type = type;
+    }
+
+    public int getInstNum(){
+        int res = 0;
+        for (BasicBlockIR bb : BBList){
+            for(InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next){
+                res++;
+            }
+        }
+        return res;
+    }
+
+    public void updateCallee(){
+        for (FuncIR func : callee){
+            func.caller.remove(this);
+        }
+        callee.clear();
+        for (BasicBlockIR bb : BBList) {
+            for (InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
+                if (inst instanceof CallInstIR) {
+                    callee.add(((CallInstIR) inst).getFunc());
+                    ((CallInstIR) inst).getFunc().caller.add(this);
+                }
+            }
+        }
+    }
+
+    public HashSet<VirtualRegisterIR> getAllVreg(){
+        HashSet<VirtualRegisterIR> res = new HashSet<>();
+        for (BasicBlockIR bb : BBList){
+            for(InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next){
+                if (inst instanceof CallInstIR){
+                    for (OperandIR arg : ((CallInstIR) inst).getArgs())
+                        res.addAll(inst.getVreg(arg));
+                    if (((CallInstIR) inst).getReturnValue() != null)
+                        res.addAll(inst.getVreg(((CallInstIR) inst).getReturnValue()));
+                }
+                else{
+                    res.addAll(inst.getUsedVReg());
+                    res.addAll(inst.getDefinedVreg());
+                }
+            }
+        }
+        return res;
     }
 
     public void initGlobalDefined(){
@@ -83,7 +129,8 @@ public class FuncIR {
                 dfsBB(((JumpInstIR) inst).getTarget(), now);
             if (inst instanceof CJumpInstIR) {
                 dfsBB(((CJumpInstIR) inst).getTrueBB(), now);
-//                dfsBB(((CJumpInstIR) inst).getFalseBB(), now);
+                if (((CJumpInstIR) inst).getFalseBB() != null)
+                    dfsBB(((CJumpInstIR) inst).getFalseBB(), now);
             }
         }
         reversedOrderedBBList.add(now);
@@ -131,13 +178,14 @@ public class FuncIR {
             definedPhyRegs = new HashSet<>();
             if (type == Type.LIBRARY)
                 definedPhyRegs.addAll(RegisterSet.allocatePhyRegisterSet);
-            else
-                for (BasicBlockIR bb:BBList){
-                    for(InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next){
-                        for (VirtualRegisterIR vreg: inst.getUsedVReg())
+            else {
+                for (BasicBlockIR bb : BBList) {
+                    for (InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
+                        for (VirtualRegisterIR vreg : inst.getDefinedVreg())
                             definedPhyRegs.add(vreg.getPhyReg());
                     }
                 }
+            }
         }
         return definedPhyRegs;
     }

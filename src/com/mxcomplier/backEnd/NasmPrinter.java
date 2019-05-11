@@ -120,11 +120,11 @@ public class NasmPrinter extends IRScanner {
     public void visit(CJumpInstIR node) {
         println(node.nasmString());
     }
-
-    @Override
-    public void visit(CompInstIR node) {
-        println(node.nasmString());
-    }
+//
+//    @Override
+//    public void visit(CompInstIR node) {
+//        println(node.nasmString());
+//    }
 
     @Override
     public void visit(BinaryInstIR node) {
