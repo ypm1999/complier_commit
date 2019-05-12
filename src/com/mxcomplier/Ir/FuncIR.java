@@ -15,6 +15,9 @@ import java.util.List;
 
 public class FuncIR {
 
+    static private int ID = 0;
+    private int id;
+
     public enum Type{
         EXTRA, LIBRARY, USER
     }
@@ -32,11 +35,13 @@ public class FuncIR {
     private List<VirtualRegisterIR> parameters = new ArrayList<>();
 
     public FuncIR(String name){
+        this.id = ++ID;
         this.name = name;
         this.type = Type.USER;
     }
 
     public FuncIR(String name, Type type){
+        this.id = ++ID;
         this.name = name;
         this.type = type;
     }
@@ -204,6 +209,11 @@ public class FuncIR {
                 }
         }
         return usedPhyRegs;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
     }
 
     public void accept(IRVisitor visitor) {

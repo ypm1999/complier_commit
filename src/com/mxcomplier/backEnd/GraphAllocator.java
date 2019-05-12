@@ -7,7 +7,6 @@ import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.Instructions.InstIR;
 import com.mxcomplier.Ir.Instructions.MoveInstIR;
 import com.mxcomplier.Ir.Operands.*;
-import com.mxcomplier.Ir.RegisterSet;
 import org.antlr.v4.runtime.misc.Pair;
 
 
@@ -280,6 +279,7 @@ public class GraphAllocator{
             mem.lable = "__Static" + cnt + "_" + mem.lable;
             cnt++;
         }
+
         for (FuncIR func: ir.root.getFuncs()){
             curFunc = func;
             runFunc(func);
