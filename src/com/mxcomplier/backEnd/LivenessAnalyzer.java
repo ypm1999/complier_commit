@@ -3,8 +3,10 @@ package com.mxcomplier.backEnd;
 import com.mxcomplier.AST.BinaryExprNode;
 import com.mxcomplier.Ir.BasicBlockIR;
 import com.mxcomplier.Ir.FuncIR;
+import com.mxcomplier.Ir.Instructions.CallInstIR;
 import com.mxcomplier.Ir.Instructions.InstIR;
 import com.mxcomplier.Ir.Instructions.MoveInstIR;
+import com.mxcomplier.Ir.Instructions.ReturnInstIR;
 import com.mxcomplier.Ir.Operands.OperandIR;
 import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
 import org.antlr.v4.runtime.misc.Pair;
@@ -18,16 +20,17 @@ public class LivenessAnalyzer {
     private HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> liveOut = new HashMap<>();
     private HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> usedVregs = new HashMap<>();
     private HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> definedVregs = new HashMap<>();
+    public boolean IRlevel;
 
     LivenessAnalyzer(){
-
+        IRlevel = false;
     }
 
-    public HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> getLiveOut() {
+    HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> getLiveOut() {
         return liveOut;
     }
 
-    public void buildLiveOut(FuncIR func){
+    void buildLiveOut(FuncIR func){
         liveOut.clear();
         usedVregs.clear();
         definedVregs.clear();
@@ -40,6 +43,12 @@ public class LivenessAnalyzer {
             definedVregs.put(bb, bbDefined);
             for(InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next){
                 List<VirtualRegisterIR> used = inst.getUsedVReg(), defined = inst.getDefinedVreg();
+                if (IRlevel){
+                    if (inst instanceof CallInstIR) {
+                        used = ((CallInstIR) inst).getIRUsedVReg();
+                        defined = ((CallInstIR) inst).getIRDefinedVreg();
+                    }
+                }
                 for (VirtualRegisterIR vreg : used)
                     if (!bbDefined.contains(vreg))
                         bbUsed.add(vreg);
@@ -98,11 +107,6 @@ public class LivenessAnalyzer {
         return graph;
     }
 
-//
-//    void run(FuncIR func){
-//        Graph interferenceGraph = new Graph();
-//        buildGraph(func, interferenceGraph);
-//    }
 
 
 }

@@ -49,6 +49,19 @@ public class CallInstIR extends InstIR {
         return res;
     }
 
+    public List<VirtualRegisterIR> getIRUsedVReg() {
+        List<VirtualRegisterIR> tmp = new ArrayList<>();
+        for (OperandIR arg : args)
+            tmp.addAll(getVreg(arg));
+        return tmp;
+    }
+
+    public List<VirtualRegisterIR> getIRDefinedVreg() {
+        if (returnValue != null)
+         return getVreg(returnValue);
+        return new ArrayList<>();
+    }
+
     @Override
     public List<VirtualRegisterIR> getUsedVReg() {
         return new ArrayList<>(Arrays.asList(RegisterSet.paratReg).subList(0, min(args.size(), 6)));

@@ -62,7 +62,6 @@ public class GraphAllocator{
                         v = tmp;
                     }
                 }
-//                System.err.println(u + " <-> " + v);
                 if (!graph.getNeighbor(u).contains(v) && conservative(u, v)) {
                     v.alais = u;
                     renameMap.put(v, u);
@@ -71,7 +70,6 @@ public class GraphAllocator{
                         graph.removeEdge(v, node);
                         graph.addEdge(u, node);
                     }
-//                    System.err.println(v);
                     graph.removeNode(v);
                 }
             }
@@ -187,10 +185,6 @@ public class GraphAllocator{
 
     private IRBuilder irBuilder;
     private void rewriteFunc(FuncIR func){
-//        for (VirtualRegisterIR vreg : spilledVregs){
-//            System.err.println(vreg);
-//            System.err.flush();
-//        }
         for (VirtualRegisterIR vreg :spilledVregs)
             if (vreg.memory == null)
                 vreg.memory = new StackSoltIR(vreg.lable + "_spillPlace");
@@ -223,8 +217,6 @@ public class GraphAllocator{
     }
 
     private void runFunc(FuncIR func){
-//        for (VirtualRegisterIR vreg : func.usedGlobalVar)
-//            vreg.setPhyReg(null);
         while (true){
             init(func);
             do{
@@ -244,8 +236,6 @@ public class GraphAllocator{
             }
             else
                 rewriteFunc(func);
-//            new IRPrinter(irBuilder).visit(irBuilder.root);
-//            System.out.flush();;
         }
 
         for (BasicBlockIR bb:func.getBBList()){
@@ -264,6 +254,10 @@ public class GraphAllocator{
                             inst.next.remove();
                             inst = inst.prev;
                         }
+//                        else if (dest == destNext){
+//                            inst = inst.prev;
+//                            inst.next.remove();
+//                        }
                     }
                 }
             }

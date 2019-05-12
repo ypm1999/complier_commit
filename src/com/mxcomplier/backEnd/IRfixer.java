@@ -1,7 +1,6 @@
 package com.mxcomplier.backEnd;
 
 import com.mxcomplier.Config;
-import com.mxcomplier.Error.IRError;
 import com.mxcomplier.Ir.BasicBlockIR;
 import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.Instructions.*;
@@ -133,21 +132,20 @@ public class IRfixer extends IRScanner {
         }
     }
 
+    static private final VirtualRegisterIR moveTempVreg = new VirtualRegisterIR("move_tmp");
     @Override
     public void visit(MoveInstIR node) {
         if (node.getDest() instanceof MemoryIR && (node.getSrc() instanceof MemoryIR || node.getSrc() instanceof  ImmediateIR)){
-            VirtualRegisterIR tmp = new VirtualRegisterIR("move_tmp");
-            node.prepend(new MoveInstIR(tmp, node.getSrc()));
-            node.setSrc(tmp);
+            node.prepend(new MoveInstIR(moveTempVreg, node.getSrc()));
+            node.setSrc(moveTempVreg);
         }
     }
 
     @Override
     public void visit(LeaInstIR node) {
         if (node.getDest() instanceof MemoryIR && node.getSrc() instanceof MemoryIR){
-            VirtualRegisterIR tmp = new VirtualRegisterIR("lea_tmp");
-            node.append(new MoveInstIR(node.getDest(), tmp));
-            node.dest = tmp;
+            node.append(new MoveInstIR(node.getDest(), moveTempVreg));
+            node.dest = moveTempVreg;
         }
     }
 
@@ -180,25 +178,20 @@ public class IRfixer extends IRScanner {
     @Override
     public void visit(PushInstIR node) {
         if (node.getSrc() instanceof ImmediateIR){
-            VirtualRegisterIR tmp = new VirtualRegisterIR("push_tmp");
-            node.prepend(new MoveInstIR(tmp, node.getSrc()));
-            node.setSrc(tmp);
+            node.prepend(new MoveInstIR(moveTempVreg, node.getSrc()));
+            node.setSrc(moveTempVreg);
         }
     }
 
     @Override
     public void visit(CJumpInstIR node) {
         if (node.getLhs() instanceof ImmediateIR){
-            if (node.getRhs() instanceof ImmediateIR)
-                node.prepend(new MoveInstIR(new VirtualRegisterIR("Cjump_imm_temp"), node.getLhs()));
-            else
-                node.swap();
+            node.swap();
         }
 
         if (node.getLhs() instanceof MemoryIR && node.getRhs() instanceof MemoryIR){
-            VirtualRegisterIR tmp = new VirtualRegisterIR("Cjump_tmp");
-            node.prepend(new MoveInstIR(tmp, node.getRhs()));
-            node.rhs = tmp;
+            node.prepend(new MoveInstIR(moveTempVreg, node.getRhs()));
+            node.rhs = moveTempVreg;
         }
         node.append(new JumpInstIR(node.getFalseBB()));
         node.removeFalseBB();

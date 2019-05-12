@@ -22,6 +22,13 @@ public class ReturnInstIR extends BranchInstIR {
         this.src = src;
     }
 
+//    public List<VirtualRegisterIR> getIRUsedVReg(){
+//        if (src != null)
+//            return getVreg(src);
+//        else
+//            return new ArrayList<>();
+//    }
+
     @Override
     public List<VirtualRegisterIR> getUsedVReg() {
         if (src != null)
