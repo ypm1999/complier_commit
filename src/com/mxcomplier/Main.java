@@ -37,32 +37,36 @@ public class Main {
             parser.setErrorHandler(new BailErrorStrategy());
             ParseTree tree = parser.program();
 
+            System.err.println("building AST");
             ProgramNode ast = (ProgramNode) new ASTBuilder().visit(tree);
             new ScopePrepareASTScanner().visit(ast);
             new ScopeClassMemberASTScanner().visit(ast);
             new ScopeBuilderASTScanner().visit(ast);
 
+
+            System.err.println("building IR");
             IRBuilder irBuilder = new IRBuilder();
             irBuilder.visit(ast);
 
             new BlockMerger(true).visit(irBuilder.root);
             new LocalValueNumbering().visit(irBuilder.root);
-            if (Config.DEBUG) {
-                new IRPrinter(irBuilder).visit(irBuilder.root);
-            }
+
             new UseLessCodeEliminater(irBuilder).run();
 
             new FuncInliner().run(irBuilder);
+            System.err.println("inline Finished");
+
+            new IRfixer().visit((irBuilder.root));
             if (Config.DEBUG) {
                 new IRPrinter(irBuilder).visit(irBuilder.root);
             }
-
-            new IRfixer().visit((irBuilder.root));
             new BlockMerger(true).visit(irBuilder.root);
 
+            System.err.println("Allocating");
             new GraphAllocator().run(irBuilder);
             new StackFrameAllocater().visit(irBuilder.root);
             new BlockMerger(false).visit(irBuilder.root);
+            System.err.println("Printing");
             new NasmPrinter(irBuilder).visit(irBuilder.root);
 
         } catch (ComplierError e) {

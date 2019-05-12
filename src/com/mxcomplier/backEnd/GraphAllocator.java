@@ -7,6 +7,7 @@ import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.Instructions.InstIR;
 import com.mxcomplier.Ir.Instructions.MoveInstIR;
 import com.mxcomplier.Ir.Operands.*;
+import com.mxcomplier.Ir.RegisterSet;
 import org.antlr.v4.runtime.misc.Pair;
 
 
@@ -62,7 +63,10 @@ public class GraphAllocator{
                         v = tmp;
                     }
                 }
+
                 if (!graph.getNeighbor(u).contains(v) && conservative(u, v)) {
+
+                    System.err.println("merge " + u  + " <-" + v);
                     v.alais = u;
                     renameMap.put(v, u);
                     HashSet<VirtualRegisterIR> tmp = new HashSet<>(graph.getNeighbor(v));
@@ -89,7 +93,7 @@ public class GraphAllocator{
         spilledVregs = new ArrayList<>();
         finishedStack = new LinkedList<>();
 
-        doMerge(func);
+//        doMerge(func);
 
         originGraph = new LivenessAnalyzer().buildGraph(func, null);
         graph = new Graph(originGraph);
@@ -217,6 +221,7 @@ public class GraphAllocator{
     }
 
     private void runFunc(FuncIR func){
+        func.initOrderBBList();
         while (true){
             init(func);
             do{
@@ -258,6 +263,7 @@ public class GraphAllocator{
                 }
             }
         }
+
     }
 
     private OperandIR getPhyValue(OperandIR oper){

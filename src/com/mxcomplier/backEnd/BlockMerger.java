@@ -54,6 +54,5 @@ public class BlockMerger extends IRScanner {
                 }
             }
         }
-        node.initOrderBBList();
     }
 }
