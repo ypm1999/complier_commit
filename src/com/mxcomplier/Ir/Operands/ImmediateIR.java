@@ -5,7 +5,7 @@ import com.mxcomplier.Ir.IRVisitor;
 public class ImmediateIR extends ConstantIR {
     private long value;
 
-    public ImmediateIR(long value){
+    public ImmediateIR(long value) {
         this.value = value;
     }
 

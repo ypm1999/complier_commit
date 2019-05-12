@@ -11,7 +11,7 @@ public class LeaInstIR extends InstIR {
     public AddressIR dest;
     public AddressIR src;
 
-    public LeaInstIR(AddressIR dest, AddressIR src){
+    public LeaInstIR(AddressIR dest, AddressIR src) {
         this.dest = dest;
         this.src = src;
     }
@@ -51,13 +51,13 @@ public class LeaInstIR extends InstIR {
     public List<VirtualRegisterIR> getDefinedVreg() {
         List<VirtualRegisterIR> tmp = new ArrayList<>();
         if (dest instanceof VirtualRegisterIR)
-            tmp.add((VirtualRegisterIR)dest);
+            tmp.add((VirtualRegisterIR) dest);
         return tmp;
     }
 
 
     @Override
-    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap){
+    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap) {
         dest = (AddressIR) replacedVreg(dest, renameMap);
         src = (AddressIR) replacedVreg(src, renameMap);
     }

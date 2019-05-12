@@ -1,9 +1,3 @@
-
-
-
-
-
-
 default rel
 
 global print
@@ -31,7 +25,7 @@ extern _GLOBAL_OFFSET_TABLE_
 extern stdout
 
 
-SECTION .text  
+SECTION .text   
 
 print:
         push    rbx
@@ -39,6 +33,9 @@ print:
         movsx   edi, byte [rdi+8H]
         test    dil, dil
         jz      L_002
+
+
+
 L_001:  mov     rsi, qword [rel stdout]
         add     rbx, 1
         call    _IO_putc
@@ -47,7 +44,6 @@ L_001:  mov     rsi, qword [rel stdout]
         jnz     L_001
 L_002:  pop     rbx
         ret
-
 
 println:
         push    rbx
@@ -72,33 +68,47 @@ getString:
         push    r12
         push    rbp
         push    rbx
+        call    _IO_getc
+        cmp     al, 10
+        mov     byte [rel buffer.3345], al
+        jz      L_005
+        cmp     al, 13
+        mov     edx, eax
+        jnz     L_007
+L_005:  lea     rbx, [rel buffer.3345]
+L_006:  mov     rdi, qword [rel stdin]
+        call    _IO_getc
+        cmp     al, 10
+        mov     edx, eax
+        mov     byte [rbx], al
+        jz      L_006
+        cmp     al, 13
+        jz      L_006
+L_007:  add     edx, 1
         xor     ebp, ebp
         lea     rbx, [rel buffer.3345]
-        call    _IO_getc
-        mov     byte [rel buffer.3345], al
-        add     eax, 1
-        cmp     al, 33
-        ja      L_005
-        mov     rdx, qword 200004801H
-        bt      rdx, rax
-        jc      L_010
-L_005:  mov     r12, qword 200004801H
-L_006:  mov     rdi, qword [rel stdin]
+        cmp     dl, 14
+        ja      L_008
+        mov     eax, 18433
+        bt      rax, rdx
+        jc      L_013
+L_008:  mov     r12d, 18433
+L_009:  mov     rdi, qword [rel stdin]
         add     rbx, 1
         call    _IO_getc
         mov     byte [rbx], al
         add     eax, 1
         lea     edx, [rbp+1H]
-        cmp     al, 33
-        ja      L_007
+        cmp     al, 14
+        ja      L_010
         bt      r12, rax
-        jc      L_008
-L_007:  mov     ebp, edx
-        jmp     L_006
-L_008:  lea     edi, [rbp+0AH]
+        jc      L_011
+L_010:  mov     ebp, edx
+        jmp     L_009
+L_011:  lea     edi, [rbp+0AH]
         movsxd  rbp, edx
         movsxd  rdi, edi
-L_009:  mov     byte [rbx], 0
+L_012:  mov     byte [rbx], 0
         call    malloc
         lea     rsi, [rel buffer.3345]
         lea     rdi, [rax+8H]
@@ -110,9 +120,9 @@ L_009:  mov     byte [rbx], 0
         pop     rbp
         pop     r12
         ret
-L_010:  xor     ebp, ebp
+L_013:  xor     ebp, ebp
         mov     edi, 9
-        jmp     L_009
+        jmp     L_012
 
 
 getInt:
@@ -125,18 +135,18 @@ getInt:
         movsx   rdx, al
         sub     eax, 48
         cmp     al, 9
-        jbe     L_012
+        jbe     L_015
         mov     ebp, 1
-L_011:  mov     rdi, qword [rel stdin]
+L_014:  mov     rdi, qword [rel stdin]
         cmp     dl, 45
         cmove   ebx, ebp
         call    _IO_getc
         movsx   rdx, al
         sub     eax, 48
         cmp     al, 9
-        ja      L_011
-L_012:  xor     r12d, r12d
-L_013:  lea     rax, [r12+r12]
+        ja      L_014
+L_015:  xor     r12d, r12d
+L_016:  lea     rax, [r12+r12]
         mov     rdi, qword [rel stdin]
         lea     rbp, [rax+r12*8]
         add     rbp, rdx
@@ -145,7 +155,7 @@ L_013:  lea     rax, [r12+r12]
         sub     eax, 48
         lea     r12, [rbp-30H]
         cmp     al, 9
-        jbe     L_013
+        jbe     L_016
         mov     eax, 48
         sub     rax, rbp
         test    ebx, ebx
@@ -214,49 +224,43 @@ _string_substring:
         pop     r14
         ret
 
+
 _string_parseInt:
         movsx   edx, byte [rdi+8H]
         cmp     dl, 45
-        jz      L_016
+        jz      L_019
         test    dl, dl
-        jz      L_017
+        jz      L_020
         lea     rcx, [rdi+8H]
         xor     esi, esi
-L_014:  xor     eax, eax
-
-
-L_015:  sub     edx, 48
+L_017:  xor     eax, eax
+L_018:  sub     edx, 48
         lea     rax, [rax+rax*4]
         add     rcx, 1
         movsxd  rdx, edx
         lea     rax, [rdx+rax*2]
         movsx   edx, byte [rcx]
         test    dl, dl
-        jnz     L_015
+        jnz     L_018
         mov     rdx, rax
         neg     rdx
         test    esi, esi
         cmovne  rax, rdx
         ret
-
-
-
-
-L_016:  movsx   edx, byte [rdi+9H]
+L_019:  movsx   edx, byte [rdi+9H]
         lea     rcx, [rdi+9H]
         test    dl, dl
-        jz      L_017
+        jz      L_020
         mov     esi, 1
-        jmp     L_014
-
-
-L_017:  xor     eax, eax
+        jmp     L_017
+L_020:  xor     eax, eax
         ret
 
 
 _string_ord:
         movsx   rax, byte [rdi+rsi+8H]
         ret
+
 
 __stradd:
         push    r15

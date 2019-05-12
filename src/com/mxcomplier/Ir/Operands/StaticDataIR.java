@@ -7,11 +7,11 @@ public class StaticDataIR extends ConstantIR {
     private int size;
     private String constString = null;
 
-    public StaticDataIR(){
+    public StaticDataIR() {
         this.size = Config.getREGSIZE();
     }
 
-    public StaticDataIR(String constString){
+    public StaticDataIR(String constString) {
         this.constString = constString;
         this.size = constString.length() + 1 + Config.getREGSIZE();
     }
@@ -26,13 +26,12 @@ public class StaticDataIR extends ConstantIR {
 
     @Override
     public String toString() {
-        if (constString == null){
+        if (constString == null) {
             StringBuilder tmp = new StringBuilder("db");
             for (int i = 0; i < size; i++)
                 tmp.append(" 00H,");
             return tmp.substring(0, tmp.length() - 1);
-        }
-        else{
+        } else {
             StringBuilder tmp = new StringBuilder(String.format("dq %d\ndb ", constString.length()));
             for (int i = 0; i < constString.length(); ++i)
                 tmp.append(String.format("%02XH, ", (int) constString.charAt(i)));
@@ -42,7 +41,7 @@ public class StaticDataIR extends ConstantIR {
     }
 
     public String nasmString() {
-        return  toString();
+        return toString();
     }
 
     public void accept(IRVisitor visitor) {

@@ -23,7 +23,9 @@ pointer_t getString() {
 	int length = 0;
 	char * str = buffer;
 	*str = getchar();
-	while(*str != '\n' && *str != '\r' && *str != ' ' && *str != -1){
+	while(*str == '\n' || *str == '\r')
+		*str = getchar();
+	while(*str != '\n' && *str != '\r' && *str != -1){
 		*(++str) = getchar();
 		++length;
 	}

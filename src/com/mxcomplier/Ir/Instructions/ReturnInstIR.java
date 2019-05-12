@@ -14,11 +14,11 @@ public class ReturnInstIR extends BranchInstIR {
 
     private OperandIR src;
 
-    public ReturnInstIR(){
+    public ReturnInstIR() {
         this.src = null;
     }
 
-    public ReturnInstIR(OperandIR src){
+    public ReturnInstIR(OperandIR src) {
         this.src = src;
     }
 
@@ -28,7 +28,6 @@ public class ReturnInstIR extends BranchInstIR {
 //        else
 //            return new ArrayList<>();
 //    }
-
 
 
     @Override

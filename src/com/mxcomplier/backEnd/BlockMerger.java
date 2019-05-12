@@ -2,29 +2,25 @@ package com.mxcomplier.backEnd;
 
 import com.mxcomplier.Ir.BasicBlockIR;
 import com.mxcomplier.Ir.FuncIR;
-import com.mxcomplier.Ir.Instructions.*;
-import com.mxcomplier.Ir.Operands.ImmediateIR;
-import com.mxcomplier.Ir.Operands.MemoryIR;
-import com.mxcomplier.Ir.Operands.OperandIR;
-import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
+import com.mxcomplier.Ir.Instructions.InstIR;
+import com.mxcomplier.Ir.Instructions.JumpInstIR;
 import com.mxcomplier.Ir.ProgramIR;
-import com.mxcomplier.Ir.RegisterSet;
 
-import java.util.*;
-
-import static com.mxcomplier.FrontEnd.IRBuilder.ZERO;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BlockMerger extends IRScanner {
 
 
     private boolean basic;
-    public BlockMerger(boolean basic){
+
+    public BlockMerger(boolean basic) {
         this.basic = basic;
     }
 
     @Override
     public void visit(ProgramIR node) {
-        for (FuncIR func : node.getFuncs()){
+        for (FuncIR func : node.getFuncs()) {
             func.accept(this);
         }
     }
@@ -32,7 +28,7 @@ public class BlockMerger extends IRScanner {
     @Override
     public void visit(FuncIR node) {
         boolean changed = true;
-        while(changed) {
+        while (changed) {
             changed = false;
             node.initOrderBBList();
             List<BasicBlockIR> BBLIst = new ArrayList<>(node.getBBList());

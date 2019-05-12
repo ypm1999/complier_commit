@@ -1,4 +1,4 @@
 package com.mxcomplier.Ir.Operands;
 
-abstract public class RegisterIR extends AddressIR{
+abstract public class RegisterIR extends AddressIR {
 }

@@ -9,19 +9,18 @@ import com.mxcomplier.Ir.Operands.OperandIR;
 import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
 import com.mxcomplier.Ir.ProgramIR;
 
-
 import java.util.HashMap;
 import java.util.HashSet;
 
 
-public class LocalValueNumbering extends IRScanner{
+public class LocalValueNumbering extends IRScanner {
 
 
-    class Pair{
+    class Pair {
         BinaryInstIR.Op op;
         Integer lhs, rhs;
 
-        Pair(BinaryInstIR.Op op, Integer lhs, Integer rhs){
+        Pair(BinaryInstIR.Op op, Integer lhs, Integer rhs) {
             this.op = op;
             this.lhs = lhs;
             this.rhs = rhs;
@@ -34,7 +33,7 @@ public class LocalValueNumbering extends IRScanner{
 
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof Pair){
+            if (obj instanceof Pair) {
                 Pair other = (Pair) obj;
                 return op == other.op && lhs.equals(other.lhs) && rhs.equals(other.rhs);
 
@@ -51,7 +50,7 @@ public class LocalValueNumbering extends IRScanner{
     private HashMap<Integer, Integer> valueImmMap = new HashMap<>();
     private FuncIR curFunc = null;
 
-    private Integer getOperandValue(OperandIR oper){
+    private Integer getOperandValue(OperandIR oper) {
         if (oper instanceof VirtualRegisterIR)
             return getRegValue((VirtualRegisterIR) oper);
         else if (oper instanceof ImmediateIR)
@@ -60,7 +59,7 @@ public class LocalValueNumbering extends IRScanner{
             return ++valueCountor;
     }
 
-    private OperandIR getValueOperand(Integer value){
+    private OperandIR getValueOperand(Integer value) {
         if (valueImmMap.containsKey(value))
             return new ImmediateIR(valueImmMap.get(value));
         else if (valueRegisterMap.containsKey(value)) {
@@ -69,14 +68,13 @@ public class LocalValueNumbering extends IRScanner{
                 return null;
             else
                 return vregSet.iterator().next();
-        }
-        else
+        } else
             return null;
     }
 
-    private Integer getImmValue(ImmediateIR imm){
+    private Integer getImmValue(ImmediateIR imm) {
         Integer immInt = (int) imm.getValue();
-        if (!immValueMap.containsKey(immInt)){
+        if (!immValueMap.containsKey(immInt)) {
 
             ++valueCountor;
             immValueMap.put(immInt, valueCountor);
@@ -85,21 +83,21 @@ public class LocalValueNumbering extends IRScanner{
         return immValueMap.get(immInt);
     }
 
-    private Integer getRegValue(VirtualRegisterIR reg){
-        if (!registerValueMap.containsKey(reg)){
+    private Integer getRegValue(VirtualRegisterIR reg) {
+        if (!registerValueMap.containsKey(reg)) {
             addRegisterValue(reg, ++valueCountor);
         }
         return registerValueMap.get(reg);
     }
 
-    private void addRegisterValue(VirtualRegisterIR vreg, Integer val){
+    private void addRegisterValue(VirtualRegisterIR vreg, Integer val) {
         if (!valueRegisterMap.containsKey(val))
             valueRegisterMap.put(val, new HashSet<>());
         valueRegisterMap.get(val).add(vreg);
         registerValueMap.put(vreg, val);
     }
 
-    private void deleteRegisterValue(VirtualRegisterIR vreg){
+    private void deleteRegisterValue(VirtualRegisterIR vreg) {
         if (registerValueMap.containsKey(vreg)) {
             Integer value = registerValueMap.get(vreg);
             if (valueRegisterMap.containsKey(value))
@@ -108,11 +106,10 @@ public class LocalValueNumbering extends IRScanner{
         }
     }
 
-    private void changeRegisterValue(VirtualRegisterIR vreg, Integer newVal){
+    private void changeRegisterValue(VirtualRegisterIR vreg, Integer newVal) {
         deleteRegisterValue(vreg);
         addRegisterValue(vreg, newVal);
     }
-
 
 
     @Override
@@ -137,7 +134,7 @@ public class LocalValueNumbering extends IRScanner{
         valueRegisterMap.clear();
         immValueMap.clear();
         valueImmMap.clear();
-        for(InstIR inst = node.getHead().next; inst != node.getTail(); ) {
+        for (InstIR inst = node.getHead().next; inst != node.getTail(); ) {
             InstIR next = inst.next;
             inst.accept(this);
             inst = next;
@@ -152,10 +149,14 @@ public class LocalValueNumbering extends IRScanner{
 
     private Integer doUnary(UnaryInstIR.Op op, Integer imm) {
         switch (op) {
-            case INV: return ~imm;
-            case NEG: return -imm;
-            case INC: return imm+1;
-            case DEC: return imm-1;
+            case INV:
+                return ~imm;
+            case NEG:
+                return -imm;
+            case INC:
+                return imm + 1;
+            case DEC:
+                return imm - 1;
             default:
                 throw new IRError("Unary error in LVN");
         }
@@ -163,16 +164,28 @@ public class LocalValueNumbering extends IRScanner{
 
     private Integer doBinary(BinaryInstIR.Op op, Integer limm, Integer rimm) {
         switch (op) {
-            case SUB: return limm - rimm;
-            case XOR: return limm ^ rimm;
-            case MUL: return limm * rimm;
-            case MOD: if(rimm == 0) rimm = 1; return limm % rimm;
-            case DIV: if(rimm == 0) rimm = 1; return limm / rimm;
-            case AND: return limm & rimm;
-            case ADD: return limm + rimm;
-            case OR: return limm | rimm;
-            case SHL: return limm << rimm;
-            case SHR: return limm >> rimm;
+            case SUB:
+                return limm - rimm;
+            case XOR:
+                return limm ^ rimm;
+            case MUL:
+                return limm * rimm;
+            case MOD:
+                if (rimm == 0) rimm = 1;
+                return limm % rimm;
+            case DIV:
+                if (rimm == 0) rimm = 1;
+                return limm / rimm;
+            case AND:
+                return limm & rimm;
+            case ADD:
+                return limm + rimm;
+            case OR:
+                return limm | rimm;
+            case SHL:
+                return limm << rimm;
+            case SHR:
+                return limm >> rimm;
             default:
                 throw new IRError("Binary error in LVN");
         }
@@ -181,21 +194,20 @@ public class LocalValueNumbering extends IRScanner{
     @Override
     public void visit(UnaryInstIR node) {
         Integer value = getOperandValue(node.getDest());
-        if (valueImmMap.containsKey(value)){
+        if (valueImmMap.containsKey(value)) {
             Integer imm = doUnary(node.getOp(), valueImmMap.get(value));
             value = immValueMap.containsKey(imm) ? immValueMap.get(imm) : ++valueCountor;
             node.append(new MoveInstIR(node.getDest(), new ImmediateIR(imm)));
             node.remove();
-        }
-        else
+        } else
             value = ++valueCountor;
 
         if (node.getDest() instanceof VirtualRegisterIR)
             changeRegisterValue((VirtualRegisterIR) node.getDest(), value);
     }
 
-    private boolean doComp(CJumpInstIR.Op op, long lhs, long rhs){
-        switch (op){
+    private boolean doComp(CJumpInstIR.Op op, long lhs, long rhs) {
+        switch (op) {
             case L:
                 return lhs < rhs;
             case G:
@@ -222,7 +234,7 @@ public class LocalValueNumbering extends IRScanner{
             node.lhs = new ImmediateIR(valueImmMap.get(lhs));
         if (valueImmMap.containsKey(rhs))
             node.rhs = new ImmediateIR(valueImmMap.get(rhs));
-        if (node.lhs instanceof ImmediateIR && node.rhs instanceof ImmediateIR){
+        if (node.lhs instanceof ImmediateIR && node.rhs instanceof ImmediateIR) {
             boolean res = doComp(node.getOp(), ((ImmediateIR) node.lhs).getValue(), ((ImmediateIR) node.rhs).getValue());
             if (res)
                 node.append(new JumpInstIR(node.getTrueBB()));
@@ -238,15 +250,14 @@ public class LocalValueNumbering extends IRScanner{
         Integer dest = getOperandValue(node.getDest());
         Integer result;
         Pair binaryPair = new Pair(node.getOp(), src, dest);
-        if (pairValueMap.containsKey(binaryPair)){
+        if (pairValueMap.containsKey(binaryPair)) {
             result = pairValueMap.get(binaryPair);
             OperandIR oper = getValueOperand(result);
-            if (oper != null){
+            if (oper != null) {
                 node.append(new MoveInstIR(node.dest, oper));
                 node.remove();
             }
-        }
-        else{
+        } else {
             result = ++valueCountor;
             pairValueMap.put(binaryPair, result);
         }
@@ -260,7 +271,7 @@ public class LocalValueNumbering extends IRScanner{
         if (valueImmMap.containsKey(src))
             node.src = new ImmediateIR(valueImmMap.get(src));
         if (node.getDest() instanceof VirtualRegisterIR)
-            changeRegisterValue((VirtualRegisterIR)node.getDest(), src);
+            changeRegisterValue((VirtualRegisterIR) node.getDest(), src);
     }
 
     @Override

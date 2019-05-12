@@ -1,6 +1,5 @@
 package com.mxcomplier.Scope;
 
-import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
 import com.mxcomplier.Type.FuncType;
 import com.mxcomplier.Type.Type;
 

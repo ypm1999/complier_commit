@@ -10,14 +10,14 @@ import java.util.List;
 import java.util.Map;
 
 public class UnaryInstIR extends InstIR {
-    public enum Op{
+    public enum Op {
         NEG, INV, INC, DEC, NULL, ERROR
     }
 
     private Op op;
     public AddressIR dest;
 
-    public UnaryInstIR(Op op, AddressIR dest){
+    public UnaryInstIR(Op op, AddressIR dest) {
         this.op = op;
         this.dest = dest;
     }
@@ -47,12 +47,12 @@ public class UnaryInstIR extends InstIR {
     public List<VirtualRegisterIR> getDefinedVreg() {
         List<VirtualRegisterIR> tmp = new ArrayList<>();
         if (dest instanceof VirtualRegisterIR)
-            tmp.add((VirtualRegisterIR)dest);
+            tmp.add((VirtualRegisterIR) dest);
         return tmp;
     }
 
     @Override
-    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap){
+    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap) {
         dest = (AddressIR) replacedVreg(dest, renameMap);
     }
 

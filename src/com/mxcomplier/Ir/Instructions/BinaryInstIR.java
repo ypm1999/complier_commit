@@ -1,7 +1,10 @@
 package com.mxcomplier.Ir.Instructions;
 
 import com.mxcomplier.Ir.IRVisitor;
-import com.mxcomplier.Ir.Operands.*;
+import com.mxcomplier.Ir.Operands.AddressIR;
+import com.mxcomplier.Ir.Operands.OperandIR;
+import com.mxcomplier.Ir.Operands.StackSoltIR;
+import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
 import com.mxcomplier.Ir.RegisterSet;
 
 import java.util.ArrayList;
@@ -9,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public class BinaryInstIR extends InstIR {
-    public enum Op{
+    public enum Op {
         ADD, SUB, MUL, DIV, MOD, SHL, SHR, AND, OR, XOR, ERROR
     }
 
@@ -17,7 +20,7 @@ public class BinaryInstIR extends InstIR {
     public AddressIR dest;
     public OperandIR src;
 
-    public BinaryInstIR(Op op, AddressIR dest, OperandIR src){
+    public BinaryInstIR(Op op, AddressIR dest, OperandIR src) {
         this.op = op;
         this.dest = dest;
         this.src = src;
@@ -57,12 +60,12 @@ public class BinaryInstIR extends InstIR {
     public List<VirtualRegisterIR> getDefinedVreg() {
         List<VirtualRegisterIR> tmp = new ArrayList<>();
         if (dest instanceof VirtualRegisterIR)
-            tmp.add((VirtualRegisterIR)dest);
+            tmp.add((VirtualRegisterIR) dest);
         return tmp;
     }
 
     @Override
-    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap){
+    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap) {
         dest = (AddressIR) replacedVreg(dest, renameMap);
         src = replacedVreg(src, renameMap);
     }
@@ -73,7 +76,7 @@ public class BinaryInstIR extends InstIR {
     }
 
     public String nasmString() {
-        switch (op){
+        switch (op) {
             case SHL:
             case SHR:
                 if (src == RegisterSet.Vrcx)

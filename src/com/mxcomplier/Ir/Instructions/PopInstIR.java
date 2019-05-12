@@ -1,7 +1,6 @@
 package com.mxcomplier.Ir.Instructions;
 
 import com.mxcomplier.Ir.IRVisitor;
-import com.mxcomplier.Ir.Operands.MemoryIR;
 import com.mxcomplier.Ir.Operands.RegisterIR;
 import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
 
@@ -13,7 +12,7 @@ public class PopInstIR extends InstIR {
 
     private RegisterIR dest;
 
-    public PopInstIR(RegisterIR dest){
+    public PopInstIR(RegisterIR dest) {
         this.dest = dest;
     }
 
@@ -25,12 +24,12 @@ public class PopInstIR extends InstIR {
     public List<VirtualRegisterIR> getDefinedVreg() {
         List<VirtualRegisterIR> tmp = new ArrayList<>();
         if (dest instanceof VirtualRegisterIR)
-            tmp.add((VirtualRegisterIR)dest);
+            tmp.add((VirtualRegisterIR) dest);
         return tmp;
     }
 
     @Override
-    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap){
+    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap) {
         dest = (RegisterIR) replacedVreg(dest, renameMap);
     }
 
@@ -44,7 +43,7 @@ public class PopInstIR extends InstIR {
         return "pop " + dest;
     }
 
-    public String nasmString(){
+    public String nasmString() {
         return toString();
     }
 

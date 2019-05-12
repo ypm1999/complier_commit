@@ -214,9 +214,8 @@ public class ScopeBuilderASTScanner extends ASTScanner {
             if (tmpSymbol instanceof FuncSymbol)
                 func = (FuncSymbol) tmpSymbol;
             else
-                throw new ComplierError(base.getLocation(),"invalid member function call");
-        }
-        else
+                throw new ComplierError(base.getLocation(), "invalid member function call");
+        } else
             throw new ComplierError(node.getLocation(), "unknown function call");
 
         if (!node.getArgumentList().isEmpty()) {

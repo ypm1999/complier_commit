@@ -9,8 +9,7 @@ abstract public class IRScanner implements IRVisitor {
     IRBuilder builder;
 
 
-
-    MemoryIR getMemory(OperandIR operand){
+    MemoryIR getMemory(OperandIR operand) {
         if (operand instanceof VirtualRegisterIR)
             return ((VirtualRegisterIR) operand).memory;
         else if (operand instanceof MemoryIR)
@@ -19,34 +18,33 @@ abstract public class IRScanner implements IRVisitor {
             return null;
     }
 
-    MemoryIR getVregMemory(OperandIR operand){
+    MemoryIR getVregMemory(OperandIR operand) {
         if (operand instanceof VirtualRegisterIR)
             return ((VirtualRegisterIR) operand).memory;
         else
             return null;
     }
 
-    void fixMemory(MemoryIR mem, InstIR node){
+    void fixMemory(MemoryIR mem, InstIR node) {
         if (mem == null)
             return;
 
         MemoryIR base = getMemory(mem.getBase());
         MemoryIR offset = getMemory(mem.getOffset());
-        if (mem.old_base != null || mem.old_offset != null){
+        if (mem.old_base != null || mem.old_offset != null) {
             base = getMemory(mem.old_base);
             offset = getMemory(mem.old_offset);
-        }
-        else{
+        } else {
             mem.old_base = mem.getBase();
             mem.old_offset = mem.getOffset();
         }
         fixMemory(base, node);
         fixMemory(offset, node);
-        if (base != null){
+        if (base != null) {
             node.prepend(new MoveInstIR(RegisterSet.r8, base));
             mem.setBase(RegisterSet.Vr8);
         }
-        if (mem.getOffset() != null){
+        if (mem.getOffset() != null) {
             node.prepend(new MoveInstIR(RegisterSet.r9, offset));
             mem.setOffset(RegisterSet.Vr9);
         }

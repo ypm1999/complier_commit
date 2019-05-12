@@ -17,7 +17,7 @@ public class BasicBlockIR {
     public List<BasicBlockIR> successors;
 
 
-    public BasicBlockIR(FuncIR func, String lable){
+    public BasicBlockIR(FuncIR func, String lable) {
         this.id = ++BBid;
         this.lable = lable;
         this.func = func;
@@ -27,24 +27,24 @@ public class BasicBlockIR {
         func.getBBList().add(this);
     }
 
-    void initFrontAndSucc(){
+    void initFrontAndSucc() {
         fronters = new ArrayList<>();
         successors = new ArrayList<>();
     }
 
-    void addFronter(BasicBlockIR bb){
+    void addFronter(BasicBlockIR bb) {
         fronters.add(bb);
     }
 
-    void addSuccessor(BasicBlockIR bb){
+    void addSuccessor(BasicBlockIR bb) {
         successors.add(bb);
     }
 
-    public void append(InstIR inst){
+    public void append(InstIR inst) {
         tail.prepend(inst);
     }
 
-    public void prepend(InstIR inst){
+    public void prepend(InstIR inst) {
         head.append(inst);
     }
 
@@ -72,11 +72,11 @@ public class BasicBlockIR {
         return lable;
     }
 
-    public String getFuncLabel(){
+    public String getFuncLabel() {
         return func.getName() + func.getBBList().indexOf(this);
     }
 
-    public void merge(BasicBlockIR nextBB){
+    public void merge(BasicBlockIR nextBB) {
         successors = nextBB.successors;
         tail.prev.next = nextBB.getHead().next;
         nextBB.getHead().next.prev = tail.prev;

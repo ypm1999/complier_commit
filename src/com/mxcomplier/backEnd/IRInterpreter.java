@@ -7,7 +7,6 @@ import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.Instructions.*;
 import com.mxcomplier.Ir.Operands.*;
 
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,51 +14,51 @@ import java.util.Scanner;
 
 import static com.mxcomplier.Ir.Operands.VirtualRegisterIR.getVregId;
 
-public class IRInterpreter{
+public class IRInterpreter {
     private FuncIR main, init;
     private HashMap<StaticDataIR, Integer> staticDataMap = new HashMap<>();
     private long[] regSet;
     private char[] memory;
     private static int MemorySize = (1 << 20) * 256;
 
-    public IRInterpreter(IRBuilder ir){
+    public IRInterpreter(IRBuilder ir) {
         this.main = ir.funcMap.get("main");
         this.init = ir.funcMap.get("__init");
         regSet = new long[getVregId()];
         memory = new char[MemorySize];
-        for (StaticDataIR data: ir.root.getStaticData()){
-            int addr = (int)malloc(data.getSize());
+        for (StaticDataIR data : ir.root.getStaticData()) {
+            int addr = (int) malloc(data.getSize());
             staticDataMap.put(data, addr);
             if (data.getConstString() != null)
                 writeString(addr, data.getConstString());
         }
     }
 
-    public void run(){
+    public void run() {
 //        runFunc(init, new ArrayList<>());
         System.err.println("main return Value:" + runFunc(main, new ArrayList<>()));
     }
 
-    private long runFunc(FuncIR func, List<OperandIR> args){
+    private long runFunc(FuncIR func, List<OperandIR> args) {
         if (func.getType() == FuncIR.Type.LIBRARY)
             return runLibFunc(func, args);
 
-        for (int i = 0; i < args.size(); i++){
+        for (int i = 0; i < args.size(); i++) {
             runInst(new MoveInstIR(func.getParameters().get(i), args.get(i)));
         }
 
         BasicBlockIR bb = func.entryBB;
-        while(bb != null) {
+        while (bb != null) {
 //            System.err.println(bb.toString());
             InstIR inst = bb.getHead().next;
             BasicBlockIR nextBB;
             while (inst != bb.getTail()) {
-                if (inst instanceof ReturnInstIR){
+                if (inst instanceof ReturnInstIR) {
 //                    System.err.println(func.getName() + " return Value:" + getValue(((ReturnInstIR) inst).getSrc()));
                     return getValue(((ReturnInstIR) inst).getSrc());
                 }
                 nextBB = runInst(inst);
-                if (nextBB != null){
+                if (nextBB != null) {
                     bb = nextBB;
                     break;
                 }
@@ -69,8 +68,10 @@ public class IRInterpreter{
         assert false;
         return 0;
     }
+
     private Scanner sc = new Scanner(System.in);
-    private long runLibFunc(FuncIR func, List<OperandIR> args){
+
+    private long runLibFunc(FuncIR func, List<OperandIR> args) {
         switch (func.getName()) {
             case "print":
                 System.out.print(getString(args.get(0)));
@@ -128,14 +129,14 @@ public class IRInterpreter{
     }
 
 
-    private BasicBlockIR runInst(InstIR instruction){
+    private BasicBlockIR runInst(InstIR instruction) {
 //        System.err.println(instruction.toString());
-        switch (instruction.getClass().getName().substring(31)){
-            case "BinaryInstIR":{
+        switch (instruction.getClass().getName().substring(31)) {
+            case "BinaryInstIR": {
                 BinaryInstIR inst = (BinaryInstIR) instruction;
                 long lhs = getValue(inst.getDest());
                 long rhs = getValue(inst.getSrc());
-                switch (inst.getOp()){
+                switch (inst.getOp()) {
                     case ADD:
                         write(inst.getDest(), lhs + rhs);
                         break;
@@ -166,14 +167,15 @@ public class IRInterpreter{
                     case XOR:
                         write(inst.getDest(), lhs ^ rhs);
                         break;
-                    default: assert false;
+                    default:
+                        assert false;
                 }
                 break;
             }
-            case "UnaryInstIR":{
+            case "UnaryInstIR": {
                 UnaryInstIR inst = (UnaryInstIR) instruction;
                 long dest = getValue(inst.getDest());
-                switch (inst.getOp()){
+                switch (inst.getOp()) {
                     case NEG:
                         write(inst.getDest(), -dest);
                         break;
@@ -186,16 +188,17 @@ public class IRInterpreter{
                     case DEC:
                         write(inst.getDest(), dest - 1);
                         break;
-                    default: assert false;
+                    default:
+                        assert false;
                 }
                 break;
             }
-            case "MoveInstIR":{
+            case "MoveInstIR": {
                 MoveInstIR inst = (MoveInstIR) instruction;
                 write(inst.getDest(), getValue(inst.getSrc()));
                 break;
             }
-            case "LeaInstIR":{
+            case "LeaInstIR": {
                 LeaInstIR inst = (LeaInstIR) instruction;
                 write(inst.getDest(), getMemaddr((MemoryIR) inst.getSrc()));
                 break;
@@ -206,16 +209,16 @@ public class IRInterpreter{
 //            case "PushInstIR":{
 //
 //            }
-            case "JumpInstIR":{
+            case "JumpInstIR": {
                 return ((JumpInstIR) instruction).getTarget();
 
             }
-            case "CJumpInstIR":{
+            case "CJumpInstIR": {
                 CJumpInstIR inst = (CJumpInstIR) instruction;
                 long lhs = getValue(inst.getLhs());
                 long rhs = getValue(inst.getRhs());
                 boolean result = false;
-                switch (inst.getOp()){
+                switch (inst.getOp()) {
                     case L:
                         result = lhs < rhs;
                         break;
@@ -234,14 +237,15 @@ public class IRInterpreter{
                     case NE:
                         result = lhs != rhs;
                         break;
-                    default: assert false;
+                    default:
+                        assert false;
                 }
                 if (result)
                     return inst.getTrueBB();
                 else
                     return inst.getFalseBB();
             }
-            case "CallInstIR":{
+            case "CallInstIR": {
                 CallInstIR inst = (CallInstIR) instruction;
                 long ret = runFunc(inst.getFunc(), inst.getArgs());
                 write(inst.getReturnValue(), ret);
@@ -255,86 +259,81 @@ public class IRInterpreter{
         return null;
     }
 
-    private int getMemaddr(MemoryIR mem){
-        if (mem.getConstant() != null){
+    private int getMemaddr(MemoryIR mem) {
+        if (mem.getConstant() != null) {
             return staticDataMap.getOrDefault(mem.getConstant(), -1);
         }
         VirtualRegisterIR base = (VirtualRegisterIR) mem.getBase();
         VirtualRegisterIR offset = (VirtualRegisterIR) mem.getOffset();
-        int addrOffset = (int)regSet[base.getId()] + mem.getNum();
+        int addrOffset = (int) regSet[base.getId()] + mem.getNum();
         if (offset != null)
-            addrOffset += (int)regSet[offset.getId()] * mem.getScale();
+            addrOffset += (int) regSet[offset.getId()] * mem.getScale();
         return addrOffset;
     }
 
-    private void write(AddressIR dest, long src){
-        if (dest instanceof MemoryIR){
+    private void write(AddressIR dest, long src) {
+        if (dest instanceof MemoryIR) {
             memoryWriteInt(getMemaddr((MemoryIR) dest), src);
-        }
-        else if (dest instanceof VirtualRegisterIR){
+        } else if (dest instanceof VirtualRegisterIR) {
             regSet[((VirtualRegisterIR) dest).getId()] = src;
-        }
-        else
+        } else
             assert false;
     }
 
-    private long getValue(OperandIR src){
+    private long getValue(OperandIR src) {
         if (src == null)
             return 0;
-        if (src instanceof ImmediateIR){
+        if (src instanceof ImmediateIR) {
             return ((ImmediateIR) src).getValue();
 
-        }
-        else if (src instanceof VirtualRegisterIR){
+        } else if (src instanceof VirtualRegisterIR) {
             return regSet[((VirtualRegisterIR) src).getId()];
-        }
-        else if (src instanceof MemoryIR){
-            if (((MemoryIR)src).getConstant() != null){
-                return staticDataMap.get((StaticDataIR) ((MemoryIR)src).getConstant());
-            }
-            else
+        } else if (src instanceof MemoryIR) {
+            if (((MemoryIR) src).getConstant() != null) {
+                return staticDataMap.get((StaticDataIR) ((MemoryIR) src).getConstant());
+            } else
                 return memoryGetInt(getMemaddr((MemoryIR) src));
-        }
-        else
+        } else
             assert false;
         return 0;
     }
 
-    private void writeString(int dest, String str){
+    private void writeString(int dest, String str) {
         memoryWriteInt(dest, str.length());
         dest += Config.getREGSIZE();
-        for (int i = 0; i < str.length(); i++){
+        for (int i = 0; i < str.length(); i++) {
             memory[dest++] = str.charAt(i);
         }
         memory[dest] = '\0';
     }
 
-    private String getString(OperandIR src){
-        int addr = (int)getValue(src);
+    private String getString(OperandIR src) {
+        int addr = (int) getValue(src);
         long length = memoryGetInt(addr);
         addr += 8;
         StringBuilder str = new StringBuilder();
-        while(length-- > 0){
+        while (length-- > 0) {
             str.append(memory[addr++]);
         }
         return str.toString();
     }
 
-    private long memoryGetInt(int addr){
+    private long memoryGetInt(int addr) {
         long res = 0;
-        for(int i = 0; i < Config.getREGSIZE(); i++) {
-            res |= ((long)memory[addr++]) << (i * 8);
+        for (int i = 0; i < Config.getREGSIZE(); i++) {
+            res |= ((long) memory[addr++]) << (i * 8);
         }
         return res;
     }
 
-    private void memoryWriteInt(int addr, long src){
-        for(int i = 0; i < Config.getREGSIZE(); i++, src>>=8)
-            memory[addr++] = (char)src;
+    private void memoryWriteInt(int addr, long src) {
+        for (int i = 0; i < Config.getREGSIZE(); i++, src >>= 8)
+            memory[addr++] = (char) src;
     }
 
     private static int pt = 0;
-    private long malloc(long size){
+
+    private long malloc(long size) {
         pt += size;
         assert pt < MemorySize;
         return pt - size;

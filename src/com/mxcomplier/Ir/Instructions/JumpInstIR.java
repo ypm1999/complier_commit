@@ -8,7 +8,7 @@ import java.util.Map;
 public class JumpInstIR extends BranchInstIR {
     private BasicBlockIR target;
 
-    public JumpInstIR(BasicBlockIR target){
+    public JumpInstIR(BasicBlockIR target) {
         this.target = target;
     }
 

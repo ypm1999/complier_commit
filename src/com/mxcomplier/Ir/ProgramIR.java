@@ -9,7 +9,7 @@ public class ProgramIR {
     private List<FuncIR> funcs;
     private List<StaticDataIR> staticData;
 
-    public ProgramIR(){
+    public ProgramIR() {
         this.funcs = new ArrayList<>();
         this.staticData = new ArrayList<>();
     }

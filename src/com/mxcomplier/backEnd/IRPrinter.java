@@ -9,21 +9,21 @@ import com.mxcomplier.Ir.ProgramIR;
 public class IRPrinter extends IRScanner {
     private String indentation = "";
 
-    public IRPrinter(IRBuilder builder){
+    public IRPrinter(IRBuilder builder) {
         this.builder = builder;
     }
 
-    private void println(String str){
-        str = str.replace("\n", "\n"+indentation);
-        System.out.println(indentation+str);
+    private void println(String str) {
+        str = str.replace("\n", "\n" + indentation);
+        System.out.println(indentation + str);
     }
 
 
-    private void indent(){
+    private void indent() {
         indentation += '\t';
     }
 
-    private void unindent(){
+    private void unindent() {
         indentation = indentation.substring(1);
     }
 
@@ -32,7 +32,7 @@ public class IRPrinter extends IRScanner {
     public void visit(BasicBlockIR node) {
         InstIR inst = node.getHead().next;
         indent();
-        while(inst != node.getTail()){
+        while (inst != node.getTail()) {
             inst.accept(this);
             inst = inst.next;
         }
@@ -41,7 +41,7 @@ public class IRPrinter extends IRScanner {
 
     @Override
     public void visit(ProgramIR node) {
-        for (FuncIR func : node.getFuncs()){
+        for (FuncIR func : node.getFuncs()) {
             func.accept(this);
         }
     }
@@ -50,7 +50,7 @@ public class IRPrinter extends IRScanner {
     public void visit(FuncIR node) {
         println(String.format("<%s>", node.getName()));
         indent();
-        for (BasicBlockIR bb : node.getBBList()){
+        for (BasicBlockIR bb : node.getBBList()) {
             println(String.format("<%s>", bb));
             bb.accept(this);
         }

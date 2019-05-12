@@ -16,7 +16,7 @@ public class NasmPrinter extends IRScanner {
     private String indentation = "";
     private PrintStream output = System.out;
 
-    public NasmPrinter(IRBuilder builder){
+    public NasmPrinter(IRBuilder builder) {
         this.builder = builder;
         if (Config.DEBUG) {
             try {
@@ -27,25 +27,25 @@ public class NasmPrinter extends IRScanner {
         }
     }
 
-    private void println(String str){
-        str = str.replace("\n", "\n"+indentation);
-        output.println(indentation+str);
+    private void println(String str) {
+        str = str.replace("\n", "\n" + indentation);
+        output.println(indentation + str);
     }
 
 
-    private void indent(){
+    private void indent() {
         indentation += '\t';
     }
 
-    private void unindent(){
+    private void unindent() {
         indentation = indentation.substring(1);
     }
 
-    private void init_print(List<StaticDataIR> staticData){
+    private void init_print(List<StaticDataIR> staticData) {
         try {
             BufferedReader libBuffer = new BufferedReader(new FileReader("lib/c2nasm/lib.asm"));
             String line;
-            while((line = libBuffer.readLine()) != null)
+            while ((line = libBuffer.readLine()) != null)
                 output.println(line);
 
         } catch (IOException e) {
@@ -56,7 +56,7 @@ public class NasmPrinter extends IRScanner {
         println("global __init");
         println("section .data");
         indent();
-        for (StaticDataIR data : staticData){
+        for (StaticDataIR data : staticData) {
             println(data.lable + ':');
             indent();
             println(data.nasmString());
@@ -72,7 +72,7 @@ public class NasmPrinter extends IRScanner {
     public void visit(BasicBlockIR node) {
         InstIR inst = node.getHead().next;
         indent();
-        while(inst != node.getTail()){
+        while (inst != node.getTail()) {
             inst.accept(this);
             inst = inst.next;
         }
@@ -82,7 +82,7 @@ public class NasmPrinter extends IRScanner {
     @Override
     public void visit(ProgramIR node) {
         init_print(node.getStaticData());
-        for (FuncIR func : node.getFuncs()){
+        for (FuncIR func : node.getFuncs()) {
             func.accept(this);
         }
         output.flush();
@@ -92,7 +92,7 @@ public class NasmPrinter extends IRScanner {
     public void visit(FuncIR node) {
         println(String.format("%s:", node.getName()));
         indent();
-        for (BasicBlockIR bb : node.getBBList()){
+        for (BasicBlockIR bb : node.getBBList()) {
             println(String.format("%s:", bb));
             bb.accept(this);
         }

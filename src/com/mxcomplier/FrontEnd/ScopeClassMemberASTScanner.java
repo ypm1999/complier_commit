@@ -54,7 +54,7 @@ public class ScopeClassMemberASTScanner extends ASTScanner {
     public void visit(FuncDefNode node) {
         currentScope = node.getFuncBody().getScope();
         List<Type> args = new ArrayList<>();
-        for (VarDefNode arg : node.getParameters()){
+        for (VarDefNode arg : node.getParameters()) {
             arg.accept(this);
             Type type = arg.getType().getType();
             if (type instanceof ClassType)
@@ -64,12 +64,11 @@ public class ScopeClassMemberASTScanner extends ASTScanner {
         currentScope = currentScope.getParent();
 
         Type returnType;
-        if (node.getReturnType() == null){
+        if (node.getReturnType() == null) {
             if (currentClass == null || !args.isEmpty() || !node.getName().equals(currentClass.getName()))
                 throw new ComplierError(node.getLocation(), "constructor function is invalid");
             returnType = currentClass.getType();
-        }
-        else
+        } else
             returnType = node.getReturnType().getType();
         FuncSymbol symbol = new FuncSymbol(node.getName(), returnType, node.getFuncBody().getScope(), args, currentClass);
         symbol.setConstructor(node.getReturnType() == null);

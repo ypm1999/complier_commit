@@ -8,7 +8,7 @@ public class PhysicalRegisterIR extends RegisterIR {
     static private int ID = 0;
     private int id;
 
-    public PhysicalRegisterIR(String label){
+    public PhysicalRegisterIR(String label) {
         this.lable = label;
         this.id = ++ID;
     }

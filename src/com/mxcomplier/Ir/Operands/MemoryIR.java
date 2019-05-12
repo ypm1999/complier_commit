@@ -1,7 +1,6 @@
 package com.mxcomplier.Ir.Operands;
 
 import com.mxcomplier.Ir.IRVisitor;
-import com.mxcomplier.Ir.RegisterSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,29 +15,30 @@ public class MemoryIR extends AddressIR {
     private ConstantIR constant = null;
 
 
-    public MemoryIR(){}
+    public MemoryIR() {
+    }
 
-    public MemoryIR(VirtualRegisterIR base){
+    public MemoryIR(VirtualRegisterIR base) {
         this.base = base;
     }
 
-    public MemoryIR(VirtualRegisterIR base, VirtualRegisterIR offset){
+    public MemoryIR(VirtualRegisterIR base, VirtualRegisterIR offset) {
         this.base = base;
         this.offset = offset;
     }
 
-    public MemoryIR(VirtualRegisterIR base, VirtualRegisterIR offset, int scale){
+    public MemoryIR(VirtualRegisterIR base, VirtualRegisterIR offset, int scale) {
         this.base = base;
         this.offset = offset;
         this.scale = scale;
     }
 
-    public MemoryIR(VirtualRegisterIR base, int num){
+    public MemoryIR(VirtualRegisterIR base, int num) {
         this.base = base;
         this.num = num;
     }
 
-    public MemoryIR(MemoryIR other){
+    public MemoryIR(MemoryIR other) {
         base = other.base;
         offset = other.offset;
         scale = other.scale;
@@ -48,7 +48,7 @@ public class MemoryIR extends AddressIR {
         old_base = other.old_offset;
     }
 
-    public MemoryIR(ConstantIR constant){
+    public MemoryIR(ConstantIR constant) {
         this.constant = constant;
     }
 
@@ -89,7 +89,7 @@ public class MemoryIR extends AddressIR {
         this.num = num;
     }
 
-    public List<VirtualRegisterIR> getVreg(){
+    public List<VirtualRegisterIR> getVreg() {
         List<VirtualRegisterIR> regs = new ArrayList<>();
         if (base != null)
             regs.add(base);
@@ -111,7 +111,7 @@ public class MemoryIR extends AddressIR {
         str1 = "" + base;
         if (offset == null)
             str2 = "";
-        else{
+        else {
             if (scale == 1)
                 str2 = " + " + offset.toString();
             else

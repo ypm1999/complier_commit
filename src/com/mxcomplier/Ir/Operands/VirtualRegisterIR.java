@@ -11,13 +11,13 @@ public class VirtualRegisterIR extends RegisterIR {
     private PhysicalRegisterIR phyReg = null;
     public VirtualRegisterIR alais = null;
 
-    public VirtualRegisterIR(String label){
+    public VirtualRegisterIR(String label) {
         this.id = vRegId++;
         this.lable = label;
 //        this.memory = new StackSoltIR(lable + "_solt");
     }
 
-    public VirtualRegisterIR(VirtualRegisterIR other){
+    public VirtualRegisterIR(VirtualRegisterIR other) {
         this.id = vRegId++;
         this.lable = other.lable + "_cp";
         this.tempVar = other.tempVar;
@@ -26,7 +26,7 @@ public class VirtualRegisterIR extends RegisterIR {
         this.alais = other.alais;
     }
 
-    public VirtualRegisterIR(String label, PhysicalRegisterIR phy){
+    public VirtualRegisterIR(String label, PhysicalRegisterIR phy) {
         this.id = -1;
         this.lable = label;
         this.phyReg = phy;
@@ -36,7 +36,7 @@ public class VirtualRegisterIR extends RegisterIR {
         return id;
     }
 
-    static public int getVregId(){
+    static public int getVregId() {
         return vRegId;
     }
 
@@ -51,7 +51,6 @@ public class VirtualRegisterIR extends RegisterIR {
     public PhysicalRegisterIR getPhyReg() {
         return phyReg;
     }
-
 
 
     @Override

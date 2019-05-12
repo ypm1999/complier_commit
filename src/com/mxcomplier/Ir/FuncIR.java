@@ -18,9 +18,10 @@ public class FuncIR {
     static private int ID = 0;
     private int id;
 
-    public enum Type{
+    public enum Type {
         EXTRA, LIBRARY, USER
     }
+
     private String name;
     private Type type;
     public VirtualRegisterIR returnValue = null;
@@ -34,30 +35,30 @@ public class FuncIR {
     private List<BasicBlockIR> orderedBBList, reversedOrderedBBList;
     private List<VirtualRegisterIR> parameters = new ArrayList<>();
 
-    public FuncIR(String name){
+    public FuncIR(String name) {
         this.id = ++ID;
         this.name = name;
         this.type = Type.USER;
     }
 
-    public FuncIR(String name, Type type){
+    public FuncIR(String name, Type type) {
         this.id = ++ID;
         this.name = name;
         this.type = type;
     }
 
-    public int getInstNum(){
+    public int getInstNum() {
         int res = 0;
-        for (BasicBlockIR bb : BBList){
-            for(InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next){
+        for (BasicBlockIR bb : BBList) {
+            for (InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
                 res++;
             }
         }
         return res;
     }
 
-    public void updateCallee(){
-        for (FuncIR func : callee){
+    public void updateCallee() {
+        for (FuncIR func : callee) {
             func.caller.remove(this);
         }
         callee.clear();
@@ -71,17 +72,16 @@ public class FuncIR {
         }
     }
 
-    public HashSet<VirtualRegisterIR> getAllVreg(){
+    public HashSet<VirtualRegisterIR> getAllVreg() {
         HashSet<VirtualRegisterIR> res = new HashSet<>();
-        for (BasicBlockIR bb : BBList){
-            for(InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next){
-                if (inst instanceof CallInstIR){
+        for (BasicBlockIR bb : BBList) {
+            for (InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
+                if (inst instanceof CallInstIR) {
                     for (OperandIR arg : ((CallInstIR) inst).getArgs())
                         res.addAll(inst.getVreg(arg));
                     if (((CallInstIR) inst).getReturnValue() != null)
                         res.addAll(inst.getVreg(((CallInstIR) inst).getReturnValue()));
-                }
-                else{
+                } else {
                     res.addAll(inst.getUsedVReg());
                     res.addAll(inst.getDefinedVreg());
                 }
@@ -90,11 +90,11 @@ public class FuncIR {
         return res;
     }
 
-    public void initGlobalDefined(){
+    public void initGlobalDefined() {
         HashSet<VirtualRegisterIR> usedVreg = new HashSet<>(), definedVreg = new HashSet<>();
-        for (BasicBlockIR bb : BBList){
-            for(InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next){
-                if (inst instanceof CallInstIR){
+        for (BasicBlockIR bb : BBList) {
+            for (InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
+                if (inst instanceof CallInstIR) {
                     for (OperandIR arg : ((CallInstIR) inst).getArgs())
                         usedVreg.addAll(inst.getVreg(arg));
                     if (((CallInstIR) inst).getReturnValue() != null) {
@@ -121,7 +121,8 @@ public class FuncIR {
 
 
     static private HashSet<BasicBlockIR> accessed = new HashSet<>();
-    private void dfsBB(BasicBlockIR now, BasicBlockIR fa){
+
+    private void dfsBB(BasicBlockIR now, BasicBlockIR fa) {
         if (fa != null) {
             now.addFronter(fa);
             fa.addSuccessor(now);
@@ -129,7 +130,7 @@ public class FuncIR {
         if (accessed.contains(now))
             return;
         accessed.add(now);
-        for(InstIR inst = now.getTail().prev; inst != now.getHead(); inst = inst.prev) {
+        for (InstIR inst = now.getTail().prev; inst != now.getHead(); inst = inst.prev) {
             if (inst instanceof JumpInstIR)
                 dfsBB(((JumpInstIR) inst).getTarget(), now);
             if (inst instanceof CJumpInstIR) {
@@ -141,14 +142,14 @@ public class FuncIR {
         reversedOrderedBBList.add(now);
     }
 
-    public void initOrderBBList(){
-        for (BasicBlockIR bb:BBList)
+    public void initOrderBBList() {
+        for (BasicBlockIR bb : BBList)
             bb.initFrontAndSucc();
         accessed.clear();
         reversedOrderedBBList = new ArrayList<>();
         dfsBB(entryBB, null);
         List<BasicBlockIR> tempBBList = new ArrayList<>(BBList);
-        for (BasicBlockIR bb:tempBBList){
+        for (BasicBlockIR bb : tempBBList) {
             if (!accessed.contains(bb))
                 BBList.remove(bb);
         }
@@ -178,8 +179,8 @@ public class FuncIR {
         return parameters;
     }
 
-    public HashSet<PhysicalRegisterIR> getDefinedPhyRegs(){
-        if (definedPhyRegs == null){
+    public HashSet<PhysicalRegisterIR> getDefinedPhyRegs() {
+        if (definedPhyRegs == null) {
             definedPhyRegs = new HashSet<>();
             if (type == Type.LIBRARY)
                 definedPhyRegs.addAll(RegisterSet.allocatePhyRegisterSet);
@@ -196,14 +197,14 @@ public class FuncIR {
     }
 
     public HashSet<PhysicalRegisterIR> getUsedPhyRegs() {
-        if (usedPhyRegs == null){
+        if (usedPhyRegs == null) {
             usedPhyRegs = new HashSet<>();
             if (type == Type.LIBRARY)
                 usedPhyRegs.addAll(RegisterSet.allocatePhyRegisterSet);
             else
-                for (BasicBlockIR bb:BBList){
-                    for(InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next){
-                        for (VirtualRegisterIR vreg: inst.getUsedVReg())
+                for (BasicBlockIR bb : BBList) {
+                    for (InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
+                        for (VirtualRegisterIR vreg : inst.getUsedVReg())
                             usedPhyRegs.add(vreg.getPhyReg());
                     }
                 }

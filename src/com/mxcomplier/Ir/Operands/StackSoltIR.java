@@ -7,7 +7,7 @@ import com.mxcomplier.Ir.RegisterSet;
 public class StackSoltIR extends MemoryIR {
     private String lable;
 
-    public StackSoltIR(String lable){
+    public StackSoltIR(String lable) {
         super(RegisterSet.Vrbp);
         this.lable = lable;
     }

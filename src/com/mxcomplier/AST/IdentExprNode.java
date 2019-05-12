@@ -14,7 +14,6 @@ public class IdentExprNode extends ExprNode {
     }
 
 
-
     public String getName() {
         return name;
     }

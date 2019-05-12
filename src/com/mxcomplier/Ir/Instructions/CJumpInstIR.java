@@ -2,7 +2,6 @@ package com.mxcomplier.Ir.Instructions;
 
 import com.mxcomplier.Ir.BasicBlockIR;
 import com.mxcomplier.Ir.IRVisitor;
-import com.mxcomplier.Ir.Operands.AddressIR;
 import com.mxcomplier.Ir.Operands.OperandIR;
 import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
 
@@ -10,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CJumpInstIR extends BranchInstIR {
-    public enum Op{
+    public enum Op {
         L, G, LE, GE, E, NE, ERROR
     }
 
@@ -18,7 +17,7 @@ public class CJumpInstIR extends BranchInstIR {
     public OperandIR lhs, rhs;
     private BasicBlockIR trueBB, falseBB;
 
-    public CJumpInstIR(Op op, OperandIR lhs, OperandIR rhs, BasicBlockIR trueBB, BasicBlockIR falseBB){
+    public CJumpInstIR(Op op, OperandIR lhs, OperandIR rhs, BasicBlockIR trueBB, BasicBlockIR falseBB) {
         this.op = op;
         this.lhs = lhs;
         this.rhs = rhs;
@@ -46,16 +45,24 @@ public class CJumpInstIR extends BranchInstIR {
         return falseBB;
     }
 
-    public void removeFalseBB(){
+    public void removeFalseBB() {
         falseBB = null;
     }
 
-    public void swap(){
-        switch (op){
-            case L: op = Op.G; break;
-            case G: op = Op.L; break;
-            case LE: op = Op.GE; break;
-            case GE: op = Op.LE; break;
+    public void swap() {
+        switch (op) {
+            case L:
+                op = Op.G;
+                break;
+            case G:
+                op = Op.L;
+                break;
+            case LE:
+                op = Op.GE;
+                break;
+            case GE:
+                op = Op.LE;
+                break;
         }
         OperandIR tmp = lhs;
         lhs = rhs;
@@ -70,7 +77,7 @@ public class CJumpInstIR extends BranchInstIR {
     }
 
     @Override
-    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap){
+    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap) {
         lhs = replacedVreg(lhs, renameMap);
         rhs = replacedVreg(rhs, renameMap);
     }

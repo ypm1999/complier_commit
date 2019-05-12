@@ -201,7 +201,6 @@ public class Scope {
     }
 
 
-
     public Scope getParent() {
         return parent;
     }

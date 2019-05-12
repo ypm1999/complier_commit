@@ -334,7 +334,7 @@ public class ASTBuilder extends MxStarBaseVisitor<Node> {
 
 
         subExpr = visit(ctx.expression());
-        if (subExpr instanceof IntConstExprNode){
+        if (subExpr instanceof IntConstExprNode) {
             IntConstExprNode intValue = (IntConstExprNode) subExpr;
             switch (ctx.op.getText()) {
                 case "++":

@@ -5,7 +5,10 @@ import com.mxcomplier.Ir.IRVisitor;
 import com.mxcomplier.Ir.Operands.*;
 import com.mxcomplier.Ir.RegisterSet;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import static java.lang.Math.min;
 
@@ -15,7 +18,7 @@ public class CallInstIR extends InstIR {
     private List<OperandIR> args;
     private RegisterIR returnValue;
 
-    public CallInstIR(FuncIR func, List<OperandIR> args, RegisterIR returnValue){
+    public CallInstIR(FuncIR func, List<OperandIR> args, RegisterIR returnValue) {
         this.func = func;
         this.args = args;
         this.returnValue = returnValue;
@@ -39,8 +42,8 @@ public class CallInstIR extends InstIR {
         VirtualRegisterIR ret = (VirtualRegisterIR) returnValue;
         if (ret != null && ret.memory instanceof StackSoltIR)
             res.add((StackSoltIR) ret.memory);
-        for (OperandIR arg : args){
-            if (arg instanceof VirtualRegisterIR){
+        for (OperandIR arg : args) {
+            if (arg instanceof VirtualRegisterIR) {
                 MemoryIR mem = ((VirtualRegisterIR) arg).memory;
                 if (mem instanceof StackSoltIR)
                     res.add((StackSoltIR) mem);
@@ -58,7 +61,7 @@ public class CallInstIR extends InstIR {
 
     public List<VirtualRegisterIR> getIRDefinedVreg() {
         if (returnValue != null)
-         return getVreg(returnValue);
+            return getVreg(returnValue);
         return new ArrayList<>();
     }
 
@@ -68,7 +71,7 @@ public class CallInstIR extends InstIR {
     }
 
     @Override
-    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap){
+    public void replaceVreg(Map<VirtualRegisterIR, VirtualRegisterIR> renameMap) {
         returnValue = (RegisterIR) replacedVreg(returnValue, renameMap);
         List<OperandIR> tmp = new ArrayList<>();
         for (OperandIR arg : args)
@@ -97,7 +100,7 @@ public class CallInstIR extends InstIR {
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder("call " + func.getName() + " (");
-        for (OperandIR arg : args){
+        for (OperandIR arg : args) {
             str.append(arg).append(",");
         }
         if (!args.isEmpty())

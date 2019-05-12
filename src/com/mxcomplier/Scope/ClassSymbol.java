@@ -22,16 +22,15 @@ public class ClassSymbol extends Symbol {
         this.scope = scope;
     }
 
-    public void addVar(String name){
-        if (scope.getVar(name) != null){
+    public void addVar(String name) {
+        if (scope.getVar(name) != null) {
             varOffset.put(name, offset);
             offset += Config.getREGSIZE();
-        }
-        else
+        } else
             assert false;
     }
 
-    public int getVarOffset(String name){
+    public int getVarOffset(String name) {
         if (varOffset.containsKey(name))
             return varOffset.get(name);
         else
@@ -39,7 +38,7 @@ public class ClassSymbol extends Symbol {
         return -1;
     }
 
-    public int getSize(){
+    public int getSize() {
         return offset;
     }
 
