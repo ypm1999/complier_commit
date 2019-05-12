@@ -45,9 +45,9 @@ public class Main {
             IRBuilder irBuilder = new IRBuilder();
             irBuilder.visit(ast);
 
-            new BlockMerger(true).visit(irBuilder.root);
-            new LocalValueNumbering().visit(irBuilder.root);
-            new UseLessCodeEliminater(irBuilder).run();
+//            new BlockMerger(true).visit(irBuilder.root);
+//            new LocalValueNumbering().visit(irBuilder.root);
+//            new UseLessCodeEliminater(irBuilder).run();
 
 //            new FuncInliner().run(irBuilder);
 //            System.err.println("inline Finished");
@@ -56,13 +56,12 @@ public class Main {
 //            if (Config.DEBUG) {
 //                new IRPrinter(irBuilder).visit(irBuilder.root);
 //            }
-            new BlockMerger(true).visit(irBuilder.root);
+//            new BlockMerger(true).visit(irBuilder.root);
 
 //            System.err.println("Allocating");
             new GraphAllocator().run(irBuilder);
             new StackFrameAllocater().visit(irBuilder.root);
-            new BlockMerger(false).visit(irBuilder.root);
-//            System.err.println("Printing");
+//            new BlockMerger(false).visit(irBuilder.root);
             new NasmPrinter(irBuilder).visit(irBuilder.root);
 
         } catch (ComplierError e) {
