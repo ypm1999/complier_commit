@@ -153,7 +153,7 @@ public class IRBuilder extends ASTScanner {
 
         globalScope = currentScope = currentScope.getParent();
 
-//        initFuncGlobalVar(root.getFuncs());
+        initFuncGlobalVar(root.getFuncs());
     }
 
     private void showGlobal() {

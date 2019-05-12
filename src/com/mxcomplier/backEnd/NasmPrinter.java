@@ -14,13 +14,14 @@ import java.util.List;
 
 public class NasmPrinter extends IRScanner {
     private String indentation = "";
-    private PrintStream output = System.out;
+    private PrintStream output;
 
-    public NasmPrinter(IRBuilder builder) {
+    public NasmPrinter(IRBuilder builder, PrintStream output) {
+        this.output = output;
         this.builder = builder;
         if (Config.DEBUG) {
             try {
-                output = new PrintStream("test.asm");
+                this.output = new PrintStream("test.asm");
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }

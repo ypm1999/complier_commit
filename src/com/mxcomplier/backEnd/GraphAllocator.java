@@ -33,11 +33,12 @@ public class GraphAllocator {
     private boolean conservative(VirtualRegisterIR u, VirtualRegisterIR v) {
         HashSet<VirtualRegisterIR> nodes = new HashSet<>(graph.getNeighbor(u));
         nodes.addAll(graph.getNeighbor(v));
-        int cnt = 0;
-        for (VirtualRegisterIR node : nodes)
-            if (graph.getDegree(node) >= REGNUM)
-                cnt++;
-        return cnt < REGNUM;
+        return nodes.size() < REGNUM;
+//        int cnt = 0;
+//        for (VirtualRegisterIR node : nodes)
+//            if (graph.getDegree(node) >= REGNUM)
+//                cnt++;
+//        return cnt < REGNUM;
     }
 
     private void doMerge(FuncIR func) {

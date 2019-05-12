@@ -94,8 +94,6 @@ public class FuncInliner extends IRScanner {
                             FuncInfo info = funcInfoMap.getOrDefault(call.getFunc(), null);
                             if (info == null || info.instNum > MAX_CALLEE_INST_NUM)
                                 continue;
-                            if (call.getFunc().getName().equals("origin"))
-                                continue;
 
                             if (func == call.getFunc()) {
                                 if (!funcBuckupMap.containsKey(func))
