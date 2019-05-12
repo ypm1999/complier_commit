@@ -254,10 +254,6 @@ public class GraphAllocator{
                             inst.next.remove();
                             inst = inst.prev;
                         }
-//                        else if (dest == destNext){
-//                            inst = inst.prev;
-//                            inst.next.remove();
-//                        }
                     }
                 }
             }
