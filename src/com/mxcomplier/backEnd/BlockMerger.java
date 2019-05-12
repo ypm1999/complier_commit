@@ -40,7 +40,7 @@ public class BlockMerger extends IRScanner {
                 if (bb.fronters.size() == 1) {
                     BasicBlockIR prevBB = bb.fronters.iterator().next();
                     InstIR lastInst = prevBB.getTail().prev;
-                    if (basic && prevBB.successors.size() > 1)
+                    if (basic && (prevBB.successors.size() > 1 || bb == node.leaveBB))
                         continue;
                     if (lastInst instanceof JumpInstIR && ((JumpInstIR) lastInst).getTarget() == bb) {
                         lastInst.remove();

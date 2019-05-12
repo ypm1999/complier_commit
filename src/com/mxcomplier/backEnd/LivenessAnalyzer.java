@@ -23,8 +23,11 @@ public class LivenessAnalyzer {
 
     }
 
-    Graph buildGraph(FuncIR func, List<Pair<VirtualRegisterIR, VirtualRegisterIR>> moveList){
-        Graph graph = new Graph();
+    public HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> getLiveOut() {
+        return liveOut;
+    }
+
+    public void buildLiveOut(FuncIR func){
         liveOut.clear();
         usedVregs.clear();
         definedVregs.clear();
@@ -41,10 +44,6 @@ public class LivenessAnalyzer {
                     if (!bbDefined.contains(vreg))
                         bbUsed.add(vreg);
                 bbDefined.addAll(defined);
-                for (VirtualRegisterIR vreg: used)
-                    graph.addNode(vreg);
-                for (VirtualRegisterIR vreg: defined)
-                    graph.addNode(vreg);
             }
         }
         //get liveOut
@@ -66,6 +65,18 @@ public class LivenessAnalyzer {
                 liveOut.put(bb, curLiveOut);
                 changed = changed || oldSize != curLiveOut.size();
             }
+        }
+    }
+
+    Graph buildGraph(FuncIR func, List<Pair<VirtualRegisterIR, VirtualRegisterIR>> moveList){
+        Graph graph = new Graph();
+        buildLiveOut(func);
+
+        for (BasicBlockIR bb : func.getBBList()){
+            for (VirtualRegisterIR vreg: usedVregs.get(bb))
+                graph.addNode(vreg);
+            for (VirtualRegisterIR vreg: definedVregs.get(bb))
+                graph.addNode(vreg);
         }
 
         for (BasicBlockIR bb : func.getBBList()) {

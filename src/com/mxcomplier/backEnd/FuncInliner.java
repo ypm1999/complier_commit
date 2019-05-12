@@ -10,8 +10,8 @@ import java.util.*;
 
 public class FuncInliner extends IRScanner{
 
-    static private final int MAX_CALLEE_INST_NUM = 1 << 7;
-    static private final int MAX_CALLER_INST_NUM = 1 << 12;
+    static private final int MAX_CALLEE_INST_NUM = 1 << 10;
+    static private final int MAX_CALLER_INST_NUM = 1 << 13;
     static private final int MAX_INLINE_RAND = 5;
 
     private class FuncInfo{
@@ -21,6 +21,51 @@ public class FuncInliner extends IRScanner{
     }
 
     private HashMap<FuncIR, FuncInfo> funcInfoMap = new HashMap<>();
+    private HashMap<FuncIR, FuncIR> funcBuckupMap = new HashMap<>();
+
+    private FuncIR doBuckup(FuncIR oldFunc){
+        Map<BasicBlockIR, BasicBlockIR> bbRenameMap = new HashMap<>();
+        Map<VirtualRegisterIR, VirtualRegisterIR> vregRenameMap = new HashMap<>();
+        FuncIR newfunc = new FuncIR(oldFunc.getName(), oldFunc.getType());
+
+        for (int i = 0; i < oldFunc.getParameters().size(); i++){
+            VirtualRegisterIR oldArg = oldFunc.getParameters().get(i);
+            VirtualRegisterIR newArg = new VirtualRegisterIR(oldArg.lable + "_");
+            vregRenameMap.put(oldArg, newArg);
+            newfunc.getParameters().add(newArg);
+        }
+
+        if (oldFunc.returnValue != null){
+            VirtualRegisterIR newret = new VirtualRegisterIR(oldFunc.returnValue.lable + "_");
+            newfunc.returnValue = newret;
+            if (!vregRenameMap.containsKey(oldFunc.returnValue))
+                vregRenameMap.put(oldFunc.returnValue, newret);
+        }
+
+        for (VirtualRegisterIR vreg : oldFunc.getAllVreg())
+            if (!vregRenameMap.containsKey(vreg) && !oldFunc.usedGlobalVar.contains(vreg))
+                vregRenameMap.put(vreg, new VirtualRegisterIR(vreg.lable + "_"));
+        for (BasicBlockIR bb : oldFunc.getBBList()){
+            bbRenameMap.put(bb, new BasicBlockIR(newfunc, bb.getLable() + "_"));
+        }
+
+        newfunc.entryBB = bbRenameMap.get(oldFunc.entryBB);
+        newfunc.leaveBB = bbRenameMap.get(oldFunc.leaveBB);
+        newfunc.usedGlobalVar = oldFunc.usedGlobalVar;
+
+        for (BasicBlockIR oldBB : oldFunc.getBBList()){
+            BasicBlockIR newBB = bbRenameMap.get(oldBB);
+            for(InstIR inst = oldBB.getHead().next; inst != oldBB.getTail(); inst = inst.next){
+                InstIR newinst = inst.copy();
+                newinst.replaceVreg(vregRenameMap);
+                if (newinst instanceof BranchInstIR)
+                    ((BranchInstIR) newinst).bbRename(bbRenameMap);
+                newBB.append(newinst);
+            }
+        }
+
+        return newfunc;
+    }
 
     public void run(IRBuilder ir){
         List<FuncIR> funcList =  ir.root.getFuncs();
@@ -34,6 +79,7 @@ public class FuncInliner extends IRScanner{
         boolean changed = true;
         for (int cnt=0; changed && cnt < MAX_INLINE_RAND; cnt++){
             changed = false;
+            funcBuckupMap.clear();
             for (FuncIR func : funcList) {
                 if (funcInfoMap.get(func).instNum > MAX_CALLER_INST_NUM)
                     continue;
@@ -44,10 +90,16 @@ public class FuncInliner extends IRScanner{
                         if (inst instanceof CallInstIR){
                             CallInstIR call = (CallInstIR) inst;
                             FuncInfo info = funcInfoMap.getOrDefault(call.getFunc(), null);
-                            if (info == null || func == call.getFunc() || info.instNum > MAX_CALLEE_INST_NUM)
+                            if (info == null || info.instNum > MAX_CALLEE_INST_NUM)
                                 continue;
-//                            System.err.println("inline " + call.getFunc().getName() + " in " + func.getName());
-                            curBB = doInline(func, curBB, call);
+
+                            if (func == call.getFunc()){
+                                if (!funcBuckupMap.containsKey(func))
+                                    funcBuckupMap.put(func, doBuckup(func));
+                                doInline(func, funcBuckupMap.get(func), curBB, call);
+                            }
+                            else
+                                curBB = doInline(func, call.getFunc(), curBB, call);
                             inst = curBB.getHead();
 //                            new IRPrinter(ir).visit(ir.root);
                             funcInfoMap.get(func).instNum += info.instNum - 1;
@@ -68,8 +120,7 @@ public class FuncInliner extends IRScanner{
 
     }
 
-    private BasicBlockIR doInline(FuncIR caller, BasicBlockIR curBB, CallInstIR call){
-        FuncIR callee = call.getFunc();
+    private BasicBlockIR doInline(FuncIR caller, FuncIR callee, BasicBlockIR curBB, CallInstIR call){
         Map<BasicBlockIR, BasicBlockIR> bbRenameMap = new HashMap<>();
         Map<VirtualRegisterIR, VirtualRegisterIR> vregRenameMap = new HashMap<>();
 

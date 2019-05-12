@@ -36,7 +36,10 @@ public class ReturnInstIR extends BranchInstIR {
 
     @Override
     public InstIR copy() {
-        return new ReturnInstIR(src.copy());
+        if (src != null)
+            return new ReturnInstIR(src.copy());
+        else
+            return new ReturnInstIR();
     }
 
     @Override

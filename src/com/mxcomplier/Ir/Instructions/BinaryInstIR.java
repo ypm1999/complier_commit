@@ -84,7 +84,7 @@ public class BinaryInstIR extends InstIR {
                 return String.format("mul %s", src);
             case DIV:
             case MOD:
-                return String.format("mov rdx,   0\ndiv %s", src);
+                return String.format("div %s", src);
             default:
                 return String.format("%s %s, %s", op.toString().toLowerCase(), dest, src);
         }
