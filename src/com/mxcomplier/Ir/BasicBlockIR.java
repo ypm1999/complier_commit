@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BasicBlockIR {
+    private static int BBid = 0;
+    private int id;
+
     private String lable; //for Debug
     private FuncIR func;
     private InstIR head, tail;
@@ -15,6 +18,7 @@ public class BasicBlockIR {
 
 
     public BasicBlockIR(FuncIR func, String lable){
+        this.id = ++BBid;
         this.lable = lable;
         this.func = func;
         this.head = new EmptyInstIR();
@@ -77,6 +81,11 @@ public class BasicBlockIR {
         tail.prev.next = nextBB.getHead().next;
         nextBB.getHead().next.prev = tail.prev;
         tail = nextBB.getTail();
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
     }
 
     @Override

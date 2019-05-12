@@ -52,9 +52,16 @@ public class VirtualRegisterIR extends RegisterIR {
         return phyReg;
     }
 
+
+
     @Override
     public VirtualRegisterIR copy() {
         return this;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
     }
 
     @Override

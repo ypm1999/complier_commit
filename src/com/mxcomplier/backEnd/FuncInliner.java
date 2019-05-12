@@ -187,6 +187,4 @@ public class FuncInliner extends IRScanner{
 
         return newLeaveBB;
     }
-
-
 }
