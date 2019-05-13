@@ -171,6 +171,10 @@ public class FuncIR {
         return BBList;
     }
 
+    public void setBBList(List<BasicBlockIR> BBList) {
+        this.BBList = BBList;
+    }
+
     public Type getType() {
         return type;
     }

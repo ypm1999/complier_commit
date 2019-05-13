@@ -12,7 +12,7 @@ public class FuncInliner extends IRScanner {
 
     static private final int MAX_CALLEE_INST_NUM = 1 << 9;
     static private final int MAX_CALLER_INST_NUM = 1 << 12;
-    static private final int MAX_INLINE_RAND = 1;
+    static private final int MAX_INLINE_RAND = 8;
 
     private class FuncInfo {
         int instNum = 0;

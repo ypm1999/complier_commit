@@ -18,6 +18,10 @@ public class BlockMerger extends IRScanner {
         this.basic = basic;
     }
 
+    void runBasic(){
+
+    }
+
     @Override
     public void visit(ProgramIR node) {
         for (FuncIR func : node.getFuncs()) {
