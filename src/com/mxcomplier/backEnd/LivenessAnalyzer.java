@@ -55,7 +55,7 @@ public class LivenessAnalyzer {
         }
         //get liveOut
         boolean changed = true;
-        func.initOrderBBList();
+        func.initReverseOrderBBList();
         while (changed) {
             changed = false;
             for (BasicBlockIR bb : func.getReversedOrderedBBList()) {

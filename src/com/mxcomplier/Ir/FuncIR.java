@@ -1,9 +1,7 @@
 package com.mxcomplier.Ir;
 
-import com.mxcomplier.Ir.Instructions.CJumpInstIR;
-import com.mxcomplier.Ir.Instructions.CallInstIR;
-import com.mxcomplier.Ir.Instructions.InstIR;
-import com.mxcomplier.Ir.Instructions.JumpInstIR;
+import com.mxcomplier.Error.IRError;
+import com.mxcomplier.Ir.Instructions.*;
 import com.mxcomplier.Ir.Operands.AddressIR;
 import com.mxcomplier.Ir.Operands.OperandIR;
 import com.mxcomplier.Ir.Operands.PhysicalRegisterIR;
@@ -122,7 +120,7 @@ public class FuncIR {
 
     static private HashSet<BasicBlockIR> accessed = new HashSet<>();
 
-    private void dfsBB(BasicBlockIR now, BasicBlockIR fa) {
+    private void reverseOrderDfsBB(BasicBlockIR now, BasicBlockIR fa) {
         if (fa != null) {
             now.addFronter(fa);
             fa.addSuccessor(now);
@@ -130,24 +128,63 @@ public class FuncIR {
         if (accessed.contains(now))
             return;
         accessed.add(now);
+
         for (InstIR inst = now.getTail().prev; inst != now.getHead(); inst = inst.prev) {
             if (inst instanceof JumpInstIR)
-                dfsBB(((JumpInstIR) inst).getTarget(), now);
+                reverseOrderDfsBB(((JumpInstIR) inst).getTarget(), now);
             if (inst instanceof CJumpInstIR) {
-                dfsBB(((CJumpInstIR) inst).getTrueBB(), now);
+                reverseOrderDfsBB(((CJumpInstIR) inst).getTrueBB(), now);
                 if (((CJumpInstIR) inst).getFalseBB() != null)
-                    dfsBB(((CJumpInstIR) inst).getFalseBB(), now);
+                    reverseOrderDfsBB(((CJumpInstIR) inst).getFalseBB(), now);
             }
         }
         reversedOrderedBBList.add(now);
+    }
+
+    private void orderDfsBB(BasicBlockIR now, BasicBlockIR fa) {
+//        System.err.println(now.getLable());
+        if (fa != null) {
+            now.addFronter(fa);
+            fa.addSuccessor(now);
+        }
+        if (accessed.contains(now))
+            return;
+        accessed.add(now);
+        orderedBBList.add(now);
+//        System.err.println(now.getLable());
+        for (InstIR inst = now.getTail().prev; inst != now.getHead(); inst = inst.prev) {
+//            System.err.println(inst);
+            if (inst instanceof EmptyInstIR)
+                throw new IRError("empty");
+            if (inst instanceof JumpInstIR)
+                orderDfsBB(((JumpInstIR) inst).getTarget(), now);
+            if (inst instanceof CJumpInstIR) {
+                orderDfsBB(((CJumpInstIR) inst).getTrueBB(), now);
+                if (((CJumpInstIR) inst).getFalseBB() != null)
+                    orderDfsBB(((CJumpInstIR) inst).getFalseBB(), now);
+            }
+        }
+    }
+
+    public void initReverseOrderBBList() {
+        for (BasicBlockIR bb : BBList)
+            bb.initFrontAndSucc();
+        accessed.clear();
+        reversedOrderedBBList = new ArrayList<>();
+        reverseOrderDfsBB(entryBB, null);
+        List<BasicBlockIR> tempBBList = new ArrayList<>(BBList);
+        for (BasicBlockIR bb : tempBBList) {
+            if (!accessed.contains(bb))
+                BBList.remove(bb);
+        }
     }
 
     public void initOrderBBList() {
         for (BasicBlockIR bb : BBList)
             bb.initFrontAndSucc();
         accessed.clear();
-        reversedOrderedBBList = new ArrayList<>();
-        dfsBB(entryBB, null);
+        orderedBBList = new ArrayList<>();
+        orderDfsBB(entryBB, null);
         List<BasicBlockIR> tempBBList = new ArrayList<>(BBList);
         for (BasicBlockIR bb : tempBBList) {
             if (!accessed.contains(bb))

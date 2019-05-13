@@ -219,7 +219,7 @@ public class GraphAllocator {
     }
 
     private void runFunc(FuncIR func) {
-        func.initOrderBBList();
+        func.initReverseOrderBBList();
         while (true) {
             init(func);
             do {

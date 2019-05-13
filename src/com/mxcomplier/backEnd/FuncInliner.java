@@ -125,7 +125,7 @@ public class FuncInliner extends IRScanner {
         Map<BasicBlockIR, BasicBlockIR> bbRenameMap = new HashMap<>();
         Map<VirtualRegisterIR, VirtualRegisterIR> vregRenameMap = new HashMap<>();
 
-        callee.initOrderBBList();
+        callee.initReverseOrderBBList();
         List<BasicBlockIR> calleeBBList = callee.getReversedOrderedBBList();
 
         BasicBlockIR oldLeaveBB = callee.leaveBB;

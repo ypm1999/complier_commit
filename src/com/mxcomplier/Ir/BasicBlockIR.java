@@ -32,6 +32,13 @@ public class BasicBlockIR {
         successors = new ArrayList<>();
     }
 
+    public int getInstNum(){
+        int res = 0;
+        for (InstIR inst = head.next; inst != tail; inst = inst.next)
+            res++;
+        return  res;
+    }
+
     void addFronter(BasicBlockIR bb) {
         fronters.add(bb);
     }

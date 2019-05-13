@@ -2,7 +2,6 @@ package com.mxcomplier.backEnd;
 
 import com.mxcomplier.Config;
 import com.mxcomplier.Error.ComplierError;
-import com.mxcomplier.Error.IRError;
 import com.mxcomplier.FrontEnd.IRBuilder;
 import com.mxcomplier.Ir.BasicBlockIR;
 import com.mxcomplier.Ir.FuncIR;
@@ -82,47 +81,86 @@ public class NasmPrinter extends IRScanner {
     }
 
     private void setOrder(FuncIR func){
-        func.initOrderBBList();
+        func.initReverseOrderBBList();
         LinkedList<BasicBlockIR> BBList = new LinkedList<>();
         func.setBBList(BBList);
         List<BasicBlockIR> orderedBBList = func.getReversedOrderedBBList();
         Collections.reverse(orderedBBList);
 
-        HashMap<BasicBlockIR, Counter> pathCounter = new HashMap<>();
-        for (BasicBlockIR bb : orderedBBList)
-            pathCounter.put(bb, new Counter(0));
-        pathCounter.get(func.entryBB).value++;
-
-        BBList.add(func.entryBB);
-        for (BasicBlockIR bb : orderedBBList){
-
-            int count = pathCounter.get(bb).value;
-            for (BasicBlockIR nextBB : bb.successors)
-                pathCounter.get(nextBB).value += count;
-            if (bb == func.entryBB)
-                continue;
-
-            BasicBlockIR prevBB = null;
-            count = -1;
-            for (BasicBlockIR prev : bb.fronters) {
-                int tmp = pathCounter.get(prev).value;
-                if (!(prev.getTail().prev instanceof JumpInstIR)
-                        || ((JumpInstIR)prev.getTail().prev).getTarget() != bb)
-                    continue;
-                if (tmp > count){
-                    count = tmp;
-                    prevBB = prev;
-                }
-            }
-
-            if (prevBB == null || !BBList.contains(prevBB)){
-                BBList.addLast(bb);
-            }
-            else{
-                prevBB.getTail().prev.remove();
-                BBList.add(BBList.indexOf(prevBB) + 1, bb);
+//        HashMap<BasicBlockIR, Counter> pathCounter = new HashMap<>();
+//        for (BasicBlockIR bb : orderedBBList)
+//            pathCounter.put(bb, new Counter(0));
+//        pathCounter.get(func.entryBB).value++;
+        for (BasicBlockIR bb: orderedBBList){
+            if (bb.getTail().prev instanceof CJumpInstIR) {
+                CJumpInstIR inst = (CJumpInstIR) bb.getTail().prev;
+                inst.append(new JumpInstIR(inst.getFalseBB()));
+                inst.removeFalseBB();
             }
         }
+
+        BBList.add(func.entryBB);
+        orderedBBList.remove(func.entryBB);
+        while (!orderedBBList.isEmpty()){
+            List<BasicBlockIR> removedBB = new LinkedList<>();
+
+            for (BasicBlockIR bb : orderedBBList){
+                BasicBlockIR prevBB = null;
+                for (BasicBlockIR prev : bb.fronters) {
+                    if (!(prev.getTail().prev instanceof JumpInstIR)
+                            || ((JumpInstIR)prev.getTail().prev).getTarget() != bb)
+                        continue;
+                    if(BBList.contains(prev)) {
+                        prevBB = prev;
+                        break;
+                    }
+                }
+
+                if (prevBB != null){
+                    prevBB.getTail().prev.remove();
+//                    if (bb.fronters.size() == 1){
+//                        prevBB.merge(bb);
+//                    }
+                    BBList.add(BBList.indexOf(prevBB) + 1, bb);
+                    removedBB.add(bb);
+                }
+            }
+            if (removedBB.isEmpty()) {
+                BBList.add(orderedBBList.iterator().next());
+                orderedBBList.remove(orderedBBList.iterator().next());
+            }
+            else
+                orderedBBList.removeAll(removedBB);
+        }
+//        for (BasicBlockIR bb : orderedBBList){
+//
+//            int count = pathCounter.get(bb).value;
+//            for (BasicBlockIR nextBB : bb.successors)
+//                pathCounter.get(nextBB).value += count;
+//            if (bb == func.entryBB)
+//                continue;
+//
+//            BasicBlockIR prevBB = null;
+//            count = -1;
+//            for (BasicBlockIR prev : bb.fronters) {
+//                int tmp = pathCounter.get(prev).value;
+//                if (!(prev.getTail().prev instanceof JumpInstIR)
+//                        || ((JumpInstIR)prev.getTail().prev).getTarget() != bb)
+//                    continue;
+//                if (tmp > count){
+//                    count = tmp;
+//                    prevBB = prev;
+//                }
+//            }
+//
+//            if (prevBB == null || !BBList.contains(prevBB)){
+//                BBList.addLast(bb);
+//            }
+//            else{
+//                prevBB.getTail().prev.remove();
+//                BBList.add(BBList.indexOf(prevBB) + 1, bb);
+//            }
+//        }
     }
 
 
