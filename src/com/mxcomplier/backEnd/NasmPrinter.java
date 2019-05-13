@@ -68,18 +68,6 @@ public class NasmPrinter extends IRScanner {
         println("section .text\n");
     }
 
-    class Counter{
-        int value;
-        Counter(int val){
-            value = val;
-        }
-
-        @Override
-        public String toString() {
-            return "" + value;
-        }
-    }
-
     private void setOrder(FuncIR func){
         func.initReverseOrderBBList();
         LinkedList<BasicBlockIR> BBList = new LinkedList<>();
@@ -87,10 +75,6 @@ public class NasmPrinter extends IRScanner {
         List<BasicBlockIR> orderedBBList = func.getReversedOrderedBBList();
         Collections.reverse(orderedBBList);
 
-//        HashMap<BasicBlockIR, Counter> pathCounter = new HashMap<>();
-//        for (BasicBlockIR bb : orderedBBList)
-//            pathCounter.put(bb, new Counter(0));
-//        pathCounter.get(func.entryBB).value++;
         for (BasicBlockIR bb: orderedBBList){
             if (bb.getTail().prev instanceof CJumpInstIR) {
                 CJumpInstIR inst = (CJumpInstIR) bb.getTail().prev;
@@ -133,35 +117,6 @@ public class NasmPrinter extends IRScanner {
             else
                 orderedBBList.removeAll(removedBB);
         }
-//        for (BasicBlockIR bb : orderedBBList){
-//
-//            int count = pathCounter.get(bb).value;
-//            for (BasicBlockIR nextBB : bb.successors)
-//                pathCounter.get(nextBB).value += count;
-//            if (bb == func.entryBB)
-//                continue;
-//
-//            BasicBlockIR prevBB = null;
-//            count = -1;
-//            for (BasicBlockIR prev : bb.fronters) {
-//                int tmp = pathCounter.get(prev).value;
-//                if (!(prev.getTail().prev instanceof JumpInstIR)
-//                        || ((JumpInstIR)prev.getTail().prev).getTarget() != bb)
-//                    continue;
-//                if (tmp > count){
-//                    count = tmp;
-//                    prevBB = prev;
-//                }
-//            }
-//
-//            if (prevBB == null || !BBList.contains(prevBB)){
-//                BBList.addLast(bb);
-//            }
-//            else{
-//                prevBB.getTail().prev.remove();
-//                BBList.add(BBList.indexOf(prevBB) + 1, bb);
-//            }
-//        }
     }
 
 
