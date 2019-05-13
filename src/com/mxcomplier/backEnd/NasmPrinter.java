@@ -118,10 +118,11 @@ public class NasmPrinter extends IRScanner {
 
                 if (prevBB != null){
                     prevBB.getTail().prev.remove();
-//                    if (bb.fronters.size() == 1){
-//                        prevBB.merge(bb);
-//                    }
-                    BBList.add(BBList.indexOf(prevBB) + 1, bb);
+                    if (bb.fronters.size() == 1){
+                        prevBB.merge(bb);
+                    }
+                    else
+                        BBList.add(BBList.indexOf(prevBB) + 1, bb);
                     removedBB.add(bb);
                 }
             }

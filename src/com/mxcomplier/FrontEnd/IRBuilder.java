@@ -148,6 +148,8 @@ public class IRBuilder extends ASTScanner {
 
         if (useinit) {
             root.getFuncs().add(initFunc);
+            initFunc.caller.add(funcMap.get("main"));
+            funcMap.get("main").callee.add(initFunc);
             funcMap.get("main").entryBB.prepend(new CallInstIR(initFunc, new ArrayList<>(), null));
         }
 

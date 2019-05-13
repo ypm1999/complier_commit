@@ -33,10 +33,11 @@ public class BlockMerger extends IRScanner {
 
     @Override
     public void visit(FuncIR node) {
+//        if (node.getName().equals("main"))
+//            return;
         boolean changed = true;
         while (changed) {
             changed = false;
-
             node.initReverseOrderBBList();
             List<BasicBlockIR> BBList = node.getReversedOrderedBBList();
             HashSet<BasicBlockIR> removedBB = new HashSet<>();
@@ -49,7 +50,6 @@ public class BlockMerger extends IRScanner {
                     if (((CJumpInstIR) lastInst).getTrueBB() == ((CJumpInstIR) lastInst).getFalseBB()){
                         lastInst.append(new JumpInstIR(((CJumpInstIR) lastInst).getTrueBB()));
                         lastInst.remove();
-//                        System.err.println("case1");
                         changed = true;
                     }
                 }
@@ -63,43 +63,29 @@ public class BlockMerger extends IRScanner {
                         for (BasicBlockIR prevBB: bb.fronters) {
                             if (removedBB.contains(prevBB))
                                 continue;
-//                            System.err.println(prevBB + " <- " + bb);
                             ((BranchInstIR) prevBB.getTail().prev).bbRename(renameMap);
                             changed = true;
                         }
-//                        System.err.println("case2");
                         break;
                     }
                     if (nextBB.fronters.size() == 1 && nextBB.getInstNum() > 1) {
-//                        System.err.println(bb + " <--- " + nextBB);
-                    lastInst.remove();
-                    bb.merge(nextBB);
-                    removedBB.add(nextBB);
-                    if (nextBB == node.leaveBB)
-                        node.leaveBB = bb;
-//                    System.err.println("case3");
-                    changed = true;
+                        lastInst.remove();
+                        bb.merge(nextBB);
+                        removedBB.add(nextBB);
+                        if (nextBB == node.leaveBB)
+                            node.leaveBB = bb;
+                        changed = true;
+                    }
+                    if (nextBB.getInstNum() == 1 && nextBB.getTail().prev instanceof CJumpInstIR){
+                        System.err.println(bb + " <- " + nextBB);
+                        CJumpInstIR inst = (CJumpInstIR) nextBB.getTail().prev;
+                        lastInst.append(inst.copy());
+                        lastInst.remove();
+                        changed = true;
+                    }
                 }
-                }
-
             }
-//            System.err.println("finished");
-//                if (bb.fronters.size() == 1) {
-//                    BasicBlockIR prevBB = bb.fronters.iterator().next();
-//                    InstIR lastInst = prevBB.getTail().prev;
-//                    if (basic && (prevBB.successors.size() > 1 || bb == node.leaveBB))
-//                        continue;
-//                    if (lastInst instanceof JumpInstIR && ((JumpInstIR) lastInst).getTarget() == bb) {
-//                        lastInst.remove();
-//                        prevBB.merge(bb);
-//                        node.getBBList().remove(bb);
-//                        if (bb == node.leaveBB)
-//                            node.leaveBB = prevBB;
-//                        changed = true;
-//                        break;
-//                    }
-//                }
-//            }
         }
+        node.initReverseOrderBBList();
     }
 }

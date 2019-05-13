@@ -95,6 +95,8 @@ public class FuncInliner extends IRScanner {
                             FuncInfo info = funcInfoMap.getOrDefault(call.getFunc(), null);
                             if (info == null || info.instNum > MAX_CALLEE_INST_NUM)
                                 continue;
+                            if (call.getFunc().getName().equals("put"))
+                                continue;
                             if (func == call.getFunc()) {
                                 if (!funcBuckupMap.containsKey(func))
                                     funcBuckupMap.put(func, doBuckup(func));
@@ -141,10 +143,10 @@ public class FuncInliner extends IRScanner {
         call.next = curBB.getTail();
 
         //rename inst after call
-        for (InstIR inst = newLeaveBB.getHead().next; inst != newLeaveBB.getTail(); inst = inst.next) {
-            if (inst instanceof BranchInstIR)
-                ((BranchInstIR) inst).bbRename(Collections.singletonMap(curBB, newLeaveBB));
-        }
+//        for (InstIR inst = newLeaveBB.getHead().next; inst != newLeaveBB.getTail(); inst = inst.next) {
+//            if (inst instanceof BranchInstIR)
+//                ((BranchInstIR) inst).bbRename(Collections.singletonMap(curBB, newLeaveBB));
+//        }
 
         for (int i = 0; i < callee.getParameters().size(); i++) {
             VirtualRegisterIR oldArg = callee.getParameters().get(i);
