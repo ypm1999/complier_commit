@@ -12,6 +12,7 @@ import org.antlr.v4.runtime.misc.Pair;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 public class LivenessAnalyzer {
 
@@ -75,9 +76,25 @@ public class LivenessAnalyzer {
         }
     }
 
+    void liveOutRename(HashMap<VirtualRegisterIR, VirtualRegisterIR> renameMap){
+        for (Map.Entry<BasicBlockIR, HashSet<VirtualRegisterIR>> entry: liveOut.entrySet()){
+            HashSet<VirtualRegisterIR> livenow = entry.getValue();
+            for (Map.Entry<VirtualRegisterIR, VirtualRegisterIR> rename: renameMap.entrySet()){
+                if (livenow.contains(rename.getKey())){
+                    livenow.remove(rename.getKey());
+                    livenow.add(rename.getValue());
+                }
+            }
+        }
+    }
+
     Graph buildGraph(FuncIR func, List<Pair<VirtualRegisterIR, VirtualRegisterIR>> moveList) {
-        Graph graph = new Graph();
         buildLiveOut(func);
+        return rebuildGraph(func, moveList);
+    }
+
+    Graph rebuildGraph(FuncIR func, List<Pair<VirtualRegisterIR, VirtualRegisterIR>> moveList) {
+        Graph graph = new Graph();
 
         for (BasicBlockIR bb : func.getBBList()) {
             for (VirtualRegisterIR vreg : usedVregs.get(bb))

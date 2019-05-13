@@ -33,55 +33,60 @@ public class GraphAllocator {
     private boolean conservative(VirtualRegisterIR u, VirtualRegisterIR v) {
         HashSet<VirtualRegisterIR> nodes = new HashSet<>(graph.getNeighbor(u));
         nodes.addAll(graph.getNeighbor(v));
-        return nodes.size() < REGNUM;
-//        int cnt = 0;
-//        for (VirtualRegisterIR node : nodes)
-//            if (graph.getDegree(node) >= REGNUM)
-//                cnt++;
-//        return cnt < REGNUM;
+        int cnt = 0;
+        for (VirtualRegisterIR node : nodes)
+            if (graph.getDegree(node) >= REGNUM)
+                cnt++;
+        return cnt < REGNUM;
     }
 
     private void doMerge(FuncIR func) {
         List<Pair<VirtualRegisterIR, VirtualRegisterIR>> moveList = new ArrayList<>();
-        graph = new LivenessAnalyzer().buildGraph(func, moveList);
+        LivenessAnalyzer livenessAnalyzer = new LivenessAnalyzer();
+        livenessAnalyzer.buildLiveOut(func);
 
-        for (VirtualRegisterIR node : graph.getnodes())
-            node.alais = node;
-
-        HashMap<VirtualRegisterIR, VirtualRegisterIR> renameMap = new HashMap<>();
-        for (Pair<VirtualRegisterIR, VirtualRegisterIR> pair : moveList) {
-            VirtualRegisterIR u = getAlias(pair.a), v = getAlias(pair.b);
-            if (u == v)
-                continue;
-            if (v.getPhyReg() != null) {
-                if (u.getPhyReg() != null)
+        boolean changed = true;
+        while(changed) {
+            changed = false;
+            moveList.clear();
+            graph = livenessAnalyzer.buildGraph(func, moveList);
+            for (VirtualRegisterIR node : graph.getnodes())
+                node.alais = node;
+            HashMap<VirtualRegisterIR, VirtualRegisterIR> renameMap = new HashMap<>();
+            for (Pair<VirtualRegisterIR, VirtualRegisterIR> pair : moveList) {
+                VirtualRegisterIR u = getAlias(pair.a), v = getAlias(pair.b);
+                if (u == v)
                     continue;
-                else {
-                    VirtualRegisterIR tmp = u;
-                    u = v;
-                    v = tmp;
+                if (v.getPhyReg() != null) {
+                    if (u.getPhyReg() != null)
+                        continue;
+                    else {
+                        VirtualRegisterIR tmp = u;
+                        u = v;
+                        v = tmp;
+                    }
+                }
+                if (!graph.getNeighbor(u).contains(v) && conservative(u, v)) {
+//                    System.err.println("merge " + u + " <-" + v);
+                    v.alais = u;
+                    renameMap.put(v, u);
+                    HashSet<VirtualRegisterIR> tmp = new HashSet<>(graph.getNeighbor(v));
+                    for (VirtualRegisterIR node : tmp) {
+                        graph.removeEdge(v, node);
+                        graph.addEdge(u, node);
+                    }
+                    graph.removeNode(v);
+                    changed = true;
                 }
             }
 
-            if (!graph.getNeighbor(u).contains(v) && conservative(u, v)) {
-
-                System.err.println("merge " + u + " <-" + v);
-                v.alais = u;
-                renameMap.put(v, u);
-                HashSet<VirtualRegisterIR> tmp = new HashSet<>(graph.getNeighbor(v));
-                for (VirtualRegisterIR node : tmp) {
-                    graph.removeEdge(v, node);
-                    graph.addEdge(u, node);
+            for (BasicBlockIR bb : func.getBBList()) {
+                for (InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
+                    inst.replaceVreg(renameMap);
                 }
-                graph.removeNode(v);
             }
-        }
 
-
-        for (BasicBlockIR bb : func.getBBList()) {
-            for (InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
-                inst.replaceVreg(renameMap);
-            }
+//            livenessAnalyzer.liveOutRename(renameMap);
         }
     }
 
