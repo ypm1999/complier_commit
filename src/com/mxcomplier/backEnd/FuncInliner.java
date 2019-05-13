@@ -42,7 +42,8 @@ public class FuncInliner extends IRScanner {
         }
 
         for (VirtualRegisterIR vreg : oldFunc.getAllVreg())
-            if (!vregRenameMap.containsKey(vreg) && !oldFunc.usedGlobalVar.contains(vreg))
+            if (!vregRenameMap.containsKey(vreg) &&
+                    !oldFunc.usedGlobalVar.contains(vreg) && !oldFunc.definedGlobalVar.contains(vreg))
                 vregRenameMap.put(vreg, new VirtualRegisterIR(vreg.lable + "_"));
         for (BasicBlockIR bb : oldFunc.getBBList()) {
             bbRenameMap.put(bb, new BasicBlockIR(newfunc, bb.getLable() + "_"));
@@ -94,7 +95,6 @@ public class FuncInliner extends IRScanner {
                             FuncInfo info = funcInfoMap.getOrDefault(call.getFunc(), null);
                             if (info == null || info.instNum > MAX_CALLEE_INST_NUM)
                                 continue;
-
                             if (func == call.getFunc()) {
                                 if (!funcBuckupMap.containsKey(func))
                                     funcBuckupMap.put(func, doBuckup(func));
@@ -165,7 +165,8 @@ public class FuncInliner extends IRScanner {
             vregRenameMap.put(callee.returnValue, (VirtualRegisterIR) call.getReturnValue());
 
         for (VirtualRegisterIR vreg : callee.getAllVreg()) {
-            if (!vregRenameMap.containsKey(vreg) && !callee.usedGlobalVar.contains(vreg)) {
+            if (!vregRenameMap.containsKey(vreg)
+                    && !callee.usedGlobalVar.contains(vreg) && !callee.definedGlobalVar.contains(vreg)) {
                 vregRenameMap.put(vreg, new VirtualRegisterIR(vreg));
             }
         }
@@ -187,9 +188,9 @@ public class FuncInliner extends IRScanner {
             caller.updateCallee();
             if (callee != caller) {
                 caller.usedGlobalVar.addAll(callee.usedGlobalVar);
-//                caller.definedGlobalVar.addAll(callee.definedGlobalVar);
-//                caller.selfUsedGlobalVar.addAll(callee.selfUsedGlobalVar);
-//                caller.selfDefinedGlobalVar.addAll(callee.selfDefinedGlobalVar);
+                caller.definedGlobalVar.addAll(callee.definedGlobalVar);
+                caller.selfUsedGlobalVar.addAll(callee.selfUsedGlobalVar);
+                caller.selfDefinedGlobalVar.addAll(callee.selfDefinedGlobalVar);
             }
         }
 
