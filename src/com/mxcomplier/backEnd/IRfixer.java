@@ -147,6 +147,30 @@ public class IRfixer extends IRScanner {
             case MUL:
             case DIV:
             case MOD:
+                if (node.src instanceof ImmediateIR && (node.getOp() == BinaryInstIR.Op.MOD || node.getOp() == BinaryInstIR.Op.DIV)){
+                    long value = ((ImmediateIR)node.src).getValue();
+                    long tmp = value;
+                    int K = 32;
+                    while(tmp > 1) {
+                        tmp >>= 1;
+                        K++;
+                    }
+                    long magicValue = ((((long)1 << K) + value - 1)) / value;
+                    VirtualRegisterIR res = (VirtualRegisterIR) node.dest;
+                    node.prepend(new MoveInstIR(RegisterSet.Vrax, node.dest));
+                    node.prepend(new MoveInstIR(RegisterSet.Vrcx, new ImmediateIR(magicValue)));
+                    node.prepend(new BinaryInstIR(BinaryInstIR.Op.MUL, RegisterSet.Vrax, RegisterSet.Vrcx));
+                    node.prepend(new BinaryInstIR(BinaryInstIR.Op.SHR, RegisterSet.Vrax, new ImmediateIR(K)));
+                    if (node.getOp() == BinaryInstIR.Op.MOD){
+                        node.prepend(new MoveInstIR(RegisterSet.Vrcx, node.src));
+                        node.prepend(new BinaryInstIR(BinaryInstIR.Op.MUL, RegisterSet.Vrax, RegisterSet.Vrcx));
+                        node.prepend(new BinaryInstIR(BinaryInstIR.Op.SUB, res, RegisterSet.Vrax));
+                    }
+                    else
+                        node.prepend(new MoveInstIR(res, RegisterSet.Vrax));
+                    node.remove();
+                    return;
+                }
                 node.prepend(new MoveInstIR(RegisterSet.Vrax, node.dest));
                 node.prepend(new MoveInstIR(RegisterSet.Vrbx, node.src));
                 node.prepend(new MoveInstIR(RegisterSet.Vrdx, ZERO));

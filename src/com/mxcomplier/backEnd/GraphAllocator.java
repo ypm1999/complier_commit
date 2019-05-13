@@ -92,7 +92,7 @@ public class GraphAllocator {
         spilledVregs = new ArrayList<>();
         finishedStack = new LinkedList<>();
 
-//        doMerge(func);
+        doMerge(func);
 
         originGraph = new LivenessAnalyzer().buildGraph(func, null);
         graph = new Graph(originGraph);

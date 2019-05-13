@@ -53,6 +53,8 @@ public class BinaryInstIR extends InstIR {
     public List<VirtualRegisterIR> getUsedVReg() {
         List<VirtualRegisterIR> tmp = getVreg(src);
         tmp.addAll(getVreg(dest));
+        if (op == Op.MOD || op == Op.DIV || op == Op.MUL)
+            tmp.add(RegisterSet.Vrdx);
         return tmp;
     }
 
@@ -61,6 +63,8 @@ public class BinaryInstIR extends InstIR {
         List<VirtualRegisterIR> tmp = new ArrayList<>();
         if (dest instanceof VirtualRegisterIR)
             tmp.add((VirtualRegisterIR) dest);
+        if (op == Op.MOD || op == Op.DIV || op == Op.MUL)
+            tmp.add(RegisterSet.Vrdx);
         return tmp;
     }
 

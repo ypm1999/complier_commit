@@ -46,7 +46,9 @@ public class Main {
             irBuilder.visit(ast);
 
 
+            System.err.println("start merge");
             new BlockMerger(true).visit(irBuilder.root);
+            System.err.println("end merge");
             if (Config.DEBUG) {
                 new IRPrinter(irBuilder).visit(irBuilder.root);
             }
@@ -56,13 +58,14 @@ public class Main {
             if (Config.DEBUG) {
                 new IRPrinter(irBuilder).visit(irBuilder.root);
             }
+
+            System.err.println("start merge");
             new BlockMerger(true).visit(irBuilder.root);
-            new LocalValueNumbering().visit(irBuilder.root);
-            new UseLessCodeEliminater(irBuilder).run();
-            
+            System.err.println("end merge");
             new IRfixer().visit((irBuilder.root));
             new GraphAllocator().run(irBuilder);
             new StackFrameAllocater().visit(irBuilder.root);
+//            new BlockMerger(false).visit(irBuilder.root);
 
             new NasmPrinter(irBuilder, System.out).visit(irBuilder.root);
             if (!Config.DEBUG) {
