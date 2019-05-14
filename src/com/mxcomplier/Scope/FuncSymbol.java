@@ -3,7 +3,9 @@ package com.mxcomplier.Scope;
 import com.mxcomplier.Type.FuncType;
 import com.mxcomplier.Type.Type;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class FuncSymbol extends Symbol {
     private Type returnType;
@@ -11,6 +13,7 @@ public class FuncSymbol extends Symbol {
     private List<Type> parameters;
     private boolean isConstructor;
     private ClassSymbol belongClass;
+    private Set<Symbol> dependence = new HashSet<>();
 
 
     public FuncSymbol(String name, Type returnType, Scope scope, List<Type> args, ClassSymbol belongClass) {
@@ -40,6 +43,14 @@ public class FuncSymbol extends Symbol {
 
     public ClassSymbol getBelongClass() {
         return belongClass;
+    }
+
+    public Set<Symbol> getDependence() {
+        return dependence;
+    }
+
+    public void addDependence(Symbol symbol){
+        dependence.add(symbol);
     }
 
     public void setConstructor(boolean constructor) {

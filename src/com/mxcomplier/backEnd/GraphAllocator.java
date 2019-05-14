@@ -69,7 +69,7 @@ public class GraphAllocator {
                     }
                 }
                 if (!graph.getNeighbor(u).contains(v) && conservative(u, v)) {
-                    System.err.println("merge " + u + " <-" + v);
+//                    System.err.println("merge " + u + " <-" + v);
                     v.alais = u;
                     renameMap.put(v, u);
                     HashSet<VirtualRegisterIR> tmp = new HashSet<>(graph.getNeighbor(v));
@@ -205,14 +205,11 @@ public class GraphAllocator {
     }
 
     private void rebuildSpilledList(){
-        if (spilledVregs.size() < 4)
+        if (spilledVregs.size() < 3)
             return;
-        int n = spilledVregs.size() / 2;
+        int n = spilledVregs.size() - spilledVregs.size() / 3;
         while(--n > 0)
             spilledVregs.remove(0);
-//        while(--n > 0){
-//
-//        }
     }
 
     private IRBuilder irBuilder;

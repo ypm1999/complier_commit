@@ -10,13 +10,13 @@ import java.util.*;
 
 public class FuncInliner extends IRScanner {
 
-    static private final int MAX_CALLEE_INST_NUM = 1 << 9;
-    static private final int MAX_CALLER_INST_NUM = 1 << 12;
-    static private final int MAX_INLINE_RAND = 8;
+    static private final int MAX_CALLEE_INST_NUM = 1 << 10;
+    static private final int MAX_CALLER_INST_NUM = 1 << 13;
+    static private final int MAX_INLINE_RAND = 16;
 
     private class FuncInfo {
         int instNum = 0;
-        boolean selfRecursive = false;
+        FuncIR funcCopy = null;
     }
 
     private HashMap<FuncIR, FuncInfo> funcInfoMap = new HashMap<>();
@@ -76,7 +76,7 @@ public class FuncInliner extends IRScanner {
             FuncInfo info = new FuncInfo();
             funcInfoMap.put(func, info);
             info.instNum = func.getInstNum();
-            info.selfRecursive = func.callee.contains(func);
+            info.funcCopy = doBuckup(func);
         }
 
         boolean changed = true;
@@ -95,20 +95,10 @@ public class FuncInliner extends IRScanner {
                             FuncInfo info = funcInfoMap.getOrDefault(call.getFunc(), null);
                             if (info == null || info.instNum > MAX_CALLEE_INST_NUM)
                                 continue;
-                            if (call.getFunc().getName().equals("put"))
-                                continue;
-                            if (func == call.getFunc()) {
-                                if (!funcBuckupMap.containsKey(func))
-                                    funcBuckupMap.put(func, doBuckup(func));
-                                doInline(func, funcBuckupMap.get(func), curBB, call);
-                            } else
-                                curBB = doInline(func, call.getFunc(), curBB, call);
+                            curBB = doInline(func, info.funcCopy, curBB, call);
                             inst = curBB.getHead();
-//                            new IRPrinter(ir).visit(ir.root);
                             funcInfoMap.get(func).instNum += info.instNum - 1;
-                            funcInfoMap.get(func).selfRecursive = func.callee.contains(func);
                             changed = true;
-//                            break;
                         }
                     }
                 }

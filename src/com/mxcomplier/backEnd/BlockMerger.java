@@ -20,10 +20,6 @@ public class BlockMerger extends IRScanner {
         this.basic = basic;
     }
 
-    void runBasic(){
-
-    }
-
     @Override
     public void visit(ProgramIR node) {
         for (FuncIR func : node.getFuncs()) {
@@ -33,8 +29,6 @@ public class BlockMerger extends IRScanner {
 
     @Override
     public void visit(FuncIR node) {
-//        if (node.getName().equals("main"))
-//            return;
         boolean changed = true;
         while (changed) {
             changed = false;
@@ -44,7 +38,6 @@ public class BlockMerger extends IRScanner {
             for (BasicBlockIR bb : BBList) {
                 if (removedBB.contains(bb))
                     continue;
-//                System.err.println(bb);
                 InstIR lastInst = bb.getTail().prev;
                 if (lastInst instanceof CJumpInstIR){
                     if (((CJumpInstIR) lastInst).getTrueBB() == ((CJumpInstIR) lastInst).getFalseBB()){

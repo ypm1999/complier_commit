@@ -1,5 +1,6 @@
 package com.mxcomplier.Ir.Instructions;
 
+import com.mxcomplier.Error.IRError;
 import com.mxcomplier.Ir.BasicBlockIR;
 import com.mxcomplier.Ir.IRVisitor;
 import com.mxcomplier.Ir.Operands.OperandIR;
@@ -47,6 +48,33 @@ public class CJumpInstIR extends BranchInstIR {
 
     public void removeFalseBB() {
         falseBB = null;
+    }
+
+    public void reverseOp(){
+        BasicBlockIR tmp = trueBB;
+        trueBB = falseBB;
+        falseBB = tmp;
+        switch (op) {
+            case L:
+                op = Op.GE;
+                break;
+            case G:
+                op = Op.LE;
+                break;
+            case LE:
+                op = Op.G;
+                break;
+            case GE:
+                op = Op.L;
+                break;
+            case E:
+                op = Op.NE;
+                break;
+            case NE:
+                op = Op.E;
+                break;
+            default: throw new IRError("OP in Cjump");
+        }
     }
 
     public void swap() {

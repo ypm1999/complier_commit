@@ -2,6 +2,7 @@ package com.mxcomplier.backEnd;
 
 import com.mxcomplier.Config;
 import com.mxcomplier.Error.ComplierError;
+import com.mxcomplier.Error.IRError;
 import com.mxcomplier.FrontEnd.IRBuilder;
 import com.mxcomplier.Ir.BasicBlockIR;
 import com.mxcomplier.Ir.FuncIR;
@@ -71,53 +72,102 @@ public class NasmPrinter extends IRScanner {
     private void setOrder(FuncIR func){
         func.initReverseOrderBBList();
         LinkedList<BasicBlockIR> BBList = new LinkedList<>();
-        func.setBBList(BBList);
-        List<BasicBlockIR> orderedBBList = func.getReversedOrderedBBList();
-        Collections.reverse(orderedBBList);
+        List<BasicBlockIR> oldBBList = new ArrayList<>(func.getBBList());
+        List<BasicBlockIR> workList = new LinkedList<>();
 
-        for (BasicBlockIR bb: orderedBBList){
+
+        BBList.add(func.entryBB);
+        workList.add(func.entryBB);
+        for (BasicBlockIR bb: oldBBList){
             if (bb.getTail().prev instanceof CJumpInstIR) {
                 CJumpInstIR inst = (CJumpInstIR) bb.getTail().prev;
+                if (inst.getTrueBB().fronters.size() == 1)
+                    inst.reverseOp();
                 inst.append(new JumpInstIR(inst.getFalseBB()));
+                BasicBlockIR trueBB = inst.getTrueBB();
+                if (!BBList.contains(trueBB))
+                    BBList.add(trueBB);
+                if (!workList.contains(trueBB) && trueBB != func.leaveBB)
+                    workList.add(trueBB);
                 inst.removeFalseBB();
             }
         }
 
-        BBList.add(func.entryBB);
-        orderedBBList.remove(func.entryBB);
-        while (!orderedBBList.isEmpty()){
-            List<BasicBlockIR> removedBB = new LinkedList<>();
 
-            for (BasicBlockIR bb : orderedBBList){
-                BasicBlockIR prevBB = null;
-                for (BasicBlockIR prev : bb.fronters) {
-                    if (!(prev.getTail().prev instanceof JumpInstIR)
-                            || ((JumpInstIR)prev.getTail().prev).getTarget() != bb)
-                        continue;
-                    if(BBList.contains(prev)) {
-                        prevBB = prev;
-                        break;
-                    }
-                }
-
-                if (prevBB != null){
-                    prevBB.getTail().prev.remove();
-                    if (bb.fronters.size() == 1){
-                        prevBB.merge(bb);
-                    }
-                    else
-                        BBList.add(BBList.indexOf(prevBB) + 1, bb);
-                    removedBB.add(bb);
-                }
+        while(!workList.isEmpty()) {
+            BasicBlockIR bb = workList.iterator().next();
+            workList.remove(bb);
+            if (!(bb.getTail().prev instanceof JumpInstIR))
+                throw new IRError("bolck not end with Jump");
+            BasicBlockIR nextBB = ((JumpInstIR) bb.getTail().prev).getTarget();
+            if (BBList.contains(nextBB))
+                continue;
+            bb.getTail().prev.remove();
+            if (nextBB.fronters.size() == 1){
+                bb.merge(nextBB);
+                if (nextBB != func.leaveBB && !workList.contains(bb))
+                    workList.add(bb);
             }
-            if (removedBB.isEmpty()) {
-                BBList.add(orderedBBList.iterator().next());
-                orderedBBList.remove(orderedBBList.iterator().next());
+            else{
+                BBList.add(BBList.indexOf(bb) + 1, nextBB);
+                if (nextBB != func.leaveBB && !workList.contains(nextBB))
+                    workList.add(nextBB);
             }
-            else
-                orderedBBList.removeAll(removedBB);
         }
+        func.setBBList(BBList);
+
+
     }
+//    private void setOrder(FuncIR func){
+//        func.initReverseOrderBBList();
+//        LinkedList<BasicBlockIR> BBList = new LinkedList<>();
+//        func.setBBList(BBList);
+//        List<BasicBlockIR> orderedBBList = func.getReversedOrderedBBList();
+//        Collections.reverse(orderedBBList);
+//
+//        for (BasicBlockIR bb: orderedBBList){
+//            if (bb.getTail().prev instanceof CJumpInstIR) {
+//                CJumpInstIR inst = (CJumpInstIR) bb.getTail().prev;
+//                inst.append(new JumpInstIR(inst.getFalseBB()));
+//                inst.removeFalseBB();
+//            }
+//        }
+//
+//        BBList.add(func.entryBB);
+//        orderedBBList.remove(func.entryBB);
+//        while (!orderedBBList.isEmpty()){
+//            List<BasicBlockIR> removedBB = new LinkedList<>();
+//
+//            for (BasicBlockIR bb : orderedBBList){
+//                BasicBlockIR prevBB = null;
+//                for (BasicBlockIR prev : bb.fronters) {
+//                    if (!(prev.getTail().prev instanceof JumpInstIR)
+//                            || ((JumpInstIR)prev.getTail().prev).getTarget() != bb)
+//                        continue;
+//                    if(BBList.contains(prev)) {
+//                        prevBB = prev;
+//                        break;
+//                    }
+//                }
+//
+//                if (prevBB != null){
+//                    prevBB.getTail().prev.remove();
+//                    if (bb.fronters.size() == 1){
+//                        prevBB.merge(bb);
+//                    }
+//                    else
+//                        BBList.add(BBList.indexOf(prevBB) + 1, bb);
+//                    removedBB.add(bb);
+//                }
+//            }
+//            if (removedBB.isEmpty()) {
+//                BBList.add(orderedBBList.iterator().next());
+//                orderedBBList.remove(orderedBBList.iterator().next());
+//            }
+//            else
+//                orderedBBList.removeAll(removedBB);
+//        }
+//    }
 
 
     @Override
@@ -135,7 +185,8 @@ public class NasmPrinter extends IRScanner {
     public void visit(ProgramIR node) {
         init_print(node.getStaticData());
         for (FuncIR func : node.getFuncs()) {
-            setOrder(func);
+            if (func.getBBList().size() > 1)
+                setOrder(func);
             func.accept(this);
         }
         output.flush();

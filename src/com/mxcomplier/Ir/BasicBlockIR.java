@@ -1,5 +1,6 @@
 package com.mxcomplier.Ir;
 
+import com.mxcomplier.Config;
 import com.mxcomplier.Ir.Instructions.EmptyInstIR;
 import com.mxcomplier.Ir.Instructions.InstIR;
 
@@ -25,6 +26,14 @@ public class BasicBlockIR {
         this.tail = new EmptyInstIR();
         this.head.append(this.tail);
         func.getBBList().add(this);
+    }
+
+    public BasicBlockIR copy(){
+        //TODO
+        BasicBlockIR newBB = new BasicBlockIR(func, lable);
+        for (InstIR inst = head.next; inst != tail; inst = inst.next)
+            newBB.append(inst.copy());
+        return newBB;
     }
 
     void initFrontAndSucc() {
@@ -97,7 +106,10 @@ public class BasicBlockIR {
 
     @Override
     public String toString() {
-        return getFuncLabel() + '_' + lable;
+        if (Config.DEBUG)
+            return "_BB" + id + "_" + getFuncLabel() + '_' + lable;
+        else
+            return "_BB" + id;
     }
 
     public void accept(IRVisitor visitor) {
