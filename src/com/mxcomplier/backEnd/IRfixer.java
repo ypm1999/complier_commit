@@ -186,8 +186,8 @@ public class IRfixer extends IRScanner {
                     return;
                 }
                 node.prepend(new MoveInstIR(RegisterSet.Vrax, node.dest));
-                node.prepend(new MoveInstIR(RegisterSet.Vr15, node.src));
-                node.src = RegisterSet.Vr15;
+                node.prepend(new MoveInstIR(RegisterSet.Vrbx, node.src));
+                node.src = RegisterSet.Vrbx;
                 node.prepend(new BinaryInstIR(BinaryInstIR.Op.XOR, RegisterSet.Vrdx,RegisterSet.Vrdx));
                 if (node.getOp() == BinaryInstIR.Op.MOD)
                     node.append(new MoveInstIR(node.dest, RegisterSet.Vrdx));

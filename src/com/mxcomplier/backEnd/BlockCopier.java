@@ -14,8 +14,8 @@ import java.util.List;
 
 public class BlockCopier extends IRScanner {
 
-    static final private int MAX_COPY_INST_NUM = 8;
-    static final private int MAX_TOTAL_COPY_INST_NUM = 32;
+    static final private int MAX_COPY_INST_NUM = 16;
+    static final private int MAX_TOTAL_COPY_INST_NUM = 64;
 
     private boolean basic = true;
 
