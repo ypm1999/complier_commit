@@ -20,7 +20,7 @@ public class FuncInliner extends IRScanner {
     }
 
     private HashMap<FuncIR, FuncInfo> funcInfoMap = new HashMap<>();
-    private HashMap<FuncIR, FuncIR> funcBuckupMap = new HashMap<>();
+//    private HashMap<FuncIR, FuncIR> funcBuckupMap = new HashMap<>();
 
     private FuncIR doBuckup(FuncIR oldFunc) {
         Map<BasicBlockIR, BasicBlockIR> bbRenameMap = new HashMap<>();
@@ -76,13 +76,13 @@ public class FuncInliner extends IRScanner {
             FuncInfo info = new FuncInfo();
             funcInfoMap.put(func, info);
             info.instNum = func.getInstNum();
-            info.funcCopy = doBuckup(func);
+            if (info.instNum <= MAX_CALLEE_INST_NUM)
+                info.funcCopy = doBuckup(func);
         }
 
         boolean changed = true;
         for (int cnt = 0; changed && cnt < MAX_INLINE_RAND; cnt++) {
             changed = false;
-            funcBuckupMap.clear();
             for (FuncIR func : funcList) {
                 if (funcInfoMap.get(func).instNum > MAX_CALLER_INST_NUM)
                     continue;
@@ -93,10 +93,11 @@ public class FuncInliner extends IRScanner {
                         if (inst instanceof CallInstIR) {
                             CallInstIR call = (CallInstIR) inst;
                             FuncInfo info = funcInfoMap.getOrDefault(call.getFunc(), null);
-                            if (info == null || info.instNum > MAX_CALLEE_INST_NUM)
+                            if (info == null || info.funcCopy == null)
                                 continue;
                             curBB = doInline(func, info.funcCopy, curBB, call);
                             inst = curBB.getHead();
+
                             funcInfoMap.get(func).instNum += info.instNum - 1;
                             changed = true;
                         }
