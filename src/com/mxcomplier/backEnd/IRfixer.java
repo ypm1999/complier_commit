@@ -16,6 +16,8 @@ public class IRfixer extends IRScanner {
 
     private FuncIR curFunc = null;
 
+    private HashMap<VirtualRegisterIR, VirtualRegisterIR> renameMap = new HashMap<>();
+
     @Override
     public void visit(BasicBlockIR node) {
         InstIR inst = node.getHead().next;
@@ -59,6 +61,12 @@ public class IRfixer extends IRScanner {
 
 
         for (FuncIR func : node.getFuncs()){
+
+            for (BasicBlockIR bb : func.getBBList())
+                for (InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
+                    inst.replaceVreg(renameMap);
+                }
+
             HashMap<VirtualRegisterIR, VirtualRegisterIR> renameMap = new HashMap<>();
             for (VirtualRegisterIR vreg : func.selfDefinedGlobalVar) {
                 VirtualRegisterIR temp = new VirtualRegisterIR(func.getName() + "_" + vreg.lable);
@@ -117,10 +125,10 @@ public class IRfixer extends IRScanner {
         }
     }
 
-    static private final VirtualRegisterIR moveTempVreg = new VirtualRegisterIR("move_tmp");
     @Override
     public void visit(MoveInstIR node) {
         if (node.getDest() instanceof MemoryIR && (node.getSrc() instanceof MemoryIR || node.getSrc() instanceof  ImmediateIR)){
+            VirtualRegisterIR moveTempVreg = new VirtualRegisterIR("move_tmp");
             node.prepend(new MoveInstIR(moveTempVreg, node.getSrc()));
             node.setSrc(moveTempVreg);
         }
@@ -129,6 +137,7 @@ public class IRfixer extends IRScanner {
     @Override
     public void visit(LeaInstIR node) {
         if (node.getDest() instanceof MemoryIR && node.getSrc() instanceof MemoryIR){
+            VirtualRegisterIR moveTempVreg = new VirtualRegisterIR("move_tmp");
             node.append(new MoveInstIR(node.getDest(), moveTempVreg));
             node.dest = moveTempVreg;
         }
@@ -172,9 +181,9 @@ public class IRfixer extends IRScanner {
                     return;
                 }
                 node.prepend(new MoveInstIR(RegisterSet.Vrax, node.dest));
-                node.prepend(new MoveInstIR(RegisterSet.Vrbx, node.src));
-                node.prepend(new MoveInstIR(RegisterSet.Vrdx, ZERO));
-                node.src = RegisterSet.Vrbx;
+                node.prepend(new MoveInstIR(RegisterSet.Vr15, node.src));
+                node.src = RegisterSet.Vr15;
+                node.prepend(new BinaryInstIR(BinaryInstIR.Op.XOR, RegisterSet.Vrdx,RegisterSet.Vrdx));
                 if (node.getOp() == BinaryInstIR.Op.MOD)
                     node.append(new MoveInstIR(node.dest, RegisterSet.Vrdx));
                 else
@@ -187,6 +196,7 @@ public class IRfixer extends IRScanner {
     @Override
     public void visit(PushInstIR node) {
         if (node.getSrc() instanceof ImmediateIR){
+            VirtualRegisterIR moveTempVreg = new VirtualRegisterIR("move_tmp");
             node.prepend(new MoveInstIR(moveTempVreg, node.getSrc()));
             node.setSrc(moveTempVreg);
         }
@@ -199,6 +209,7 @@ public class IRfixer extends IRScanner {
         }
 
         if (node.getLhs() instanceof MemoryIR && node.getRhs() instanceof MemoryIR){
+            VirtualRegisterIR moveTempVreg = new VirtualRegisterIR("move_tmp");
             node.prepend(new MoveInstIR(moveTempVreg, node.getRhs()));
             node.rhs = moveTempVreg;
         }

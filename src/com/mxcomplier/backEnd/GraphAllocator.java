@@ -7,6 +7,7 @@ import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.Instructions.InstIR;
 import com.mxcomplier.Ir.Instructions.MoveInstIR;
 import com.mxcomplier.Ir.Operands.*;
+import com.mxcomplier.Ir.RegisterSet;
 import org.antlr.v4.runtime.misc.Pair;
 
 import java.util.*;
@@ -23,6 +24,7 @@ public class GraphAllocator {
     private LinkedList<VirtualRegisterIR> finishedStack;
     private HashSet<VirtualRegisterIR> simplifyTODOList, spillTODOList;
     private HashMap<VirtualRegisterIR, PhysicalRegisterIR> colorMap;
+    private LinkedList<PhysicalRegisterIR> allPhyreg;
 
     private VirtualRegisterIR getAlias(VirtualRegisterIR x) {
         if (x.alais == x)
@@ -67,7 +69,7 @@ public class GraphAllocator {
                     }
                 }
                 if (!graph.getNeighbor(u).contains(v) && conservative(u, v)) {
-//                    System.err.println("merge " + u + " <-" + v);
+                    System.err.println("merge " + u + " <-" + v);
                     v.alais = u;
                     renameMap.put(v, u);
                     HashSet<VirtualRegisterIR> tmp = new HashSet<>(graph.getNeighbor(v));
@@ -83,6 +85,10 @@ public class GraphAllocator {
             for (BasicBlockIR bb : func.getBBList()) {
                 for (InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
                     inst.replaceVreg(renameMap);
+                    if (inst instanceof MoveInstIR && ((MoveInstIR) inst).src == ((MoveInstIR) inst).dest){
+                        inst = inst.prev;
+                        inst.next.remove();
+                    }
                 }
             }
 
@@ -96,6 +102,14 @@ public class GraphAllocator {
         colorMap = new HashMap<>();
         spilledVregs = new ArrayList<>();
         finishedStack = new LinkedList<>();
+        allPhyreg = new LinkedList<>();
+        for (int i = 0; i < min(6, func.getParameters().size()); i++)
+            allPhyreg.addLast(paratReg[i].getPhyReg());
+        for (PhysicalRegisterIR preg : calleeSaveRegisterSet)
+            allPhyreg.addLast(preg);
+        for (PhysicalRegisterIR preg : allocatePhyRegisterSet)
+            if (!allPhyreg.contains(preg))
+                allPhyreg.addLast(preg);
 
         doMerge(func);
 
@@ -163,7 +177,7 @@ public class GraphAllocator {
         for (VirtualRegisterIR vreg : finishedStack) {
             if (vreg.getPhyReg() != null)
                 continue;
-            List<PhysicalRegisterIR> colorCanUse = new LinkedList<>(allocatePhyRegisterSet);
+            List<PhysicalRegisterIR> colorCanUse = new LinkedList<>(allPhyreg);
             for (VirtualRegisterIR neighbor : originGraph.getNeighbor(vreg))
                 if (colorMap.containsKey(neighbor))
                     colorCanUse.remove(colorMap.get(neighbor));
@@ -259,6 +273,19 @@ public class GraphAllocator {
                         if (dest == srcNext && src == destNext) {
                             inst.next.remove();
                             inst = inst.prev;
+                        }
+                        if (dest == destNext && dest instanceof PhysicalRegisterIR) {
+                            if (((MoveInstIR) inst.next).src instanceof MemoryIR) {
+                                MemoryIR temp = (MemoryIR) ((MoveInstIR) inst.next).src;
+                                if (temp.getOffset() != null && temp.getOffset().getPhyReg() == dest)
+                                    continue;
+                                if (temp.getBase() != null && temp.getBase().getPhyReg() == dest)
+                                    continue;
+                            }
+                            if (dest == srcNext)
+                                continue;
+                            inst = inst.prev;
+                            inst.next.remove();
                         }
                     }
                 }

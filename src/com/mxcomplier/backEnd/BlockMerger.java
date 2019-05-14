@@ -77,7 +77,7 @@ public class BlockMerger extends IRScanner {
                         changed = true;
                     }
                     if (nextBB.getInstNum() == 1 && nextBB.getTail().prev instanceof CJumpInstIR){
-                        System.err.println(bb + " <- " + nextBB);
+//                        System.err.println(bb + " <- " + nextBB);
                         CJumpInstIR inst = (CJumpInstIR) nextBB.getTail().prev;
                         lastInst.append(inst.copy());
                         lastInst.remove();

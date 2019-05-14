@@ -17,7 +17,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class Main {
+public class code_gen {
 
     public static void main(String[] args) {
         if (args.length > 0)
@@ -46,11 +46,10 @@ public class Main {
             irBuilder.visit(ast);
 
 
-            new BlockMerger(true).visit(irBuilder.root);
-            new UseLessCodeEliminater(irBuilder).run();
-            new LocalValueNumbering().visit(irBuilder.root);
-
-            new FuncInliner().run(irBuilder);
+//            new BlockMerger(true).visit(irBuilder.root);
+//            new UseLessCodeEliminater(irBuilder).run();
+//            new LocalValueNumbering().visit(irBuilder.root);
+//            new FuncInliner().run(irBuilder);
 
             new BlockMerger(true).visit(irBuilder.root);
             new IRfixer().visit((irBuilder.root));
@@ -60,8 +59,6 @@ public class Main {
 
             new GraphAllocator().run(irBuilder);
             new StackFrameAllocater().visit(irBuilder.root);
-//            new BlockMerger(false).visit(irBuilder.root);
-
             new NasmPrinter(irBuilder, System.out).visit(irBuilder.root);
 //            if (!Config.DEBUG) {
 //                new NasmPrinter(irBuilder, System.err).visit(irBuilder.root);
