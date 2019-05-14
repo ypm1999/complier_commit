@@ -6,10 +6,12 @@ import com.mxcomplier.Ir.Operands.AddressIR;
 import com.mxcomplier.Ir.Operands.OperandIR;
 import com.mxcomplier.Ir.Operands.PhysicalRegisterIR;
 import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
+import com.mxcomplier.backEnd.EmptyForRemover;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class FuncIR {
 
@@ -28,6 +30,8 @@ public class FuncIR {
     public HashSet<VirtualRegisterIR> usedGlobalVar = new HashSet<>(), selfUsedGlobalVar = new HashSet<>();
     public HashSet<VirtualRegisterIR> definedGlobalVar = new HashSet<>(), selfDefinedGlobalVar = new HashSet<>();
     private HashSet<PhysicalRegisterIR> definedPhyRegs = null, usedPhyRegs = null;
+
+    public Set<EmptyForRemover.ForBBs> forSet = new HashSet<>();
 
     private List<BasicBlockIR> BBList = new ArrayList<>();
     private List<BasicBlockIR> orderedBBList, reversedOrderedBBList;

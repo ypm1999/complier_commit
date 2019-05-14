@@ -17,6 +17,7 @@ import java.util.Map;
 public class LivenessAnalyzer {
 
     private HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> liveOut = new HashMap<>();
+    private HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> liveIn = new HashMap<>();
     private HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> usedVregs = new HashMap<>();
     private HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> definedVregs = new HashMap<>();
     public boolean IRlevel;
@@ -29,15 +30,21 @@ public class LivenessAnalyzer {
         return liveOut;
     }
 
-    void buildLiveOut(FuncIR func) {
-        liveOut.clear();
+    public HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> getUsedVregs() {
+        return usedVregs;
+    }
+
+    public HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> getDefinedVregs() {
+        return definedVregs;
+    }
+
+    //get usedVregs & definedVregs
+    public void initUseAndDef(FuncIR func){
         usedVregs.clear();
         definedVregs.clear();
-        //get usedVregs & definedVregs
         for (BasicBlockIR bb : func.getBBList()) {
             HashSet<VirtualRegisterIR> bbUsed = new HashSet<>();
             HashSet<VirtualRegisterIR> bbDefined = new HashSet<>();
-            liveOut.put(bb, new HashSet<>());
             usedVregs.put(bb, bbUsed);
             definedVregs.put(bb, bbDefined);
             for (InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
@@ -54,6 +61,39 @@ public class LivenessAnalyzer {
                 bbDefined.addAll(defined);
             }
         }
+    }
+
+    void buildLiveIn(FuncIR func) {
+        initUseAndDef(func);
+        liveIn.clear();
+        for (BasicBlockIR bb : func.getBBList())
+            liveIn.put(bb, new HashSet<>());
+        //get liveIn
+        boolean changed = true;
+        func.initReverseOrderBBList();
+        while (changed) {
+            changed = false;
+            for (BasicBlockIR bb : func.getOrderedBBList()) {
+                int oldSize = liveIn.get(bb).size();
+                HashSet<VirtualRegisterIR> curLiveIn = new HashSet<>();
+                for (BasicBlockIR prevBB : bb.fronters) {
+                    HashSet<VirtualRegisterIR> tempVregs = new HashSet<>(liveIn.get(prevBB));
+                    tempVregs.removeAll(definedVregs.get(prevBB));
+                    tempVregs.addAll(usedVregs.get(prevBB));
+                    curLiveIn.addAll(tempVregs);
+                }
+                liveIn.remove(bb);
+                liveIn.put(bb, curLiveIn);
+                changed = changed || oldSize != curLiveIn.size();
+            }
+        }
+    }
+
+    void buildLiveOut(FuncIR func) {
+        initUseAndDef(func);
+        liveOut.clear();
+        for (BasicBlockIR bb : func.getBBList())
+            liveOut.put(bb, new HashSet<>());
         //get liveOut
         boolean changed = true;
         func.initReverseOrderBBList();
