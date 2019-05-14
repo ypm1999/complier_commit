@@ -7,9 +7,12 @@ import com.mxcomplier.Type.ClassType;
 import com.mxcomplier.Type.FuncType;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Scope {
     private Scope parent;
+    private Set<Scope> children = new HashSet<>();
     private HashMap<String, Symbol> identMap = new HashMap<>();
 
     public Scope() {
@@ -18,8 +21,20 @@ public class Scope {
 
     public Scope(Scope parent) {
         this.parent = parent;
+        if (parent != null)
+            parent.children.add(this);
     }
 
+    public Set<Symbol> getAllSymbols(){
+        Set<Symbol> res = new HashSet<>(identMap.values());
+        for (Scope child : children)
+            res.addAll(child.getAllSymbols());
+        return res;
+    }
+
+    public HashMap<String, Symbol> getIdentMap() {
+        return identMap;
+    }
 
     public void put(Symbol symbol, Location location) {
         if (identMap.containsKey(symbol.getName()))
@@ -206,7 +221,11 @@ public class Scope {
     }
 
     public void setParent(Scope parent) {
+        if (this.parent != null)
+            this.parent.children.remove(this);
         this.parent = parent;
+        if (parent != null)
+            parent.children.add(this);
     }
 
     public boolean isTop() {

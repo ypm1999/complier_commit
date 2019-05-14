@@ -111,12 +111,17 @@ public class IRfixer extends IRScanner {
 
 
         InstIR firstInst = node.entryBB.getHead().next;
-        if (firstInst instanceof CallInstIR && ((CallInstIR) firstInst).getFunc().getName().equals("__init"))
+        boolean useinit = false;
+        if (firstInst instanceof CallInstIR && ((CallInstIR) firstInst).getFunc().getName().equals("__init")){
             firstInst = firstInst.next;
-        for (VirtualRegisterIR vreg: node.selfUsedGlobalVar)
-            firstInst.prepend(new MoveInstIR(vreg, vreg.memory));
+            useinit = true;
+        }
 
-        if (!node.getName().equals("__init"))
+//        if (!(!useinit && node.getName().equals("main")))
+            for (VirtualRegisterIR vreg: node.selfUsedGlobalVar)
+                firstInst.prepend(new MoveInstIR(vreg, vreg.memory));
+
+        if (!(node.getName().equals("__init") || node.getName().equals("main")))
             for (VirtualRegisterIR vreg: node.selfDefinedGlobalVar)
                 node.leaveBB.getTail().prev.prepend(new MoveInstIR(vreg.memory, vreg));
 

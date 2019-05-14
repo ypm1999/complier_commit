@@ -5,6 +5,7 @@ import com.mxcomplier.Type.Type;
 abstract public class Symbol {
     private String name;
     private Type type;
+    boolean isOutputIrrelevant = false;
 
     protected Symbol(String name, Type type) {
         this.name = name;
@@ -17,5 +18,13 @@ abstract public class Symbol {
 
     public Type getType() {
         return type;
+    }
+
+    public boolean isOutputIrrelevant() {
+        return isOutputIrrelevant;
+    }
+
+    public void setOutputIrrelevant(boolean outputIrrelevant) {
+        isOutputIrrelevant = outputIrrelevant;
     }
 }

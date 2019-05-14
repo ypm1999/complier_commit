@@ -811,7 +811,44 @@ public class IRBuilder extends ASTScanner {
                 res = (VirtualRegisterIR) lhs.resultReg;
             else
                 curBB.append(new MoveInstIR(res, lhs.resultReg));
-            curBB.append(new BinaryInstIR(op, res, rhs.resultReg));
+            boolean finished = false;
+            if (rhs.resultReg instanceof ImmediateIR){
+                long value = ((ImmediateIR) rhs.resultReg).getValue();
+                if (value == 1){
+                    finished = true;
+                    if (op == BinaryInstIR.Op.MOD)
+                        curBB.prepend(new MoveInstIR(res, ZERO));
+                    else if (op == BinaryInstIR.Op.ADD)
+                        curBB.append(new UnaryInstIR(UnaryInstIR.Op.INC, res));
+                    else if (op == BinaryInstIR.Op.SUB)
+                        curBB.append(new UnaryInstIR(UnaryInstIR.Op.DEC, res));
+                    else
+                        if (!(op == BinaryInstIR.Op.MUL || op == BinaryInstIR.Op.DIV))
+                            finished = false;
+                }
+                else if ((value & (value - 1)) == 0){
+                    int K = 0;
+                    while(value > 1){
+                        K++;
+                        value >>= 1;
+                    }
+                    finished = true;
+                    if (op == BinaryInstIR.Op.MOD) {
+                        curBB.append(new BinaryInstIR(BinaryInstIR.Op.AND, res,
+                                new ImmediateIR(((ImmediateIR) rhs.resultReg).getValue() - 1)));
+                    }
+                    else
+                        if (op == BinaryInstIR.Op.DIV)
+                        curBB.append(new BinaryInstIR(BinaryInstIR.Op.SHR, res, new ImmediateIR(K)));
+                    else if (op == BinaryInstIR.Op.MUL)
+                        curBB.append(new BinaryInstIR(BinaryInstIR.Op.SHL, res, new ImmediateIR(K)));
+                    else
+                        finished = false;
+
+                }
+            }
+            if (!finished)
+                curBB.append(new BinaryInstIR(op, res, rhs.resultReg));
         }
         node.resultReg = res;
     }

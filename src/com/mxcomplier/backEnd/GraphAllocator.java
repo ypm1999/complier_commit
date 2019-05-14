@@ -204,9 +204,21 @@ public class GraphAllocator {
         }
     }
 
+    private void rebuildSpilledList(){
+        if (spilledVregs.size() < 4)
+            return;
+        int n = spilledVregs.size() / 2;
+        while(--n > 0)
+            spilledVregs.remove(0);
+//        while(--n > 0){
+//
+//        }
+    }
+
     private IRBuilder irBuilder;
 
     private void rewriteFunc(FuncIR func) {
+        rebuildSpilledList();
         for (VirtualRegisterIR vreg : spilledVregs)
             if (vreg.memory == null)
                 vreg.memory = new StackSoltIR(vreg.lable + "_spillPlace");
