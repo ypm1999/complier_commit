@@ -61,5 +61,47 @@ public class UseLessCodeEliminater extends IRScanner {
                 }
             }
         }
+
+        for (BasicBlockIR bb : func.getBBList()) {
+            HashSet<VirtualRegisterIR> liveNow = liveOut.get(bb);
+            for (InstIR inst = bb.getTail().prev; inst != bb.getHead(); inst = inst.prev) {
+                List<VirtualRegisterIR> used = inst.getUsedVReg(), defined = inst.getDefinedVreg();
+                if (inst instanceof CallInstIR) {
+                    used = ((CallInstIR) inst).getIRUsedVReg();
+                    defined = ((CallInstIR) inst).getIRDefinedVreg();
+                }
+                boolean remove = false;
+                if (inst instanceof MoveInstIR && inst.next instanceof BinaryInstIR) {
+                    MoveInstIR move = (MoveInstIR) inst;
+                    BinaryInstIR binary = (BinaryInstIR) inst.next;
+                    if (binary.src ==  move.dest
+                            && binary.dest instanceof VirtualRegisterIR
+                            && move.dest instanceof VirtualRegisterIR
+                            && !liveNow.contains(move.dest))
+                        switch (binary.getOp()) {
+                            case ADD:
+                            case SUB:
+                            case AND:
+                            case OR:
+                            case XOR:
+                                binary.src = move.src;
+                                remove = true;
+                                break;
+                        }
+                }
+                if (remove){
+                    inst = inst.next;
+                    inst.prev.remove();
+                } else {
+                    liveNow.removeAll(defined);
+                    liveNow.addAll(used);
+                }
+
+                liveNow.removeAll(defined);
+                liveNow.addAll(used);
+
+            }
+        }
+
     }
 }
