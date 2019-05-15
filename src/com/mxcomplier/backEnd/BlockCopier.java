@@ -17,7 +17,7 @@ public class BlockCopier extends IRScanner {
     static final private int MAX_COPY_INST_NUM = 8;
     static final private int MAX_TOTAL_COPY_INST_NUM = 32;
 
-    private boolean basic = true;
+    private boolean basic;
 
     public BlockCopier(boolean basic) {
         this.basic = basic;
@@ -43,7 +43,7 @@ public class BlockCopier extends IRScanner {
                 InstIR lastInst = bb.getTail().prev;
                 if (lastInst instanceof JumpInstIR){
                     BasicBlockIR nextBB = ((JumpInstIR) lastInst).getTarget();
-                    if (nextBB == bb || (basic && nextBB == node.leaveBB))
+                    if (nextBB == bb || nextBB == node.leaveBB)
                         continue;
                     int instNum = nextBB.getInstNum();
                     if (instNum < MAX_COPY_INST_NUM && nextBB.fronters.size() * instNum < MAX_TOTAL_COPY_INST_NUM){

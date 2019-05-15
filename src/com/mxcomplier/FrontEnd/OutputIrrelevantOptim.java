@@ -36,7 +36,7 @@
 //            return base.hashCode() + rely.hashCode();
 //        }
 //        @Override
-//        public boolean equals(Object o) {
+//        public boolean phyEquals(Object o) {
 //            return o instanceof DependenceEdge
 //                    && base == ((DependenceEdge)o).base
 //                    && rely == ((DependenceEdge)o).rely;
@@ -53,7 +53,7 @@
 //        for (Symbol symbol : globalScope.getIdentMap().values()){
 //            if (symbol instanceof VarSymbol)
 //                globalVariables.add(symbol);
-//            if (symbol.getName().equals("main") && symbol instanceof FuncSymbol)
+//            if (symbol.getName().phyEquals("main") && symbol instanceof FuncSymbol)
 //                mainFunction = (FuncSymbol) symbol;
 //        }
 //        currentFunc = mainFunction;

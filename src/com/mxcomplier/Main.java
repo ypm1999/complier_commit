@@ -44,15 +44,11 @@ public class Main {
 
             IRBuilder irBuilder = new IRBuilder();
             irBuilder.visit(ast);
-            if (Config.DEBUG) {
-                new IRPrinter(irBuilder).visit(irBuilder.root);
-            }
+
             new EmptyForRemover(irBuilder).run();
+
             new BlockMerger(true).visit(irBuilder.root);
             new BlockCopier(true).visit(irBuilder.root);
-            if (Config.DEBUG) {
-                new IRPrinter(irBuilder).visit(irBuilder.root);
-            }
             new LocalValueNumbering().visit(irBuilder.root);
             new UseLessCodeEliminater(irBuilder).run();
 
@@ -65,6 +61,7 @@ public class Main {
             new GraphAllocator().run(irBuilder);
             new StackFrameAllocater().visit(irBuilder.root);
             new BlockMerger(false).visit(irBuilder.root);
+            new InstructionMatcher().visit(irBuilder.root);
             new NasmPrinter(irBuilder, System.out).visit(irBuilder.root);
 //            if (!Config.DEBUG) {
 //                new NasmPrinter(irBuilder, System.err).visit(irBuilder.root);
