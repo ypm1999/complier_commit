@@ -186,20 +186,17 @@ public class GraphAllocator {
                 spilledVregs.add(vreg);
             } else {
                 PhysicalRegisterIR preg = null;
-                for (int i = 0; i < min(6, curFunc.getParameters().size()); i++)
-                    if (colorCanUse.contains(paratReg[i].getPhyReg())) {
-                        preg = paratReg[i].getPhyReg();
-                        break;
-                    }
-                if (preg == null) {
+//                for (int i = 0; i < min(6, curFunc.getParameters().size()); i++)
+//                    if (colorCanUse.contains(paratReg[i].getPhyReg())) {
+//                        preg = paratReg[i].getPhyReg();
+//                        break;
+//                    }
+//                if (preg == null) {
                     preg = colorCanUse.iterator().next();
-                    if (curFunc.callee.isEmpty())
-                        colorCanUse.retainAll(callerSaveRegisterSet);
-//                    else
-//                        colorCanUse.retainAll(calleeSaveRegisterSet);
+                    colorCanUse.retainAll(callerSaveRegisterSet);
                     if (!colorCanUse.isEmpty())
                         preg = colorCanUse.iterator().next();
-                }
+//                }
                 colorMap.put(vreg, preg);
             }
         }

@@ -54,6 +54,8 @@ public class Main {
             new UseLessCodeEliminater(irBuilder).run();
 
             new FuncInliner().run(irBuilder);
+            new LocalValueNumbering().visit(irBuilder.root);
+            new UseLessCodeEliminater(irBuilder).run();
 
             new IRfixer().visit((irBuilder.root));
             new BlockMerger(true).visit(irBuilder.root);
