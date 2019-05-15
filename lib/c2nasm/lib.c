@@ -50,25 +50,6 @@ int64_t getInt() {
 }
 pointer_t toString(int64_t a) {
 	pointer_t ret = malloc(REG_SIZE * 4);
-	// pointer_t str = ret + ((REG_SIZE << 2) - 1);
-	// *(str--) = '\0';
-	// int neg = 0;
-	// if (a < 0){
-	// 	neg = 1;
-	// 	a = -a;
-	// }
-	// int64_t tmp, cnt = 0;
-	// while(a != 0){
-	// 	cnt++;
-	// 	tmp = a;
-	// 	a /= 10;
-	// 	*(str--) = '0' + (tmp - ((a << 3) + (a << 1)));
-	// }
-	// if (neg)
-	// 	*(str--) = '-';
-
-	// str -= REG_SIZE - 1;
-	// *((int64_t*)str) = cnt;
 	*((int64_t*)ret) = sprintf(ret + REG_SIZE, "%ld", a);
 	return ret;
 }
@@ -106,15 +87,9 @@ pointer_t __stradd(pointer_t sa, pointer_t sb) {
 	int64_t lb = *((int64_t*)sb);
 	pointer_t ret = malloc(REG_SIZE + la + lb + 1);
 	*((int64_t*)ret) = la + lb;
-	pointer_t str = ret + REG_SIZE;
-	sa += REG_SIZE;
-	while(*sa != '\0')
-		*(str++) = *(sa++);
-	
-	sb += REG_SIZE;
-	while(*sb != '\0')
-		*(str++) = *(sb++);
-	*str = '\0';
+	memcpy(ret + REG_SIZE, sa + REG_SIZE, la);
+	memcpy(ret + REG_SIZE + la, sb + REG_SIZE, lb);
+	ret[REG_SIZE + la + lb] = '\0';
 	return ret;
 }
 

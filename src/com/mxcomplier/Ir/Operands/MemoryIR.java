@@ -98,24 +98,6 @@ public class MemoryIR extends AddressIR {
         return regs;
     }
 
-    
-    public boolean phyEquals(MemoryIR obj) {
-        boolean equal = (scale == obj.scale && num == obj.num && constant == obj.constant);
-        if (base != null) {
-            if (obj.base != null)
-                equal &= base.getPhyReg() == obj.base.getPhyReg();
-            else
-                equal = false;
-        }
-        if (offset != null){
-            if (obj.offset != null)
-                equal &=  offset.getPhyReg() == obj.offset.getPhyReg();
-            else
-                equal = false;
-        }
-        return  equal;
-    }
-
     @Override
     public OperandIR copy() {
         return new MemoryIR(this);

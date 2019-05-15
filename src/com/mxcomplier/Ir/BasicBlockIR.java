@@ -1,7 +1,6 @@
 package com.mxcomplier.Ir;
 
 import com.mxcomplier.Config;
-import com.mxcomplier.Ir.Instructions.CJumpInstIR;
 import com.mxcomplier.Ir.Instructions.EmptyInstIR;
 import com.mxcomplier.Ir.Instructions.InstIR;
 
@@ -30,6 +29,7 @@ public class BasicBlockIR {
     }
 
     public BasicBlockIR copy(){
+        //TODO
         BasicBlockIR newBB = new BasicBlockIR(func, lable);
         for (InstIR inst = head.next; inst != tail; inst = inst.next)
             newBB.append(inst.copy());
@@ -39,20 +39,6 @@ public class BasicBlockIR {
     void initFrontAndSucc() {
         fronters = new ArrayList<>();
         successors = new ArrayList<>();
-    }
-
-    public int getMergeInstNum(){
-        int res = 0;
-        int cnt = 1;
-        for (InstIR inst = head.next; inst != tail; inst = inst.next) {
-            if (inst instanceof CJumpInstIR) {
-                res += cnt;
-                cnt++;
-            }
-            else
-                res++;
-        }
-        return  res;
     }
 
     public int getInstNum(){

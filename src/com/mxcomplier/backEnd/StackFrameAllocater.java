@@ -57,7 +57,9 @@ public class StackFrameAllocater extends IRScanner {
         for (StackSoltIR stackSolt : stackSolts)
             stackSolt.setNum(-Config.getREGSIZE() * (++i));
 
+        //TODO callee save regs
         HashSet<PhysicalRegisterIR> saveSet = new HashSet<>(RegisterSet.calleeSaveRegisterSet);
+
         saveSet.retainAll(node.getDefinedPhyRegs());
         if (!node.getName().equals("main"))
             for (PhysicalRegisterIR preg : saveSet) {
@@ -92,11 +94,11 @@ public class StackFrameAllocater extends IRScanner {
 //            if (firstInst instanceof PushInstIR)
 //                cnt--;
 //        }
-//        if (!node.getFunc().getName().phyEquals("__init"))
+//        if (!node.getFunc().getName().equals("__init"))
 //            for (PhysicalRegisterIR preg : saveSet)
 //                firstInst.prepend(new PushInstIR(preg));
 //
-//        if (!node.getFunc().getName().phyEquals("__init"))
+//        if (!node.getFunc().getName().equals("__init"))
 //            for (PhysicalRegisterIR preg : saveSet)
 //                node.append(new PopInstIR(preg));
         if (node.getArgs().size() > 6)
