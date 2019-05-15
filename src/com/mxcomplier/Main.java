@@ -62,14 +62,7 @@ public class Main {
             new StackFrameAllocater().visit(irBuilder.root);
             new Cjumpfixer().visit(irBuilder.root);
             new BlockMerger(false).visit(irBuilder.root);
-//            if (Config.DEBUG) {
-//                new IRPrinter(irBuilder).visit(irBuilder.root);
-//            }
-//
-            new BlockCopier(true).visit(irBuilder.root);
-//            if (Config.DEBUG) {
-//                new IRPrinter(irBuilder).visit(irBuilder.root);
-//            }
+//            new BlockCopier(false).visit(irBuilder.root);
 
             new NasmPrinter(irBuilder, System.out).visit(irBuilder.root);
 //            if (!Config.DEBUG) {
