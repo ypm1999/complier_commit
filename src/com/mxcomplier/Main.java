@@ -60,7 +60,7 @@ public class Main {
 
             new GraphAllocator().run(irBuilder);
             new StackFrameAllocater().visit(irBuilder.root);
-            new Cjumpfixer().visit(irBuilder.root);
+//            new Cjumpfixer().visit(irBuilder.root);
             new BlockMerger(false).visit(irBuilder.root);
             new InstructionMatcher().visit(irBuilder.root);
             new NasmPrinter(irBuilder, System.out).visit(irBuilder.root);
