@@ -45,8 +45,6 @@ public class IRBuilder extends ASTScanner {
     }
 
     private void initBuildInFunc() {
-        //TODO
-
         FuncIR library_print = new FuncIR("print", FuncIR.Type.LIBRARY);
         FuncIR library_println = new FuncIR("println", FuncIR.Type.LIBRARY);
         FuncIR library_getString = new FuncIR("getString", FuncIR.Type.LIBRARY);
@@ -83,8 +81,6 @@ public class IRBuilder extends ASTScanner {
     }
 
     public IRBuilder() {
-        //TODO
-
         initBuildInFunc();
     }
 
@@ -211,7 +207,6 @@ public class IRBuilder extends ASTScanner {
 
         currentFunc = node.getFuncIR();
         curBB = currentFunc.entryBB = new BasicBlockIR(currentFunc, "entry_" + currentFunc.getName());
-        //TODO add parameters
         Scope funcScope = node.getFuncBody().getScope();
         List<VirtualRegisterIR> args = currentFunc.getParameters();
         ClassSymbol belongClass = funcScope.getFunc(node.getName()).getBelongClass();
@@ -232,7 +227,6 @@ public class IRBuilder extends ASTScanner {
         node.getFuncBody().accept(this);
         currentFunc.leaveBB = new BasicBlockIR(currentFunc, "leave_" + currentFunc.getName());
 
-        //TODO merge return && find leaveBB
         for (BasicBlockIR bb : currentFunc.getBBList()) {
             if (bb == currentFunc.leaveBB)
                 continue;

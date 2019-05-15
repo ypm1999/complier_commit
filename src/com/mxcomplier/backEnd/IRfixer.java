@@ -218,6 +218,12 @@ public class IRfixer extends IRScanner {
             node.prepend(new MoveInstIR(moveTempVreg, node.getRhs()));
             node.rhs = moveTempVreg;
         }
+
+//        if (node.getTrueBB().fronters.size() == 1 ||
+//                (node.getFalseBB().fronters.size() > 1 && node.getTrueBB().getInstNum()< node.getFalseBB().getInstNum()))
+//            node.reverseOp();
+//        node.append(new JumpInstIR(node.getFalseBB()));
+        
     }
 
     @Override

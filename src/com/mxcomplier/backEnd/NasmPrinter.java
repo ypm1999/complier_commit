@@ -79,17 +79,16 @@ public class NasmPrinter extends IRScanner {
         BBList.add(func.entryBB);
         workList.add(func.entryBB);
         for (BasicBlockIR bb: oldBBList){
-            if (bb.getTail().prev instanceof CJumpInstIR) {
-                CJumpInstIR inst = (CJumpInstIR) bb.getTail().prev;
-                if (inst.getTrueBB().fronters.size() == 1)
-                    inst.reverseOp();
-                inst.append(new JumpInstIR(inst.getFalseBB()));
-                BasicBlockIR trueBB = inst.getTrueBB();
-                if (!BBList.contains(trueBB))
-                    BBList.add(trueBB);
-                if (!workList.contains(trueBB) && trueBB != func.leaveBB)
-                    workList.add(trueBB);
-                inst.removeFalseBB();
+            for (InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
+                if (inst instanceof CJumpInstIR) {
+                    CJumpInstIR cjumpInst = (CJumpInstIR) inst;
+                    BasicBlockIR trueBB = cjumpInst.getTrueBB();
+                    if (!BBList.contains(trueBB))
+                        BBList.add(trueBB);
+                    if (!workList.contains(trueBB) && trueBB != func.leaveBB)
+                        workList.add(trueBB);
+                    cjumpInst.removeFalseBB();
+                }
             }
         }
 

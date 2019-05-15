@@ -29,7 +29,6 @@ public class BasicBlockIR {
     }
 
     public BasicBlockIR copy(){
-        //TODO
         BasicBlockIR newBB = new BasicBlockIR(func, lable);
         for (InstIR inst = head.next; inst != tail; inst = inst.next)
             newBB.append(inst.copy());

@@ -57,9 +57,7 @@ public class StackFrameAllocater extends IRScanner {
         for (StackSoltIR stackSolt : stackSolts)
             stackSolt.setNum(-Config.getREGSIZE() * (++i));
 
-        //TODO callee save regs
         HashSet<PhysicalRegisterIR> saveSet = new HashSet<>(RegisterSet.calleeSaveRegisterSet);
-
         saveSet.retainAll(node.getDefinedPhyRegs());
         if (!node.getName().equals("main"))
             for (PhysicalRegisterIR preg : saveSet) {
