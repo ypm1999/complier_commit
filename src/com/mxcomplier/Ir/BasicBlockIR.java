@@ -43,13 +43,13 @@ public class BasicBlockIR {
 
     public int getMergeInstNum(){
         int res = 0;
-        int cnt = 1;
+//        int cnt = 1;
         for (InstIR inst = head.next; inst != tail; inst = inst.next) {
-            if (inst instanceof CJumpInstIR) {
-                res += cnt;
-                cnt++;
-            }
-            else
+//            if (inst instanceof CJumpInstIR) {
+//                res += cnt;
+//                cnt++;
+//            }
+//            else
                 res++;
         }
         return  res;

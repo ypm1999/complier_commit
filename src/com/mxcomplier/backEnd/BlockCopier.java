@@ -15,7 +15,9 @@ import java.util.List;
 public class BlockCopier extends IRScanner {
 
     static final private int MAX_COPY_INST_NUM = 8;
-    static final private int MAX_TOTAL_COPY_INST_NUM = 32;
+    static final private int CJUMP_MAX_COPY_INST_NUM = 4;
+    static final private int CJUMP_MAX_BB_INST_NUM = 16;
+    static final private int MAX_TOTAL_COPY_INST_NUM = 64;
 
     private boolean basic;
 
@@ -38,7 +40,7 @@ public class BlockCopier extends IRScanner {
             node.initOrderBBList();
             List<BasicBlockIR> BBList = node.getOrderedBBList();
             for (BasicBlockIR bb : BBList) {
-                if (bb.fronters.isEmpty())
+                if (bb.fronters.isEmpty() || (!basic && bb.getInstNum() > CJUMP_MAX_BB_INST_NUM))
                     continue;
                 InstIR lastInst = bb.getTail().prev;
                 if (lastInst instanceof JumpInstIR){
@@ -46,7 +48,8 @@ public class BlockCopier extends IRScanner {
                     if (nextBB == bb || nextBB == node.leaveBB)
                         continue;
                     int instNum = nextBB.getInstNum();
-                    if (instNum < MAX_COPY_INST_NUM && nextBB.fronters.size() * instNum < MAX_TOTAL_COPY_INST_NUM){
+                    if (instNum < (basic ? MAX_COPY_INST_NUM : CJUMP_MAX_COPY_INST_NUM)
+                            && nextBB.fronters.size() * instNum < MAX_TOTAL_COPY_INST_NUM){
                         lastInst.remove();
                         bb.merge(nextBB.copy());
                         nextBB.fronters.remove(bb);
