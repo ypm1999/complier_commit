@@ -64,6 +64,7 @@ public class Main {
             new BlockMerger(false).visit(irBuilder.root);
             new InstructionMatcher().visit(irBuilder.root);
             new Cjumpfixer().visit(irBuilder.root);
+            new BlockCopier(false).visit(irBuilder.root);
             new NasmPrinter(irBuilder, System.out).visit(irBuilder.root);
 //            try
 //            {

@@ -105,8 +105,9 @@ public class GraphAllocator {
         allPhyreg = new LinkedList<>();
         for (int i = 0; i < min(6, func.getParameters().size()); i++)
             allPhyreg.addLast(paratReg[i].getPhyReg());
-        for (PhysicalRegisterIR preg : calleeSaveRegisterSet)
-            allPhyreg.addLast(preg);
+        for (PhysicalRegisterIR preg : callerSaveRegisterSet)
+            if (!allPhyreg.contains(preg))
+                allPhyreg.addLast(preg);
         for (PhysicalRegisterIR preg : allocatePhyRegisterSet)
             if (!allPhyreg.contains(preg))
                 allPhyreg.addLast(preg);
@@ -194,8 +195,8 @@ public class GraphAllocator {
                     preg = colorCanUse.iterator().next();
                     if (curFunc.callee.isEmpty())
                         colorCanUse.retainAll(callerSaveRegisterSet);
-                    else
-                        colorCanUse.retainAll(calleeSaveRegisterSet);
+//                    else
+//                        colorCanUse.retainAll(calleeSaveRegisterSet);
                     if (!colorCanUse.isEmpty())
                         preg = colorCanUse.iterator().next();
                 }
