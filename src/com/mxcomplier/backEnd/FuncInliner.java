@@ -11,7 +11,7 @@ import java.util.*;
 public class FuncInliner extends IRScanner {
 
     static private final int MAX_CALLEE_INST_NUM = 1 << 10;
-    static private final int MAX_CALLER_INST_NUM = 100000;
+    static private final int MAX_CALLER_INST_NUM = 1 << 13;
     static private final int MAX_INLINE_RAND = 24;
 
     private class FuncInfo {
