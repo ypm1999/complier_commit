@@ -117,7 +117,7 @@ public class IRfixer extends IRScanner {
             useinit = true;
         }
 
-//        if (!(!useinit && node.getName().equals("main")))
+//        if (!(!useinit && node.getName().phyEquals("main")))
             for (VirtualRegisterIR vreg: node.selfUsedGlobalVar)
                 firstInst.prepend(new MoveInstIR(vreg, vreg.memory));
 
