@@ -66,11 +66,6 @@ public class Main {
             new Cjumpfixer().visit(irBuilder.root);
             new BlockCopier(false).visit(irBuilder.root);
             new NasmPrinter(irBuilder, System.out).visit(irBuilder.root);
-//            try
-//            {
-//                Thread.sleep(1000);//毫秒
-//            }
-//            catch(Exception ignored){}
 
         } catch (ComplierError e) {
             System.err.println("Complier Failed!");
