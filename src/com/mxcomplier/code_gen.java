@@ -50,7 +50,7 @@ public class code_gen {
             new BlockMerger(true).visit(irBuilder.root);
             new BlockCopier(true).visit(irBuilder.root);
             new LocalValueNumbering().visit(irBuilder.root);
-            new UseLessCodeEliminater(irBuilder).run();
+            new DeadCodeEliminater(irBuilder).run();
 
 //            new FuncInliner().run(irBuilder);
 

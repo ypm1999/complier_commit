@@ -40,11 +40,11 @@ public class CallInstIR extends InstIR {
     public List<StackSoltIR> getStackSolt() {
         List<StackSoltIR> res = new ArrayList<>();
         VirtualRegisterIR ret = (VirtualRegisterIR) returnValue;
-        if (ret != null && ret.memory instanceof StackSoltIR)
-            res.add((StackSoltIR) ret.memory);
+        if (ret != null && ret.getMemory() instanceof StackSoltIR)
+            res.add((StackSoltIR) ret.getMemory());
         for (OperandIR arg : args) {
             if (arg instanceof VirtualRegisterIR) {
-                MemoryIR mem = ((VirtualRegisterIR) arg).memory;
+                MemoryIR mem = ((VirtualRegisterIR) arg).getMemory();
                 if (mem instanceof StackSoltIR)
                     res.add((StackSoltIR) mem);
             }

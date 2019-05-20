@@ -13,7 +13,6 @@ import com.mxcomplier.Ir.RegisterSet;
 import java.util.HashSet;
 
 public class StackFrameAllocater extends IRScanner {
-    private FuncIR curFunc = null;
 
 
     @Override
@@ -28,9 +27,7 @@ public class StackFrameAllocater extends IRScanner {
     @Override
     public void visit(ProgramIR node) {
         for (FuncIR func : node.getFuncs()) {
-            curFunc = func;
             func.accept(this);
-            curFunc = null;
         }
     }
 
@@ -51,7 +48,8 @@ public class StackFrameAllocater extends IRScanner {
         }
 
         int stackSize = (stackSolts.size()) * Config.getREGSIZE();
-        firstInst.prepend(new BinaryInstIR(BinaryInstIR.Op.SUB, RegisterSet.rsp, new ImmediateIR(stackSize)));
+        if (stackSize > 0)
+            firstInst.prepend(new BinaryInstIR(BinaryInstIR.Op.SUB, RegisterSet.rsp, new ImmediateIR(stackSize)));
 
         int i = 0;
         for (StackSoltIR stackSolt : stackSolts)
@@ -78,27 +76,6 @@ public class StackFrameAllocater extends IRScanner {
 
     @Override
     public void visit(CallInstIR node) {
-
-        //TODO caller save regs
-//        HashSet<PhysicalRegisterIR> saveSet = new HashSet<>(RegisterSet.callerSaveRegisterSet);
-//        saveSet.retainAll(node.getFunc().getDefinedPhyRegs());
-//        saveSet.retainAll(curFunc.getUsedPhyRegs());
-//        for (int i = 0; i < min(6, node.getArgs().size()); ++i)
-//            saveSet.remove(RegisterSet.paratReg[i].getPhyReg());
-//        InstIR firstInst = node;
-//        int cnt = node.getArgs().size() - 6;
-//        while(cnt > 0){
-//            firstInst = firstInst.prev;
-//            if (firstInst instanceof PushInstIR)
-//                cnt--;
-//        }
-//        if (!node.getFunc().getName().phyEquals("__init"))
-//            for (PhysicalRegisterIR preg : saveSet)
-//                firstInst.prepend(new PushInstIR(preg));
-//
-//        if (!node.getFunc().getName().phyEquals("__init"))
-//            for (PhysicalRegisterIR preg : saveSet)
-//                node.append(new PopInstIR(preg));
         if (node.getArgs().size() > 6)
             node.append(new BinaryInstIR(BinaryInstIR.Op.ADD, RegisterSet.rsp,
                     new ImmediateIR(Config.getREGSIZE() * (node.getArgs().size() - 6))));

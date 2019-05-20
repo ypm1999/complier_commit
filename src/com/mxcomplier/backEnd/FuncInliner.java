@@ -6,21 +6,17 @@ import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.Instructions.*;
 import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class FuncInliner extends IRScanner {
 
     static private final int MAX_CALLEE_INST_NUM = 1 << 10;
     static private final int MAX_CALLER_INST_NUM = 1 << 14;
     static private final int MAX_INLINE_RAND = 16;
-
-    private class FuncInfo {
-        int instNum = 0;
-        FuncIR funcCopy = null;
-    }
-
     private HashMap<FuncIR, FuncInfo> funcInfoMap = new HashMap<>();
-//    private HashMap<FuncIR, FuncIR> funcBuckupMap = new HashMap<>();
 
     private FuncIR doBuckup(FuncIR oldFunc) {
         Map<BasicBlockIR, BasicBlockIR> bbRenameMap = new HashMap<>();
@@ -34,11 +30,11 @@ public class FuncInliner extends IRScanner {
             newfunc.getParameters().add(newArg);
         }
 
-        if (oldFunc.returnValue != null) {
-            VirtualRegisterIR newret = new VirtualRegisterIR(oldFunc.returnValue.lable + "_");
-            newfunc.returnValue = newret;
-            if (!vregRenameMap.containsKey(oldFunc.returnValue))
-                vregRenameMap.put(oldFunc.returnValue, newret);
+        if (oldFunc.getReturnValue() != null) {
+            VirtualRegisterIR newret = new VirtualRegisterIR(oldFunc.getReturnValue().lable + "_");
+            newfunc.setReturnValue(newret);
+            if (!vregRenameMap.containsKey(oldFunc.getReturnValue()))
+                vregRenameMap.put(oldFunc.getReturnValue(), newret);
         }
 
         for (VirtualRegisterIR vreg : oldFunc.getAllVreg())
@@ -133,12 +129,6 @@ public class FuncInliner extends IRScanner {
         curBB.getTail().prev = call;
         call.next = curBB.getTail();
 
-        //rename inst after call
-//        for (InstIR inst = newLeaveBB.getHead().next; inst != newLeaveBB.getTail(); inst = inst.next) {
-//            if (inst instanceof BranchInstIR)
-//                ((BranchInstIR) inst).bbRename(Collections.singletonMap(curBB, newLeaveBB));
-//        }
-
         for (int i = 0; i < callee.getParameters().size(); i++) {
             VirtualRegisterIR oldArg = callee.getParameters().get(i);
             VirtualRegisterIR newArg = new VirtualRegisterIR(oldArg);
@@ -154,8 +144,8 @@ public class FuncInliner extends IRScanner {
             }
         }
 
-        if (callee.returnValue != null)
-            vregRenameMap.put(callee.returnValue, (VirtualRegisterIR) call.getReturnValue());
+        if (callee.getReturnValue() != null)
+            vregRenameMap.put(callee.getReturnValue(), (VirtualRegisterIR) call.getReturnValue());
 
         for (VirtualRegisterIR vreg : callee.getAllVreg()) {
             if (!vregRenameMap.containsKey(vreg)
@@ -188,5 +178,10 @@ public class FuncInliner extends IRScanner {
         }
 
         return newLeaveBB;
+    }
+
+    private class FuncInfo {
+        int instNum = 0;
+        FuncIR funcCopy = null;
     }
 }

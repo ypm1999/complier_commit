@@ -4,9 +4,9 @@ import com.mxcomplier.Ir.Operands.AddressIR;
 import com.mxcomplier.Type.Type;
 
 abstract public class ExprNode extends Node {
+    public AddressIR resultReg;
     private Type type;
     private boolean leftValue;
-    public AddressIR resultReg;
 
     public Type getType() {
         return type;

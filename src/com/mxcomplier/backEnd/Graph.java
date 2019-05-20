@@ -34,8 +34,6 @@ class Graph {
     void addEdge(VirtualRegisterIR u, VirtualRegisterIR v) {
         if (u == v)
             throw new IRError("add self-loop edge");
-//        System.err.println(u + " " + v);
-//        System.err.flush();
         graphLink.get(u).add(v);
         graphLink.get(v).add(u);
     }
@@ -49,20 +47,20 @@ class Graph {
 
     void removeEdge(VirtualRegisterIR u, VirtualRegisterIR v) {
         if (u == v)
-            throw new IRError("add self-loop edge");
+            throw new IRError("remove self-loop edge");
         graphLink.get(u).remove(v);
         graphLink.get(v).remove(u);
     }
 
-    public Set<VirtualRegisterIR> getnodes() {
+    Set<VirtualRegisterIR> getnodes() {
         return new HashSet<>(graphLink.keySet());
     }
 
-    public int getDegree(VirtualRegisterIR u) {
+    int getDegree(VirtualRegisterIR u) {
         return graphLink.get(u).size();
     }
 
-    public HashSet<VirtualRegisterIR> getNeighbor(VirtualRegisterIR u) {
+    HashSet<VirtualRegisterIR> getNeighbor(VirtualRegisterIR u) {
         return new HashSet<>(graphLink.get(u));
     }
 

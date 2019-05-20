@@ -29,6 +29,10 @@ final public class FuncDefNode extends Node {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public TypeNode getReturnType() {
         return returnType;
     }
@@ -43,10 +47,6 @@ final public class FuncDefNode extends Node {
 
     public CompStmtNode getFuncBody() {
         return funcBody;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public FuncIR getFuncIR() {

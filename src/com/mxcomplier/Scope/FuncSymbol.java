@@ -41,6 +41,10 @@ public class FuncSymbol extends Symbol {
         return isConstructor;
     }
 
+    public void setConstructor(boolean constructor) {
+        isConstructor = constructor;
+    }
+
     public ClassSymbol getBelongClass() {
         return belongClass;
     }
@@ -49,11 +53,7 @@ public class FuncSymbol extends Symbol {
         return dependence;
     }
 
-    public void addDependence(Symbol symbol){
+    public void addDependence(Symbol symbol) {
         dependence.add(symbol);
-    }
-
-    public void setConstructor(boolean constructor) {
-        isConstructor = constructor;
     }
 }

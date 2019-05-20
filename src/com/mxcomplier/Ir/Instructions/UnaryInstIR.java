@@ -10,13 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 public class UnaryInstIR extends InstIR {
-    public enum Op {
-        NEG, INV, INC, DEC, NULL, ERROR
-    }
-
+    private AddressIR dest;
     private Op op;
-    public AddressIR dest;
-
     public UnaryInstIR(Op op, AddressIR dest) {
         this.op = op;
         this.dest = dest;
@@ -61,7 +56,6 @@ public class UnaryInstIR extends InstIR {
         return String.format("%s %s", op.toString().toLowerCase(), dest);
     }
 
-
     @Override
     public InstIR copy() {
         return new UnaryInstIR(op, (AddressIR) dest.copy());
@@ -69,6 +63,10 @@ public class UnaryInstIR extends InstIR {
 
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public enum Op {
+        NEG, INV, INC, DEC, NULL, ERROR
     }
 
 }

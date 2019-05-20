@@ -11,7 +11,9 @@ import com.mxcomplier.Ir.Operands.StaticDataIR;
 import com.mxcomplier.Ir.ProgramIR;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class NasmPrinter extends IRScanner {
     private String indentation = "";
@@ -36,11 +38,11 @@ public class NasmPrinter extends IRScanner {
 
 
     private void indent() {
-        indentation += '\t';
+        indentation += "  ";
     }
 
     private void unindent() {
-        indentation = indentation.substring(1);
+        indentation = indentation.substring(2);
     }
 
     private void init_print(List<StaticDataIR> staticData) {
@@ -69,7 +71,7 @@ public class NasmPrinter extends IRScanner {
         println("section .text\n");
     }
 
-    private void setOrder(FuncIR func){
+    private void setOrder(FuncIR func) {
         func.initReverseOrderBBList();
         LinkedList<BasicBlockIR> BBList = new LinkedList<>();
         List<BasicBlockIR> oldBBList = new ArrayList<>(func.getBBList());
@@ -78,14 +80,10 @@ public class NasmPrinter extends IRScanner {
 
         BBList.add(func.entryBB);
         workList.add(func.entryBB);
-        for (BasicBlockIR bb: oldBBList){
+        for (BasicBlockIR bb : oldBBList) {
             for (InstIR inst = bb.getHead().next; inst != bb.getTail(); inst = inst.next) {
                 if (inst instanceof CJumpInstIR) {
                     CJumpInstIR cJumpInstIR = (CJumpInstIR) inst;
-//                if (inst.getTrueBB().fronters.size() == 1)
-//                    inst.reverseOp();
-//                inst.append(new JumpInstIR(inst.getFalseBB()));
-//                inst.removeFalseBB();
                     BasicBlockIR trueBB = cJumpInstIR.getTrueBB();
                     if (!BBList.contains(trueBB))
                         BBList.add(trueBB);
@@ -97,7 +95,7 @@ public class NasmPrinter extends IRScanner {
         }
 
 
-        while(!workList.isEmpty()) {
+        while (!workList.isEmpty()) {
             BasicBlockIR bb = workList.iterator().next();
             workList.remove(bb);
             if (!(bb.getTail().prev instanceof JumpInstIR))
@@ -106,12 +104,11 @@ public class NasmPrinter extends IRScanner {
             if (BBList.contains(nextBB))
                 continue;
             bb.getTail().prev.remove();
-            if (nextBB.fronters.size() == 1){
+            if (nextBB.getFronters().size() == 1) {
                 bb.merge(nextBB);
                 if (nextBB != func.leaveBB && !workList.contains(bb))
                     workList.add(bb);
-            }
-            else{
+            } else {
                 BBList.add(BBList.indexOf(bb) + 1, nextBB);
                 if (nextBB != func.leaveBB && !workList.contains(nextBB))
                     workList.add(nextBB);
@@ -121,56 +118,6 @@ public class NasmPrinter extends IRScanner {
 
 
     }
-//    private void setOrder(FuncIR func){
-//        func.initReverseOrderBBList();
-//        LinkedList<BasicBlockIR> BBList = new LinkedList<>();
-//        func.setBBList(BBList);
-//        List<BasicBlockIR> orderedBBList = func.getReversedOrderedBBList();
-//        Collections.reverse(orderedBBList);
-//
-//        for (BasicBlockIR bb: orderedBBList){
-//            if (bb.getTail().prev instanceof CJumpInstIR) {
-//                CJumpInstIR inst = (CJumpInstIR) bb.getTail().prev;
-//                inst.append(new JumpInstIR(inst.getFalseBB()));
-//                inst.removeFalseBB();
-//            }
-//        }
-//
-//        BBList.add(func.entryBB);
-//        orderedBBList.remove(func.entryBB);
-//        while (!orderedBBList.isEmpty()){
-//            List<BasicBlockIR> removedBB = new LinkedList<>();
-//
-//            for (BasicBlockIR bb : orderedBBList){
-//                BasicBlockIR prevBB = null;
-//                for (BasicBlockIR prev : bb.fronters) {
-//                    if (!(prev.getTail().prev instanceof JumpInstIR)
-//                            || ((JumpInstIR)prev.getTail().prev).getTarget() != bb)
-//                        continue;
-//                    if(BBList.contains(prev)) {
-//                        prevBB = prev;
-//                        break;
-//                    }
-//                }
-//
-//                if (prevBB != null){
-//                    prevBB.getTail().prev.remove();
-//                    if (bb.fronters.size() == 1){
-//                        prevBB.merge(bb);
-//                    }
-//                    else
-//                        BBList.add(BBList.indexOf(prevBB) + 1, bb);
-//                    removedBB.add(bb);
-//                }
-//            }
-//            if (removedBB.isEmpty()) {
-//                BBList.add(orderedBBList.iterator().next());
-//                orderedBBList.remove(orderedBBList.iterator().next());
-//            }
-//            else
-//                orderedBBList.removeAll(removedBB);
-//        }
-//    }
 
 
     @Override
@@ -204,7 +151,6 @@ public class NasmPrinter extends IRScanner {
             bb.accept(this);
         }
         unindent();
-//        println("\n;********************************************************************************\n");
     }
 
 
@@ -227,11 +173,6 @@ public class NasmPrinter extends IRScanner {
     public void visit(CJumpInstIR node) {
         println(node.nasmString());
     }
-//
-//    @Override
-//    public void visit(CompInstIR node) {
-//        println(node.nasmString());
-//    }
 
     @Override
     public void visit(BinaryInstIR node) {

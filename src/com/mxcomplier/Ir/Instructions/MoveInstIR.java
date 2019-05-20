@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 public class MoveInstIR extends InstIR {
-    public AddressIR dest;
-    public OperandIR src;
+    private AddressIR dest;
+    private OperandIR src;
 
     public MoveInstIR(AddressIR dest, OperandIR src) {
         this.dest = dest;
@@ -18,6 +18,10 @@ public class MoveInstIR extends InstIR {
 
     public AddressIR getDest() {
         return dest;
+    }
+
+    public void setDest(AddressIR dest) {
+        this.dest = dest;
     }
 
     public OperandIR getSrc() {

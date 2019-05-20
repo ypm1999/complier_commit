@@ -16,23 +16,17 @@ import java.util.Set;
 public class FuncIR {
 
     static private int ID = 0;
-    private int id;
-
-    public enum Type {
-        EXTRA, LIBRARY, USER
-    }
-
-    private String name;
-    private Type type;
+    static private HashSet<BasicBlockIR> accessed = new HashSet<>();
     public VirtualRegisterIR returnValue = null;
     public BasicBlockIR entryBB, leaveBB;
     public HashSet<FuncIR> callee = new HashSet<>(), caller = new HashSet<>();
     public HashSet<VirtualRegisterIR> usedGlobalVar = new HashSet<>(), selfUsedGlobalVar = new HashSet<>();
     public HashSet<VirtualRegisterIR> definedGlobalVar = new HashSet<>(), selfDefinedGlobalVar = new HashSet<>();
-    private HashSet<PhysicalRegisterIR> definedPhyRegs = null, usedPhyRegs = null;
-
     public Set<EmptyForRemover.ForBBs> forSet = new HashSet<>();
-
+    private int id;
+    private String name;
+    private Type type;
+    private HashSet<PhysicalRegisterIR> definedPhyRegs = null, usedPhyRegs = null;
     private List<BasicBlockIR> BBList = new ArrayList<>();
     private List<BasicBlockIR> orderedBBList, reversedOrderedBBList;
     private List<VirtualRegisterIR> parameters = new ArrayList<>();
@@ -121,9 +115,6 @@ public class FuncIR {
         selfDefinedGlobalVar = new HashSet<>(definedGlobalVar);
     }
 
-
-    static private HashSet<BasicBlockIR> accessed = new HashSet<>();
-
     private void reverseOrderDfsBB(BasicBlockIR now, BasicBlockIR fa) {
         if (fa != null) {
             now.addFronter(fa);
@@ -146,7 +137,6 @@ public class FuncIR {
     }
 
     private void orderDfsBB(BasicBlockIR now, BasicBlockIR fa) {
-//        System.err.println(now.getLable());
         if (fa != null) {
             now.addFronter(fa);
             fa.addSuccessor(now);
@@ -155,9 +145,7 @@ public class FuncIR {
             return;
         accessed.add(now);
         orderedBBList.add(now);
-//        System.err.println(now.getLable());
         for (InstIR inst = now.getTail().prev; inst != now.getHead(); inst = inst.prev) {
-//            System.err.println(inst);
             if (inst instanceof EmptyInstIR)
                 throw new IRError("empty");
             if (inst instanceof JumpInstIR)
@@ -220,6 +208,46 @@ public class FuncIR {
         return type;
     }
 
+    public VirtualRegisterIR getReturnValue() {
+        return returnValue;
+    }
+
+    public void setReturnValue(VirtualRegisterIR returnValue) {
+        this.returnValue = returnValue;
+    }
+
+    public BasicBlockIR getEntryBB() {
+        return entryBB;
+    }
+
+    public BasicBlockIR getLeaveBB() {
+        return leaveBB;
+    }
+
+    public HashSet<FuncIR> getCallee() {
+        return callee;
+    }
+
+    public HashSet<FuncIR> getCaller() {
+        return caller;
+    }
+
+    public HashSet<VirtualRegisterIR> getDefinedGlobalVar() {
+        return definedGlobalVar;
+    }
+
+    public HashSet<VirtualRegisterIR> getUsedGlobalVar() {
+        return usedGlobalVar;
+    }
+
+    public HashSet<VirtualRegisterIR> getSelfDefinedGlobalVar() {
+        return selfDefinedGlobalVar;
+    }
+
+    public HashSet<VirtualRegisterIR> getSelfUsedGlobalVar() {
+        return selfUsedGlobalVar;
+    }
+
     public List<VirtualRegisterIR> getParameters() {
         return parameters;
     }
@@ -264,5 +292,9 @@ public class FuncIR {
 
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public enum Type {
+        EXTRA, LIBRARY, USER
     }
 }

@@ -12,15 +12,13 @@ import org.antlr.v4.runtime.misc.Pair;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
-public class LivenessAnalyzer {
+class LivenessAnalyzer {
 
+    boolean IRlevel;
     private HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> liveOut = new HashMap<>();
-    private HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> liveIn = new HashMap<>();
     private HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> usedVregs = new HashMap<>();
     private HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> definedVregs = new HashMap<>();
-    public boolean IRlevel;
 
     LivenessAnalyzer() {
         IRlevel = false;
@@ -30,16 +28,16 @@ public class LivenessAnalyzer {
         return liveOut;
     }
 
-    public HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> getUsedVregs() {
+    HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> getUsedVregs() {
         return usedVregs;
     }
 
-    public HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> getDefinedVregs() {
+    HashMap<BasicBlockIR, HashSet<VirtualRegisterIR>> getDefinedVregs() {
         return definedVregs;
     }
 
     //get usedVregs & definedVregs
-    public void initUseAndDef(FuncIR func){
+    private void initUseAndDef(FuncIR func) {
         usedVregs.clear();
         definedVregs.clear();
         for (BasicBlockIR bb : func.getBBList()) {
@@ -63,31 +61,6 @@ public class LivenessAnalyzer {
         }
     }
 
-    void buildLiveIn(FuncIR func) {
-        initUseAndDef(func);
-        liveIn.clear();
-        for (BasicBlockIR bb : func.getBBList())
-            liveIn.put(bb, new HashSet<>());
-        //get liveIn
-        boolean changed = true;
-        func.initReverseOrderBBList();
-        while (changed) {
-            changed = false;
-            for (BasicBlockIR bb : func.getOrderedBBList()) {
-                int oldSize = liveIn.get(bb).size();
-                HashSet<VirtualRegisterIR> curLiveIn = new HashSet<>();
-                for (BasicBlockIR prevBB : bb.fronters) {
-                    HashSet<VirtualRegisterIR> tempVregs = new HashSet<>(liveIn.get(prevBB));
-                    tempVregs.removeAll(definedVregs.get(prevBB));
-                    tempVregs.addAll(usedVregs.get(prevBB));
-                    curLiveIn.addAll(tempVregs);
-                }
-                liveIn.remove(bb);
-                liveIn.put(bb, curLiveIn);
-                changed = changed || oldSize != curLiveIn.size();
-            }
-        }
-    }
 
     void buildLiveOut(FuncIR func) {
         initUseAndDef(func);
@@ -102,7 +75,7 @@ public class LivenessAnalyzer {
             for (BasicBlockIR bb : func.getReversedOrderedBBList()) {
                 int oldSize = liveOut.get(bb).size();
                 HashSet<VirtualRegisterIR> curLiveOut = new HashSet<>();
-                for (BasicBlockIR nextBB : bb.successors) {
+                for (BasicBlockIR nextBB : bb.getSuccessors()) {
                     HashSet<VirtualRegisterIR> tempVregs = new HashSet<>(liveOut.get(nextBB));
 
                     tempVregs.removeAll(definedVregs.get(nextBB));
@@ -116,24 +89,13 @@ public class LivenessAnalyzer {
         }
     }
 
-    void liveOutRename(HashMap<VirtualRegisterIR, VirtualRegisterIR> renameMap){
-        for (Map.Entry<BasicBlockIR, HashSet<VirtualRegisterIR>> entry: liveOut.entrySet()){
-            HashSet<VirtualRegisterIR> livenow = entry.getValue();
-            for (Map.Entry<VirtualRegisterIR, VirtualRegisterIR> rename: renameMap.entrySet()){
-                if (livenow.contains(rename.getKey())){
-                    livenow.remove(rename.getKey());
-                    livenow.add(rename.getValue());
-                }
-            }
-        }
-    }
 
     Graph buildGraph(FuncIR func, List<Pair<VirtualRegisterIR, VirtualRegisterIR>> moveList) {
         buildLiveOut(func);
         return rebuildGraph(func, moveList);
     }
 
-    Graph rebuildGraph(FuncIR func, List<Pair<VirtualRegisterIR, VirtualRegisterIR>> moveList) {
+    private Graph rebuildGraph(FuncIR func, List<Pair<VirtualRegisterIR, VirtualRegisterIR>> moveList) {
         Graph graph = new Graph();
 
         for (BasicBlockIR bb : func.getBBList()) {

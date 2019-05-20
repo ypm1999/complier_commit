@@ -3,7 +3,6 @@ package com.mxcomplier;
 import com.mxcomplier.AST.ProgramNode;
 import com.mxcomplier.Error.ComplierError;
 import com.mxcomplier.FrontEnd.*;
-import com.mxcomplier.Ir.Instructions.CJumpInstIR;
 import com.mxcomplier.LaxerParser.MxStarLexer;
 import com.mxcomplier.LaxerParser.MxStarParser;
 import com.mxcomplier.backEnd.*;
@@ -46,29 +45,45 @@ public class Main {
             IRBuilder irBuilder = new IRBuilder();
             irBuilder.visit(ast);
 
-            new EmptyForRemover(irBuilder).run();
+            if (Config.enableEmptyForEliminate)
+                new EmptyForRemover(irBuilder).run();
+            if (Config.enableBlockMerge)
+                new BlockMerger(true).visit(irBuilder.root);
+            if (Config.enableBlockCopy)
+                new BlockCopier(true).visit(irBuilder.root);
 
-            new BlockMerger(true).visit(irBuilder.root);
-            new BlockCopier(true).visit(irBuilder.root);
-            new LocalValueNumbering().visit(irBuilder.root);
-            new UseLessCodeEliminater(irBuilder).run();
+            if (Config.enableLocalValueNumbering)
+                new LocalValueNumbering().visit(irBuilder.root);
+            if (Config.enableDeadCodeEliminate)
+                new DeadCodeEliminater(irBuilder).run();
 
-            new FuncInliner().run(irBuilder);
-            new LocalValueNumbering().visit(irBuilder.root);
-            new UseLessCodeEliminater(irBuilder).run();
+            if (Config.enableFuncInline)
+                new FuncInliner().run(irBuilder);
+            if (Config.enableLocalValueNumbering)
+                new LocalValueNumbering().visit(irBuilder.root);
+            if (Config.enableDeadCodeEliminate)
+                new DeadCodeEliminater(irBuilder).run();
 
             new IRfixer().visit((irBuilder.root));
-            new BlockMerger(true).visit(irBuilder.root);
-            new BlockCopier(true).visit(irBuilder.root);
+            if (Config.enableBlockMerge)
+                new BlockMerger(true).visit(irBuilder.root);
+            if (Config.enableBlockMerge)
+                new BlockCopier(true).visit(irBuilder.root);
 
             new GraphAllocator().run(irBuilder);
             new StackFrameAllocater().visit(irBuilder.root);
-            new BlockMerger(false).visit(irBuilder.root);
-            new InstructionMatcher().visit(irBuilder.root);
-            new Cjumpfixer().visit(irBuilder.root);
-            new BlockCopier(false).visit(irBuilder.root);
-            new NasmPrinter(irBuilder, System.out).visit(irBuilder.root);
 
+            if (Config.enableBlockMerge)
+                new BlockMerger(false).visit(irBuilder.root);
+            if (Config.enableInstructionMatch)
+                new InstructionMatcher().visit(irBuilder.root);
+
+            new Cjumpfixer().visit(irBuilder.root);
+
+            if (Config.enableFinalBlockMerge)
+                new BlockCopier(false).visit(irBuilder.root);
+
+            new NasmPrinter(irBuilder, System.out).visit(irBuilder.root);
         } catch (ComplierError e) {
             System.err.println("Complier Failed!");
             System.exit(-1);

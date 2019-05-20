@@ -8,16 +8,24 @@ import java.util.List;
 import java.util.Map;
 
 public class LeaInstIR extends InstIR {
-    public AddressIR dest;
-    public AddressIR src;
+    private AddressIR dest;
+    private AddressIR src;
 
     public LeaInstIR(AddressIR dest, AddressIR src) {
         this.dest = dest;
         this.src = src;
     }
 
+    public void setDest(AddressIR dest) {
+        this.dest = dest;
+    }
+
     public AddressIR getDest() {
         return dest;
+    }
+
+    public void setSrc(AddressIR src) {
+        this.src = src;
     }
 
     public OperandIR getSrc() {

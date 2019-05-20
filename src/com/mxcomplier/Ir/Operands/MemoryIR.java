@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MemoryIR extends AddressIR {
-    private VirtualRegisterIR base = null;
-    private VirtualRegisterIR offset = null;
     public VirtualRegisterIR old_base = null;
     public VirtualRegisterIR old_offset = null;
+    private VirtualRegisterIR base = null;
+    private VirtualRegisterIR offset = null;
     private int scale = 1;
     private int num = 0;
     private ConstantIR constant = null;
@@ -57,12 +57,12 @@ public class MemoryIR extends AddressIR {
         return base;
     }
 
-    public VirtualRegisterIR getOffset() {
-        return offset;
-    }
-
     public void setBase(VirtualRegisterIR base) {
         this.base = base;
+    }
+
+    public VirtualRegisterIR getOffset() {
+        return offset;
     }
 
     public void setOffset(VirtualRegisterIR offset) {
@@ -98,7 +98,7 @@ public class MemoryIR extends AddressIR {
         return regs;
     }
 
-    
+
     public boolean phyEquals(MemoryIR obj) {
         boolean equal = (scale == obj.scale && num == obj.num && constant == obj.constant);
         if (base != null) {
@@ -107,13 +107,13 @@ public class MemoryIR extends AddressIR {
             else
                 equal = false;
         }
-        if (offset != null){
+        if (offset != null) {
             if (obj.offset != null)
-                equal &=  offset.getPhyReg() == obj.offset.getPhyReg();
+                equal &= offset.getPhyReg() == obj.offset.getPhyReg();
             else
                 equal = false;
         }
-        return  equal;
+        return equal;
     }
 
     @Override

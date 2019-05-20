@@ -25,7 +25,7 @@ public class Scope {
             parent.children.add(this);
     }
 
-    public Set<Symbol> getAllSymbols(){
+    public Set<Symbol> getAllSymbols() {
         Set<Symbol> res = new HashSet<>(identMap.values());
         for (Scope child : children)
             res.addAll(child.getAllSymbols());

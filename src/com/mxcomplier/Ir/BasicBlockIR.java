@@ -1,7 +1,6 @@
 package com.mxcomplier.Ir;
 
 import com.mxcomplier.Config;
-import com.mxcomplier.Ir.Instructions.CJumpInstIR;
 import com.mxcomplier.Ir.Instructions.EmptyInstIR;
 import com.mxcomplier.Ir.Instructions.InstIR;
 
@@ -10,13 +9,12 @@ import java.util.List;
 
 public class BasicBlockIR {
     private static int BBid = 0;
+    private List<BasicBlockIR> fronters;
+    private List<BasicBlockIR> successors;
     private int id;
-
     private String lable; //for Debug
     private FuncIR func;
     private InstIR head, tail;
-    public List<BasicBlockIR> fronters;
-    public List<BasicBlockIR> successors;
 
 
     public BasicBlockIR(FuncIR func, String lable) {
@@ -29,7 +27,7 @@ public class BasicBlockIR {
         func.getBBList().add(this);
     }
 
-    public BasicBlockIR copy(){
+    public BasicBlockIR copy() {
         BasicBlockIR newBB = new BasicBlockIR(func, lable);
         for (InstIR inst = head.next; inst != tail; inst = inst.next)
             newBB.append(inst.copy());
@@ -41,25 +39,19 @@ public class BasicBlockIR {
         successors = new ArrayList<>();
     }
 
-    public int getMergeInstNum(){
+    public int getMergeInstNum() {
         int res = 0;
-//        int cnt = 1;
         for (InstIR inst = head.next; inst != tail; inst = inst.next) {
-//            if (inst instanceof CJumpInstIR) {
-//                res += cnt;
-//                cnt++;
-//            }
-//            else
-                res++;
+            res++;
         }
-        return  res;
+        return res;
     }
 
-    public int getInstNum(){
+    public int getInstNum() {
         int res = 0;
         for (InstIR inst = head.next; inst != tail; inst = inst.next)
             res++;
-        return  res;
+        return res;
     }
 
     void addFronter(BasicBlockIR bb) {
@@ -68,6 +60,14 @@ public class BasicBlockIR {
 
     void addSuccessor(BasicBlockIR bb) {
         successors.add(bb);
+    }
+
+    public List<BasicBlockIR> getFronters() {
+        return fronters;
+    }
+
+    public List<BasicBlockIR> getSuccessors() {
+        return successors;
     }
 
     public void append(InstIR inst) {
@@ -86,12 +86,12 @@ public class BasicBlockIR {
         return head;
     }
 
-    public InstIR getTail() {
-        return tail;
-    }
-
     public void setHead(InstIR head) {
         this.head = head;
+    }
+
+    public InstIR getTail() {
+        return tail;
     }
 
     public void setTail(InstIR tail) {
@@ -102,7 +102,7 @@ public class BasicBlockIR {
         return lable;
     }
 
-    public String getFuncLabel() {
+    private String getFuncLabel() {
         return func.getName() + func.getBBList().indexOf(this);
     }
 

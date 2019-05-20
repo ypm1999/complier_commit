@@ -12,14 +12,9 @@ import java.util.List;
 import java.util.Map;
 
 public class BinaryInstIR extends InstIR {
-    public enum Op {
-        ADD, SUB, MUL, DIV, MOD, SHL, SHR, AND, OR, XOR, ERROR
-    }
-
+    private AddressIR dest;
+    private OperandIR src;
     private Op op;
-    public AddressIR dest;
-    public OperandIR src;
-
     public BinaryInstIR(Op op, AddressIR dest, OperandIR src) {
         this.op = op;
         this.dest = dest;
@@ -30,13 +25,23 @@ public class BinaryInstIR extends InstIR {
         return op;
     }
 
+    public void setSrc(OperandIR src) {
+        this.src = src;
+    }
+
     public OperandIR getSrc() {
         return src;
+    }
+
+    public void setDest(AddressIR dest) {
+        this.dest = dest;
     }
 
     public AddressIR getDest() {
         return dest;
     }
+
+
 
     @Override
     public List<StackSoltIR> getStackSolt() {
@@ -47,7 +52,6 @@ public class BinaryInstIR extends InstIR {
             res.add((StackSoltIR) src);
         return res;
     }
-
 
     @Override
     public List<VirtualRegisterIR> getUsedVReg() {
@@ -104,5 +108,9 @@ public class BinaryInstIR extends InstIR {
 
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public enum Op {
+        ADD, SUB, MUL, DIV, MOD, SHL, SHR, AND, OR, XOR, ERROR
     }
 }

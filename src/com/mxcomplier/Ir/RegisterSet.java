@@ -1,5 +1,6 @@
 package com.mxcomplier.Ir;
 
+import com.mxcomplier.Error.IRError;
 import com.mxcomplier.Ir.Operands.PhysicalRegisterIR;
 import com.mxcomplier.Ir.Operands.VirtualRegisterIR;
 
@@ -8,6 +9,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class RegisterSet {
+
+    public RegisterSet(){
+        throw new IRError("RegSet is static");
+    }
 
     static public PhysicalRegisterIR rax = new PhysicalRegisterIR("rax");
     static public PhysicalRegisterIR rcx = new PhysicalRegisterIR("rcx");
@@ -75,7 +80,4 @@ public class RegisterSet {
             //without rbp,rsp,rax
     );
 
-    public RegisterSet() {
-
-    }
 }

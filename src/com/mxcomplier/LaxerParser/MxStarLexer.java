@@ -10,13 +10,6 @@ import org.antlr.v4.runtime.dfa.DFA;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class MxStarLexer extends Lexer {
-    static {
-        RuntimeMetaData.checkVersion("4.7.2", RuntimeMetaData.VERSION);
-    }
-
-    protected static final DFA[] _decisionToDFA;
-    protected static final PredictionContextCache _sharedContextCache =
-            new PredictionContextCache();
     public static final int
             Null = 1, True = 2, False = 3, This = 4, Void = 5, Int = 6, String = 7, Bool = 8, New = 9,
             Class = 10, Return = 11, Continue = 12, Break = 13, Else = 14, For = 15, While = 16,
@@ -27,129 +20,12 @@ public class MxStarLexer extends Lexer {
             Question = 44, Colon = 45, Semi = 46, Comma = 47, Assign = 48, Equal = 49, NotEqual = 50,
             Dot = 51, Identifier = 52, IntegerConstant = 53, Nondigit = 54, Digit = 55, NonzeroDigit = 56,
             CharacterConstant = 57, Whitespace = 58, Newline = 59, BlockComment = 60, LineComment = 61;
-    public static String[] channelNames = {
-            "DEFAULT_TOKEN_CHANNEL", "HIDDEN"
-    };
-
-    public static String[] modeNames = {
-            "DEFAULT_MODE"
-    };
-
-    private static String[] makeRuleNames() {
-        return new String[]{
-                "Null", "True", "False", "This", "Void", "Int", "String", "Bool", "New",
-                "Class", "Return", "Continue", "Break", "Else", "For", "While", "If",
-                "LeftParen", "RightParen", "LeftBracket", "RightBracket", "LeftBrace",
-                "RightBrace", "Less", "LessEqual", "Greater", "GreaterEqual", "LeftShift",
-                "RightShift", "Plus", "PlusPlus", "Minus", "MinusMinus", "Star", "Div",
-                "Mod", "And", "Or", "AndAnd", "OrOr", "Caret", "Not", "Tilde", "Question",
-                "Colon", "Semi", "Comma", "Assign", "Equal", "NotEqual", "Dot", "Identifier",
-                "IntegerConstant", "Nondigit", "Digit", "NonzeroDigit", "CharacterConstant",
-                "CCharSequence", "CChar", "EscapeSequence", "Whitespace", "Newline",
-                "BlockComment", "LineComment"
-        };
-    }
-
     public static final String[] ruleNames = makeRuleNames();
-
-    private static String[] makeLiteralNames() {
-        return new String[]{
-                null, "'null'", "'true'", "'false'", "'this'", "'void'", "'int'", "'string'",
-                "'bool'", "'new'", "'class'", "'return'", "'continue'", "'break'", "'else'",
-                "'for'", "'while'", "'if'", "'('", "')'", "'['", "']'", "'{'", "'}'",
-                "'<'", "'<='", "'>'", "'>='", "'<<'", "'>>'", "'+'", "'++'", "'-'", "'--'",
-                "'*'", "'/'", "'%'", "'&'", "'|'", "'&&'", "'||'", "'^'", "'!'", "'~'",
-                "'?'", "':'", "';'", "','", "'='", "'=='", "'!='", "'.'"
-        };
-    }
-
-    private static final String[] _LITERAL_NAMES = makeLiteralNames();
-
-    private static String[] makeSymbolicNames() {
-        return new String[]{
-                null, "Null", "True", "False", "This", "Void", "Int", "String", "Bool",
-                "New", "Class", "Return", "Continue", "Break", "Else", "For", "While",
-                "If", "LeftParen", "RightParen", "LeftBracket", "RightBracket", "LeftBrace",
-                "RightBrace", "Less", "LessEqual", "Greater", "GreaterEqual", "LeftShift",
-                "RightShift", "Plus", "PlusPlus", "Minus", "MinusMinus", "Star", "Div",
-                "Mod", "And", "Or", "AndAnd", "OrOr", "Caret", "Not", "Tilde", "Question",
-                "Colon", "Semi", "Comma", "Assign", "Equal", "NotEqual", "Dot", "Identifier",
-                "IntegerConstant", "Nondigit", "Digit", "NonzeroDigit", "CharacterConstant",
-                "Whitespace", "Newline", "BlockComment", "LineComment"
-        };
-    }
-
-    private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
-    public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
-
     /**
      * @deprecated Use {@link #VOCABULARY} instead.
      */
     @Deprecated
     public static final String[] tokenNames;
-
-    static {
-        tokenNames = new String[_SYMBOLIC_NAMES.length];
-        for (int i = 0; i < tokenNames.length; i++) {
-            tokenNames[i] = VOCABULARY.getLiteralName(i);
-            if (tokenNames[i] == null) {
-                tokenNames[i] = VOCABULARY.getSymbolicName(i);
-            }
-
-            if (tokenNames[i] == null) {
-                tokenNames[i] = "<INVALID>";
-            }
-        }
-    }
-
-    @Override
-    @Deprecated
-    public String[] getTokenNames() {
-        return tokenNames;
-    }
-
-    @Override
-
-    public Vocabulary getVocabulary() {
-        return VOCABULARY;
-    }
-
-
-    public MxStarLexer(CharStream input) {
-        super(input);
-        _interp = new LexerATNSimulator(this, _ATN, _decisionToDFA, _sharedContextCache);
-    }
-
-    @Override
-    public String getGrammarFileName() {
-        return "MxStar.g4";
-    }
-
-    @Override
-    public String[] getRuleNames() {
-        return ruleNames;
-    }
-
-    @Override
-    public String getSerializedATN() {
-        return _serializedATN;
-    }
-
-    @Override
-    public String[] getChannelNames() {
-        return channelNames;
-    }
-
-    @Override
-    public String[] getModeNames() {
-        return modeNames;
-    }
-
-    @Override
-    public ATN getATN() {
-        return _ATN;
-    }
-
     public static final String _serializedATN =
             "\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\2?\u0181\b\1\4\2\t" +
                     "\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13" +
@@ -278,11 +154,128 @@ public class MxStarLexer extends Lexer {
                     "\u015b\u0161\u0164\u016e\u017c\3\b\2\2";
     public static final ATN _ATN =
             new ATNDeserializer().deserialize(_serializedATN.toCharArray());
+    protected static final DFA[] _decisionToDFA;
+    protected static final PredictionContextCache _sharedContextCache =
+            new PredictionContextCache();
+    private static final String[] _LITERAL_NAMES = makeLiteralNames();
+    private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
+    public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
+    public static String[] channelNames = {
+            "DEFAULT_TOKEN_CHANNEL", "HIDDEN"
+    };
+    public static String[] modeNames = {
+            "DEFAULT_MODE"
+    };
+
+    static {
+        RuntimeMetaData.checkVersion("4.7.2", RuntimeMetaData.VERSION);
+    }
+
+    static {
+        tokenNames = new String[_SYMBOLIC_NAMES.length];
+        for (int i = 0; i < tokenNames.length; i++) {
+            tokenNames[i] = VOCABULARY.getLiteralName(i);
+            if (tokenNames[i] == null) {
+                tokenNames[i] = VOCABULARY.getSymbolicName(i);
+            }
+
+            if (tokenNames[i] == null) {
+                tokenNames[i] = "<INVALID>";
+            }
+        }
+    }
 
     static {
         _decisionToDFA = new DFA[_ATN.getNumberOfDecisions()];
         for (int i = 0; i < _ATN.getNumberOfDecisions(); i++) {
             _decisionToDFA[i] = new DFA(_ATN.getDecisionState(i), i);
         }
+    }
+
+    public MxStarLexer(CharStream input) {
+        super(input);
+        _interp = new LexerATNSimulator(this, _ATN, _decisionToDFA, _sharedContextCache);
+    }
+
+    private static String[] makeRuleNames() {
+        return new String[]{
+                "Null", "True", "False", "This", "Void", "Int", "String", "Bool", "New",
+                "Class", "Return", "Continue", "Break", "Else", "For", "While", "If",
+                "LeftParen", "RightParen", "LeftBracket", "RightBracket", "LeftBrace",
+                "RightBrace", "Less", "LessEqual", "Greater", "GreaterEqual", "LeftShift",
+                "RightShift", "Plus", "PlusPlus", "Minus", "MinusMinus", "Star", "Div",
+                "Mod", "And", "Or", "AndAnd", "OrOr", "Caret", "Not", "Tilde", "Question",
+                "Colon", "Semi", "Comma", "Assign", "Equal", "NotEqual", "Dot", "Identifier",
+                "IntegerConstant", "Nondigit", "Digit", "NonzeroDigit", "CharacterConstant",
+                "CCharSequence", "CChar", "EscapeSequence", "Whitespace", "Newline",
+                "BlockComment", "LineComment"
+        };
+    }
+
+    private static String[] makeLiteralNames() {
+        return new String[]{
+                null, "'null'", "'true'", "'false'", "'this'", "'void'", "'int'", "'string'",
+                "'bool'", "'new'", "'class'", "'return'", "'continue'", "'break'", "'else'",
+                "'for'", "'while'", "'if'", "'('", "')'", "'['", "']'", "'{'", "'}'",
+                "'<'", "'<='", "'>'", "'>='", "'<<'", "'>>'", "'+'", "'++'", "'-'", "'--'",
+                "'*'", "'/'", "'%'", "'&'", "'|'", "'&&'", "'||'", "'^'", "'!'", "'~'",
+                "'?'", "':'", "';'", "','", "'='", "'=='", "'!='", "'.'"
+        };
+    }
+
+    private static String[] makeSymbolicNames() {
+        return new String[]{
+                null, "Null", "True", "False", "This", "Void", "Int", "String", "Bool",
+                "New", "Class", "Return", "Continue", "Break", "Else", "For", "While",
+                "If", "LeftParen", "RightParen", "LeftBracket", "RightBracket", "LeftBrace",
+                "RightBrace", "Less", "LessEqual", "Greater", "GreaterEqual", "LeftShift",
+                "RightShift", "Plus", "PlusPlus", "Minus", "MinusMinus", "Star", "Div",
+                "Mod", "And", "Or", "AndAnd", "OrOr", "Caret", "Not", "Tilde", "Question",
+                "Colon", "Semi", "Comma", "Assign", "Equal", "NotEqual", "Dot", "Identifier",
+                "IntegerConstant", "Nondigit", "Digit", "NonzeroDigit", "CharacterConstant",
+                "Whitespace", "Newline", "BlockComment", "LineComment"
+        };
+    }
+
+    @Override
+    @Deprecated
+    public String[] getTokenNames() {
+        return tokenNames;
+    }
+
+    @Override
+
+    public Vocabulary getVocabulary() {
+        return VOCABULARY;
+    }
+
+    @Override
+    public String getGrammarFileName() {
+        return "MxStar.g4";
+    }
+
+    @Override
+    public String[] getRuleNames() {
+        return ruleNames;
+    }
+
+    @Override
+    public String getSerializedATN() {
+        return _serializedATN;
+    }
+
+    @Override
+    public String[] getChannelNames() {
+        return channelNames;
+    }
+
+    @Override
+    public String[] getModeNames() {
+        return modeNames;
+    }
+
+    @Override
+    public ATN getATN() {
+        return _ATN;
     }
 }

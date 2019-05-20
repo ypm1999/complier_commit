@@ -1,6 +1,5 @@
 package com.mxcomplier.backEnd;
 
-import com.mxcomplier.Error.IRError;
 import com.mxcomplier.Ir.BasicBlockIR;
 import com.mxcomplier.Ir.FuncIR;
 import com.mxcomplier.Ir.Instructions.BranchInstIR;
@@ -9,7 +8,9 @@ import com.mxcomplier.Ir.Instructions.InstIR;
 import com.mxcomplier.Ir.Instructions.JumpInstIR;
 import com.mxcomplier.Ir.ProgramIR;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 public class BlockMerger extends IRScanner {
 
@@ -39,21 +40,21 @@ public class BlockMerger extends IRScanner {
                 if (removedBB.contains(bb))
                     continue;
                 InstIR lastInst = bb.getTail().prev;
-                if (lastInst instanceof CJumpInstIR){
-                    if (((CJumpInstIR) lastInst).getTrueBB() == ((CJumpInstIR) lastInst).getFalseBB()){
+                if (lastInst instanceof CJumpInstIR) {
+                    if (((CJumpInstIR) lastInst).getTrueBB() == ((CJumpInstIR) lastInst).getFalseBB()) {
                         lastInst.append(new JumpInstIR(((CJumpInstIR) lastInst).getTrueBB()));
                         lastInst.remove();
                         changed = true;
                     }
                 }
-                if (lastInst instanceof JumpInstIR){
+                if (lastInst instanceof JumpInstIR) {
                     BasicBlockIR nextBB = ((JumpInstIR) lastInst).getTarget();
                     if (nextBB == bb || removedBB.contains(nextBB))
                         continue;
-                    if (bb.getInstNum() == 1){
+                    if (bb.getInstNum() == 1) {
                         HashMap<BasicBlockIR, BasicBlockIR> renameMap = new HashMap<>();
                         renameMap.put(bb, nextBB);
-                        for (BasicBlockIR prevBB: bb.fronters) {
+                        for (BasicBlockIR prevBB : bb.getFronters()) {
                             if (removedBB.contains(prevBB))
                                 continue;
                             ((BranchInstIR) prevBB.getTail().prev).bbRename(renameMap);
@@ -61,7 +62,7 @@ public class BlockMerger extends IRScanner {
                         }
                         break;
                     }
-                    if (nextBB.fronters.size() == 1 && nextBB.getInstNum() > 1) {
+                    if (nextBB.getFronters().size() == 1 && nextBB.getInstNum() > 1) {
                         lastInst.remove();
                         bb.merge(nextBB);
                         removedBB.add(nextBB);
@@ -69,7 +70,7 @@ public class BlockMerger extends IRScanner {
                             node.leaveBB = bb;
                         changed = true;
                     }
-                    if (nextBB.getInstNum() == 1 && nextBB.getTail().prev instanceof CJumpInstIR){
+                    if (nextBB.getInstNum() == 1 && nextBB.getTail().prev instanceof CJumpInstIR) {
 //                        System.err.println(bb + " <- " + nextBB);
                         CJumpInstIR inst = (CJumpInstIR) nextBB.getTail().prev;
                         lastInst.append(inst.copy());

@@ -3,9 +3,9 @@ package com.mxcomplier.Scope;
 import com.mxcomplier.Type.Type;
 
 abstract public class Symbol {
+    private boolean isOutputIrrelevant = false;
     private String name;
     private Type type;
-    boolean isOutputIrrelevant = false;
 
     protected Symbol(String name, Type type) {
         this.name = name;

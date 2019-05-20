@@ -10,11 +10,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-public class UseLessCodeEliminater extends IRScanner {
+public class DeadCodeEliminater extends IRScanner {
 
     IRBuilder ir;
 
-    public UseLessCodeEliminater(IRBuilder ir) {
+    public DeadCodeEliminater(IRBuilder ir) {
         this.ir = ir;
     }
 
@@ -47,7 +47,7 @@ public class UseLessCodeEliminater extends IRScanner {
                     dead = false;
                 else {
                     for (VirtualRegisterIR vreg : defined)
-                        if (liveNow.contains(vreg) || vreg == func.returnValue || vreg.memory != null) {
+                        if (liveNow.contains(vreg) || vreg == func.getReturnValue() || vreg.getMemory() != null) {
                             dead = false;
                             break;
                         }
@@ -62,6 +62,7 @@ public class UseLessCodeEliminater extends IRScanner {
             }
         }
 
+        //merge move & binary
         for (BasicBlockIR bb : func.getBBList()) {
             HashSet<VirtualRegisterIR> liveNow = liveOut.get(bb);
             for (InstIR inst = bb.getTail().prev; inst != bb.getHead(); inst = inst.prev) {
@@ -74,22 +75,22 @@ public class UseLessCodeEliminater extends IRScanner {
                 if (inst instanceof MoveInstIR && inst.next instanceof BinaryInstIR) {
                     MoveInstIR move = (MoveInstIR) inst;
                     BinaryInstIR binary = (BinaryInstIR) inst.next;
-                    if (binary.src ==  move.dest
-                            && binary.dest instanceof VirtualRegisterIR
-                            && move.dest instanceof VirtualRegisterIR
-                            && !liveNow.contains(move.dest))
+                    if (binary.getSrc() == move.getDest()
+                            && binary.getDest() instanceof VirtualRegisterIR
+                            && move.getDest() instanceof VirtualRegisterIR
+                            && !liveNow.contains(move.getDest()))
                         switch (binary.getOp()) {
                             case ADD:
                             case SUB:
                             case AND:
                             case OR:
                             case XOR:
-                                binary.src = move.src;
+                                binary.setSrc(move.getSrc());
                                 remove = true;
                                 break;
                         }
                 }
-                if (remove){
+                if (remove) {
                     inst = inst.next;
                     inst.prev.remove();
                 } else {

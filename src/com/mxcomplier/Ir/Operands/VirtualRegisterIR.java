@@ -4,17 +4,39 @@ import com.mxcomplier.Ir.IRVisitor;
 
 public class VirtualRegisterIR extends RegisterIR {
     static private int vRegId = 0;
-
+    private MemoryIR memory = null;
+    private boolean tempVar = false;
+    private VirtualRegisterIR alias = null;
     private int id;
-    public MemoryIR memory = null;
-    public boolean tempVar = false;
     private PhysicalRegisterIR phyReg = null;
-    public VirtualRegisterIR alais = null;
+
+    public VirtualRegisterIR getAlias() {
+        return alias;
+    }
+
+    public MemoryIR getMemory() {
+        return memory;
+    }
+
+    public boolean isTempVar() {
+        return tempVar;
+    }
+
+    public void setAlias(VirtualRegisterIR alias) {
+        this.alias = alias;
+    }
+
+    public void setMemory(MemoryIR memory) {
+        this.memory = memory;
+    }
+
+    public void setTempVar(boolean tempVar) {
+        this.tempVar = tempVar;
+    }
 
     public VirtualRegisterIR(String label) {
         this.id = vRegId++;
         this.lable = label;
-//        this.memory = new StackSoltIR(lable + "_solt");
     }
 
     public VirtualRegisterIR(VirtualRegisterIR other) {
@@ -23,7 +45,7 @@ public class VirtualRegisterIR extends RegisterIR {
         this.tempVar = other.tempVar;
         this.memory = other.memory;
         this.phyReg = other.phyReg;
-        this.alais = other.alais;
+        this.alias = other.alias;
     }
 
     public VirtualRegisterIR(String label, PhysicalRegisterIR phy) {
@@ -32,26 +54,17 @@ public class VirtualRegisterIR extends RegisterIR {
         this.phyReg = phy;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    static public int getVregId() {
-        return vRegId;
-    }
-
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
-    }
-
-    public void setPhyReg(PhysicalRegisterIR phyReg) {
-        this.phyReg = phyReg;
     }
 
     public PhysicalRegisterIR getPhyReg() {
         return phyReg;
     }
 
+    public void setPhyReg(PhysicalRegisterIR phyReg) {
+        this.phyReg = phyReg;
+    }
 
     @Override
     public VirtualRegisterIR copy() {

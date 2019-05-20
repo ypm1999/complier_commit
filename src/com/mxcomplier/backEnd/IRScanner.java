@@ -11,7 +11,7 @@ abstract public class IRScanner implements IRVisitor {
 
     MemoryIR getMemory(OperandIR operand) {
         if (operand instanceof VirtualRegisterIR)
-            return ((VirtualRegisterIR) operand).memory;
+            return ((VirtualRegisterIR) operand).getMemory();
         else if (operand instanceof MemoryIR)
             return (MemoryIR) operand;
         else
@@ -20,12 +20,12 @@ abstract public class IRScanner implements IRVisitor {
 
     MemoryIR getVregMemory(OperandIR operand) {
         if (operand instanceof VirtualRegisterIR)
-            return ((VirtualRegisterIR) operand).memory;
+            return ((VirtualRegisterIR) operand).getMemory();
         else
             return null;
     }
 
-    void fixMemory(MemoryIR mem, InstIR node) {
+    private void fixMemory(MemoryIR mem, InstIR node) {
         if (mem == null)
             return;
 
@@ -115,11 +115,6 @@ abstract public class IRScanner implements IRVisitor {
     public void visit(ReturnInstIR node) {
 
     }
-//
-//    @Override
-//    public void visit(CompInstIR node) {
-//
-//    }
 
     @Override
     public void visit(AddressIR node) {

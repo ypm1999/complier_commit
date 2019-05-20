@@ -22,12 +22,12 @@ public class IdentExprNode extends ExprNode {
         return isFunc;
     }
 
-    public boolean isVar() {
-        return isVar;
-    }
-
     public void setFunc(boolean func) {
         isFunc = func;
+    }
+
+    public boolean isVar() {
+        return isVar;
     }
 
     public void setVar(boolean var) {

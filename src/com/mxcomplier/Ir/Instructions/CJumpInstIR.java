@@ -10,15 +10,12 @@ import java.util.List;
 import java.util.Map;
 
 public class CJumpInstIR extends BranchInstIR {
-    public enum Op {
-        L, G, LE, GE, E, NE, ERROR
-    }
-
+    private OperandIR lhs, rhs;
     private Op op;
-    public OperandIR lhs, rhs;
     private BasicBlockIR trueBB, falseBB;
-
     public CJumpInstIR(Op op, OperandIR lhs, OperandIR rhs, BasicBlockIR trueBB, BasicBlockIR falseBB) {
+        if (trueBB == null)
+            throw new IRError("");
         this.op = op;
         this.lhs = lhs;
         this.rhs = rhs;
@@ -34,11 +31,20 @@ public class CJumpInstIR extends BranchInstIR {
         return lhs;
     }
 
+    public void setLhs(OperandIR lhs) {
+        this.lhs = lhs;
+    }
+
     public OperandIR getRhs() {
         return rhs;
     }
 
+    public void setRhs(OperandIR rhs) {
+        this.rhs = rhs;
+    }
+
     public BasicBlockIR getTrueBB() {
+
         return trueBB;
     }
 
@@ -50,7 +56,7 @@ public class CJumpInstIR extends BranchInstIR {
         falseBB = null;
     }
 
-    public void reverseOp(){
+    public void reverseOp() {
         BasicBlockIR tmp = trueBB;
         trueBB = falseBB;
         falseBB = tmp;
@@ -73,7 +79,8 @@ public class CJumpInstIR extends BranchInstIR {
             case NE:
                 op = Op.E;
                 break;
-            default: throw new IRError("OP in Cjump");
+            default:
+                throw new IRError("OP in Cjump");
         }
     }
 
@@ -136,5 +143,9 @@ public class CJumpInstIR extends BranchInstIR {
 
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public enum Op {
+        L, G, LE, GE, E, NE, ERROR
     }
 }
